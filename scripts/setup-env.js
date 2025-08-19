@@ -11,7 +11,8 @@ const path = require('path');
 const envDirectories = [
   'apps/api',
   'apps/app', 
-  'apps/web'
+  'apps/web',
+  'apps/email'
 ];
 
 function copyEnvFile(directory) {

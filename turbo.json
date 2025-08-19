@@ -38,6 +38,11 @@
       "persistent": true,
       "cache": false
     },
+    "dev:email": {
+      "inputs": ["$TURBO_DEFAULT$", ".env"],
+      "persistent": true,
+      "cache": false
+    },
     "jobs": {
       "persistent": true,
       "cache": false
