@@ -112,7 +112,7 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
               <p className="text-sm text-destructive">{errors.content}</p>
             )}
             <div className="text-xs text-muted-foreground">
-              {values.content.length}/10.000 caracteres
+              {values.content?.length ?? 0}/10.000 caracteres
             </div>
           </div>
 
