@@ -1,0 +1,62 @@
+# Database Development Rules
+
+## Drizzle ORM Usage
+- Use Drizzle ORM for all database operations
+- Follow the established schema structure
+- Use proper migrations for schema changes
+- Implement proper error handling
+
+## Schema Structure
+```typescript
+// Define tables with proper types
+export const users = pgTable('users', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  email: text('email').notNull().unique(),
+  fullName: text('full_name'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+// Define relations
+export const usersRelations = relations(users, ({ many }) => ({
+  posts: many(posts),
+}));
+```
+
+## Query Patterns
+- Use the established query structure in `queries/`
+- Implement proper pagination
+- Use filters for search functionality
+- Return structured results with metadata
+
+## Mutation Patterns
+- Use the established mutation structure in `mutations/`
+- Implement proper error handling
+- Use transactions when needed
+- Return structured results
+
+## Adapter Pattern
+- Use adapters for different data sources
+- Implement the DatabaseAdapter interface
+- Handle errors consistently
+- Maintain type safety
+
+## Seeding
+- Use the established seeding structure
+- Implement proper data generation
+- Use Faker for realistic test data
+- Follow the seeder pattern
+
+## Migrations
+- Use Drizzle Kit for migrations
+- Write descriptive migration names
+- Test migrations in development
+- Use proper rollback strategies
+
+## Type Safety
+- Export proper types from schema
+- Use TypeScript interfaces for results
+- Maintain type safety across the application
+- Use proper type inference
+---
+globs: "packages/database/**/*.ts"
+---

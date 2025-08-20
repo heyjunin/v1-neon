@@ -1,0 +1,73 @@
+# UI Components Development Rules
+
+## Component Structure
+- Use functional components with TypeScript
+- Implement proper prop interfaces
+- Use forwardRef for ref forwarding
+- Follow the established patterns in `@v1/ui`
+
+## Shadcn UI Integration
+- Use Shadcn UI components as base
+- Extend components when needed
+- Maintain consistent styling
+- Follow design system patterns
+
+## Styling Guidelines
+- Use Tailwind CSS for styling
+- Follow mobile-first responsive design
+- Use CSS variables for theming
+- Implement proper dark mode support
+
+## Component Patterns
+```typescript
+// 1. Import dependencies
+import { forwardRef } from 'react';
+import { cn } from '@v1/ui/cn';
+
+// 2. Define props interface
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'default' | 'outline' | 'destructive';
+  size?: 'sm' | 'md' | 'lg';
+}
+
+// 3. Component with forwardRef
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = 'default', size = 'md', ...props }, ref) => {
+    return (
+      <button
+        className={cn(
+          'base-styles',
+          variantStyles[variant],
+          sizeStyles[size],
+          className
+        )}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+
+Button.displayName = 'Button';
+```
+
+## Accessibility
+- Use proper ARIA attributes
+- Implement keyboard navigation
+- Ensure proper focus management
+- Test with screen readers
+
+## Performance
+- Use React.memo for expensive components
+- Implement proper loading states
+- Use lazy loading for heavy components
+- Optimize re-renders
+
+## Testing
+- Write unit tests for components
+- Test accessibility features
+- Test different prop combinations
+- Use proper testing utilities
+---
+globs: "packages/ui/**/*.tsx,apps/**/components/**/*.tsx"
+---

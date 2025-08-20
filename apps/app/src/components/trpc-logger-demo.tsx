@@ -4,8 +4,6 @@ import { useCreatePost, useDeletePost, usePost, usePosts, useUpdatePost } from '
 import { Button } from '@v1/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
 import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Textarea } from '@v1/ui/textarea';
 import { useState } from 'react';
 
 export function TRPCLoggerDemo() {
@@ -71,7 +69,7 @@ export function TRPCLoggerDemo() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Query Demo */}
             <div className="space-y-2">
-              <Label>Teste de Query (getPosts)</Label>
+              <div className="font-medium">Teste de Query (getPosts)</div>
               <div className="text-sm text-gray-600">
                 {postsLoading ? 'Carregando...' : 
                  postsError ? `Erro: ${postsError.message}` :
@@ -82,12 +80,12 @@ export function TRPCLoggerDemo() {
 
             {/* Query by ID Demo */}
             <div className="space-y-2">
-              <Label>Teste de Query por ID</Label>
+              <div className="font-medium">Teste de Query por ID</div>
               <div className="flex gap-2">
                 <Input
                   placeholder="ID do post"
                   value={postId}
-                  onChange={(e) => setPostId(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPostId(e.target.value)}
                 />
               </div>
               <div className="text-sm text-gray-600">
@@ -101,25 +99,26 @@ export function TRPCLoggerDemo() {
 
           {/* Mutation Demo */}
           <div className="space-y-4">
-            <Label>Teste de Mutations</Label>
+            <div className="font-medium">Teste de Mutations</div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Título</Label>
+                <div className="font-medium">Título</div>
                 <Input
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
                   placeholder="Título do post"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label>Conteúdo</Label>
-                <Textarea
+                <div className="font-medium">Conteúdo</div>
+                <textarea
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setContent(e.target.value)}
                   placeholder="Conteúdo do post"
                   rows={3}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>

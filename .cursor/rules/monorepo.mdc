@@ -1,0 +1,57 @@
+# Monorepo Development Rules
+
+## Package Structure
+- Use workspace packages for shared code
+- Follow the established package naming: `@v1/*`
+- Maintain proper dependencies between packages
+- Use proper exports in package.json
+
+## Workspace Dependencies
+```json
+{
+  "dependencies": {
+    "@v1/ui": "workspace:*",
+    "@v1/database": "workspace:*",
+    "@v1/supabase": "workspace:*"
+  }
+}
+```
+
+## Package Exports
+- Define proper exports in package.json
+- Use subpath exports for specific features
+- Maintain backward compatibility
+- Document public APIs
+
+## Turbo Configuration
+- Use Turbo for task orchestration
+- Define proper task dependencies
+- Use caching for performance
+- Configure proper environment variables
+
+## Development Workflow
+- Use `bun run dev` for development
+- Use `bun run build` for building
+- Use `bun run lint` for linting
+- Use `bun run typecheck` for type checking
+
+## Package Management
+- Use Bun as package manager
+- Install dependencies in root
+- Use workspace: protocol for internal dependencies
+- Maintain consistent versions
+
+## Build and Deploy
+- Use Turbo for build orchestration
+- Configure proper build outputs
+- Use proper environment variables
+- Implement proper caching strategies
+
+## Testing Strategy
+- Test packages individually
+- Use proper test isolation
+- Implement integration tests
+- Use proper test utilities
+---
+globs: "**/package.json,turbo.json"
+---

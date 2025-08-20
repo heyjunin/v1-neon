@@ -14,7 +14,7 @@
     "migrate-data": "bun run src/migrate-data.ts",
     "provision-neon": "bun run src/provision-neon.ts",
     "setup-complete": "bun run src/setup-complete.ts",
-    "seed": "bun run src/seed.ts run",
+    "seed": "bun run src/seed.ts run --force",
     "seed:run": "bun run src/seed.ts run",
     "seed:list": "bun run src/seed.ts list",
     "seed:help": "bun run src/seed.ts help"

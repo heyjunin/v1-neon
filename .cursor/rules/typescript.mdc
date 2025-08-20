@@ -1,0 +1,66 @@
+# TypeScript Development Rules
+
+## Type Definitions
+- Prefer interfaces over types for object shapes
+- Use type aliases for unions, intersections, and utility types
+- Avoid enums; use const assertions or union types instead
+- Export types from dedicated type files when shared
+
+## Import/Export Patterns
+- Use named exports for components and utilities
+- Use default exports sparingly (mainly for pages and layouts)
+- Group imports: external libraries, internal packages, relative imports
+- Use absolute imports with workspace packages: `@v1/ui`, `@v1/database`
+
+## Component Structure
+```typescript
+// 1. Imports
+import { useState } from 'react';
+import { Button } from '@v1/ui/button';
+
+// 2. Types/Interfaces
+interface ComponentProps {
+  title: string;
+  onAction?: () => void;
+}
+
+// 3. Component
+export function Component({ title, onAction }: ComponentProps) {
+  // 4. State and hooks
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 5. Event handlers
+  const handleClick = () => {
+    setIsLoading(true);
+    onAction?.();
+  };
+  
+  // 6. Render
+  return (
+    <Button onClick={handleClick} disabled={isLoading}>
+      {title}
+    </Button>
+  );
+}
+```
+
+## Error Handling
+- Use try-catch blocks for async operations
+- Implement proper error boundaries
+- Use Zod for runtime validation
+- Return structured error objects instead of throwing
+
+## Async/Await
+- Prefer async/await over .then() chains
+- Handle errors with try-catch
+- Use Promise.all() for parallel operations
+- Implement proper loading states
+
+## State Management
+- Use React hooks for local state
+- Prefer server state over client state when possible
+- Use tRPC for server state management
+- Implement optimistic updates when appropriate
+---
+globs: "**/*.ts,**/*.tsx"
+---

@@ -1,0 +1,59 @@
+# Next.js Development Rules
+
+## App Router Structure
+- Use the new App Router (`app/` directory)
+- Organize routes by feature, not by type
+- Use layout.tsx for shared layouts
+- Use page.tsx for route pages
+- Use loading.tsx for loading states
+- Use error.tsx for error boundaries
+
+## Server vs Client Components
+- Default to Server Components
+- Use 'use client' only when necessary:
+  - Event handlers (onClick, onChange)
+  - Browser APIs (localStorage, window)
+  - React hooks (useState, useEffect)
+  - Third-party libraries requiring client
+
+## Data Fetching
+- Use Server Components for data fetching when possible
+- Use tRPC for type-safe API calls
+- Implement proper loading and error states
+- Use Suspense boundaries for streaming
+
+## File Structure
+```
+app/
+├── (auth)/
+│   ├── login/
+│   └── register/
+├── (dashboard)/
+│   ├── posts/
+│   └── settings/
+├── api/
+│   └── trpc/
+├── globals.css
+├── layout.tsx
+└── page.tsx
+```
+
+## API Routes
+- Use tRPC for API endpoints
+- Follow the structure in `apps/app/src/app/api/trpc/[trpc]/route.ts`
+- Implement proper error handling
+- Use middleware for authentication
+
+## Environment Variables
+- Use `NEXT_PUBLIC_` prefix for client-side variables
+- Keep sensitive data server-side only
+- Use proper environment validation
+
+## Performance
+- Use Next.js Image component for images
+- Implement proper caching strategies
+- Use dynamic imports for code splitting
+- Optimize bundle size with tree shaking
+---
+globs: "apps/**/*.tsx,apps/**/*.ts"
+---

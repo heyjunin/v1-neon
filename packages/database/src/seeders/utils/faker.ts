@@ -33,6 +33,7 @@ export class FakerUtils {
   // User-related fakers
   user() {
     return {
+      id: faker.string.uuid(),
       email: faker.internet.email(),
       fullName: faker.person.fullName(),
       avatarUrl: faker.image.avatar(),
