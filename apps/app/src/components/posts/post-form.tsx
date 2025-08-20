@@ -1,5 +1,6 @@
 'use client';
 
+import { useCreatePost, useUpdatePost } from '@/lib/trpc';
 import { Button } from '@v1/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@v1/ui/dialog';
 import { Input } from '@v1/ui/input';
@@ -13,20 +14,22 @@ interface Post {
   userId: string;
 }
 
-interface PostFormProps {
+interface PostFormTRPCProps {
   post?: Post | null;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { title: string; content: string }) => Promise<void>;
-  isLoading?: boolean;
 }
 
-export function PostForm({ post, isOpen, onClose, onSubmit, isLoading = false }: PostFormProps) {
+export function PostForm({ post, isOpen, onClose }: PostFormTRPCProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [errors, setErrors] = useState<{ title?: string; content?: string }>({});
 
+  const createPostMutation = useCreatePost();
+  const updatePostMutation = useUpdatePost();
+  
   const isEditing = !!post;
+  const isLoading = createPostMutation.isPending || updatePostMutation.isPending;
 
   useEffect(() => {
     if (post) {
@@ -70,7 +73,18 @@ export function PostForm({ post, isOpen, onClose, onSubmit, isLoading = false }:
     }
 
     try {
-      await onSubmit({ title: title.trim(), content: content.trim() });
+      if (isEditing && post) {
+        await updatePostMutation.mutateAsync({
+          id: post.id,
+          title: title.trim(),
+          content: content.trim(),
+        });
+      } else {
+        await createPostMutation.mutateAsync({
+          title: title.trim(),
+          content: content.trim(),
+        });
+      }
       onClose();
     } catch (error) {
       console.error('Erro ao salvar post:', error);

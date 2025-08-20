@@ -1,6 +1,7 @@
-import "@v1/ui/globals.css";
 import { Footer } from "@/components/footer";
+import { TRPCProvider } from "@/lib/trpc";
 import { cn } from "@v1/ui/cn";
+import "@v1/ui/globals.css";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
@@ -37,9 +38,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <TRPCProvider>
+            {children}
 
-          <Footer />
+            <Footer />
+          </TRPCProvider>
         </ThemeProvider>
       </body>
     </html>

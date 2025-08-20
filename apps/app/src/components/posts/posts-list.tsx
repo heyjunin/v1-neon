@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Button } from '@v1/ui/button';
-import { Input } from '@v1/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
+import { useDeletePost, usePosts } from '@/lib/trpc';
 import { Badge } from '@v1/ui/badge';
-import { Search, Plus, Edit, Trash2, Calendar, User } from 'lucide-react';
+import { Button } from '@v1/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
+import { Input } from '@v1/ui/input';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
+import { useState } from 'react';
 
 interface Post {
   id: string;
@@ -23,43 +24,45 @@ interface Post {
   };
 }
 
-interface PostsListProps {
-  posts: Post[];
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  onSearch: (search: string) => void;
+interface PostsListTRPCProps {
   onEdit: (post: Post) => void;
-  onDelete: (postId: string) => void;
   onCreate: () => void;
-  isLoading?: boolean;
 }
 
 export function PostsList({
-  posts,
-  total,
-  page,
-  limit,
-  totalPages,
-  onPageChange,
-  onSearch,
   onEdit,
-  onDelete,
-  onCreate,
-  isLoading = false
-}: PostsListProps) {
+  onCreate
+}: PostsListTRPCProps) {
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentLimit] = useState(10);
+
+  const { data, isLoading, error } = usePosts({
+    search: searchTerm || undefined,
+    page: currentPage,
+    limit: currentLimit,
+  });
+
+  const deletePostMutation = useDeletePost();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    onSearch(value);
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      onPageChange(newPage);
+    if (newPage >= 1 && newPage <= (data?.totalPages || 1)) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    if (confirm('Tem certeza que deseja excluir este post?')) {
+      try {
+        await deletePostMutation.mutateAsync({ id: postId });
+      } catch (error) {
+        console.error('Error deleting post:', error);
+      }
     }
   };
 
@@ -68,24 +71,22 @@ export function PostsList({
     return content.substring(0, maxLength) + '...';
   };
 
-  if (isLoading) {
+  if (error) {
     return (
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader>
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-            </CardHeader>
-            <CardContent>
-              <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card>
+        <CardContent className="flex flex-col items-center justify-center py-12">
+          <div className="text-destructive text-center">
+            <h3 className="text-lg font-semibold mb-2">Erro ao carregar posts</h3>
+            <p>{error.message}</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
+
+  const posts = data?.data || [];
+  const total = data?.total || 0;
+  const totalPages = data?.totalPages || 1;
 
   return (
     <div className="space-y-6">
@@ -116,7 +117,21 @@ export function PostsList({
 
       {/* Posts List */}
       <div className="space-y-4">
-        {posts.length === 0 ? (
+        {isLoading ? (
+          // Loading skeleton
+          Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+              </CardContent>
+            </Card>
+          ))
+        ) : posts.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <div className="text-muted-foreground text-center">
@@ -135,7 +150,7 @@ export function PostsList({
             </CardContent>
           </Card>
         ) : (
-          posts.map((post) => (
+          posts.map((post: Post) => (
             <Card key={post.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
@@ -170,11 +185,12 @@ export function PostsList({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onDelete(post.id)}
+                      onClick={() => handleDelete(post.id)}
+                      disabled={deletePostMutation.isPending}
                       className="flex items-center gap-1 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
-                      Excluir
+                      {deletePostMutation.isPending ? 'Excluindo...' : 'Excluir'}
                     </Button>
                   </div>
                 </div>
@@ -203,21 +219,21 @@ export function PostsList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
           >
             Anterior
           </Button>
           
           <div className="flex items-center gap-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNumber = Math.max(1, Math.min(totalPages - 4, page - 2)) + i;
+              const pageNumber = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
               if (pageNumber > totalPages) return null;
               
               return (
                 <Button
                   key={pageNumber}
-                  variant={pageNumber === page ? "default" : "outline"}
+                  variant={pageNumber === currentPage ? "default" : "outline"}
                   size="sm"
                   onClick={() => handlePageChange(pageNumber)}
                   className="w-8 h-8 p-0"
@@ -231,8 +247,8 @@ export function PostsList({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={page === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
           >
             Próxima
           </Button>
