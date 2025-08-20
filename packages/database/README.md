@@ -1,115 +1,232 @@
-# @v1/database
+# Database Package
 
-Pacote de banco de dados usando Drizzle ORM + Neon PostgreSQL.
+This package provides database functionality using Drizzle ORM with Neon PostgreSQL.
 
-## 🚀 Setup Rápido
+## Features
 
-### Opção 1: Setup Automático (Recomendado)
+- Database schema definitions
+- Query and mutation functions
+- Migration management
+- **Seeder system** (Laravel-inspired)
+
+## Seeder System
+
+The seeder system allows you to populate your database with sample data, similar to Laravel's `artisan db:seed` command.
+
+### Available Commands
+
 ```bash
-# No diretório raiz do projeto
-bun run setup:neon
+# Run all seeders
+bun run seed run
+
+# Run specific seeder(s)
+bun run seed run users
+bun run seed run users,posts
+
+# List available seeders
+bun run seed list
+
+# Show help
+bun run seed help
+
+# Force run (overwrite existing data)
+bun run seed run --force
+
+# Verbose output
+bun run seed run --verbose
 ```
 
-### Opção 2: Setup Manual
-```bash
-# 1. Instalar dependências
-bun install
+### Available Seeders
 
-# 2. Provisionar banco Neon
-bun run provision-neon
+- **database**: Runs all seeders in the correct order
+- **users**: Creates sample users (20 fake users with realistic data)
+- **posts**: Creates sample posts (50 fake posts distributed among users)
+- **example-advanced**: Demonstrates various faker features (for learning purposes)
 
-# 3. Executar migrações
-bun run push
+### Creating Custom Seeders
 
-# 4. Migrar dados (opcional)
-bun run migrate-data
+1. Create a new seeder file in `src/seeders/`:
+
+```typescript
+import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import { BaseSeeder } from './base-seeder';
+import { fakerUtils } from './utils/faker';
+import { yourTable } from '../schema/your-table';
+
+export class YourSeeder extends BaseSeeder {
+  name = 'your-seeder';
+
+  async run(db: NeonHttpDatabase): Promise<void> {
+    // Initialize faker with a seed for consistent results
+    fakerUtils.initialize({ seed: 12345 });
+
+    // Generate fake data
+    const sampleData = fakerUtils.array(() => ({
+      // Use faker utilities to generate realistic data
+      name: fakerUtils.user().fullName,
+      email: fakerUtils.user().email,
+      description: fakerUtils.lorem().sentence(),
+      createdAt: fakerUtils.date().recent(30)
+    }), 50);
+
+    await this.executeInTransaction(db, async () => {
+      // Check if data already exists
+      const existing = await db.select().from(yourTable).limit(1);
+      
+      if (existing.length > 0) {
+        throw new Error('Data already exists. Use --force to override.');
+      }
+
+      await this.batchInsert(db, yourTable, sampleData);
+    });
+  }
+}
 ```
 
-## 📋 Scripts Disponíveis
+2. Register the seeder in `src/seeders/index.ts`:
 
-| Script | Descrição |
-|--------|-----------|
-| `bun run generate` | Gera migrações baseadas nos schemas |
-| `bun run push` | Aplica migrações no banco |
-| `bun run migrate` | Executa migrações com controle de versão |
-| `bun run studio` | Abre o Drizzle Studio |
-| `bun run provision-neon` | Provisiona banco Neon via Launchpad |
-| `bun run migrate-data` | Migra dados do Supabase para Neon |
-| `bun run setup-complete` | Setup completo (provision + migrate + seed) |
+```typescript
+import { YourSeeder } from './your-seeder';
 
-## 🗄️ Estrutura do Banco
-
-### Tabelas
-
-#### `users`
-- `id` (uuid, primary key)
-- `email` (text, unique)
-- `fullName` (text, nullable)
-- `avatarUrl` (text, nullable)
-- `createdAt` (timestamp)
-- `updatedAt` (timestamp)
-
-#### `posts`
-- `id` (uuid, primary key)
-- `userId` (uuid, foreign key)
-- `title` (text)
-- `content` (text)
-- `createdAt` (timestamp)
-- `updatedAt` (timestamp)
-
-## 🔄 Migração do Supabase
-
-Este pacote inclui um sistema de adapters que permite migração gradual do Supabase para Neon:
-
-### Variáveis de Ambiente
-```bash
-# Para usar Drizzle (Neon)
-USE_DRIZZLE=true
-
-# Para usar Supabase (padrão)
-USE_DRIZZLE=false
+export const seeders = [
+  new DatabaseSeeder(),
+  new UsersSeeder(),
+  new PostsSeeder(),
+  new YourSeeder() // Add your seeder here
+];
 ```
 
-### Adapters
-- `SupabaseAdapter`: Usa Supabase para todas as operações
-- `DrizzleAdapter`: Usa Drizzle + Neon para operações de banco, mantém Supabase para auth
+### Seeder Features
 
-## 🔧 Desenvolvimento
+- **Transaction support**: All operations are wrapped in transactions
+- **Batch inserts**: Large datasets are inserted in batches for better performance
+- **Duplicate protection**: Seeders check for existing data before inserting
+- **Force mode**: Override duplicate protection with `--force` flag
+- **Verbose logging**: Detailed output with `--verbose` flag
+- **Error handling**: Graceful error handling with detailed error messages
+- **Faker.js integration**: Generate realistic fake data with consistent seeds
 
-### Gerar Novas Migrações
+### Usage Examples
+
 ```bash
-# Após modificar schemas
+# Development setup
+bun run seed run
+
+# Production-like data
+bun run seed run --force
+
+# Debug seeding process
+bun run seed run --verbose
+
+# Run only specific seeders
+bun run seed run users,posts
+
+# Check what seeders are available
+bun run seed list
+
+# Run the advanced example seeder
+bun run seed run example-advanced
+```
+
+### Faker.js Integration
+
+The seeder system includes comprehensive faker.js integration for generating realistic fake data:
+
+#### Available Faker Utilities
+
+```typescript
+import { fakerUtils } from '@v1/database/seeders';
+
+// Initialize with seed for consistent results
+fakerUtils.initialize({ seed: 12345 });
+
+// Generate user data
+const user = fakerUtils.user();
+// { email, fullName, avatarUrl, firstName, lastName, username, bio, location, website, phone, birthDate }
+
+// Generate post data
+const post = fakerUtils.post();
+// { title, content, excerpt, tags, category }
+
+// Generate company data
+const company = fakerUtils.company();
+// { name, catchPhrase, bs, industry, foundedYear, employeeCount }
+
+// Generate address data
+const address = fakerUtils.address();
+// { street, city, state, country, zipCode, coordinates }
+
+// Generate dates
+const recentDate = fakerUtils.date().recent(7);
+const futureDate = fakerUtils.date().future(1);
+
+// Generate random data
+const randomNumber = fakerUtils.random().number(1, 100);
+const randomBoolean = fakerUtils.random().boolean();
+const randomUuid = fakerUtils.random().uuid();
+
+// Generate images
+const avatar = fakerUtils.image().avatar();
+const placeholder = fakerUtils.image().urlPlaceholder(300, 200);
+
+// Generate lorem text
+const sentence = fakerUtils.lorem().sentence();
+const paragraph = fakerUtils.lorem().paragraph();
+
+// Generate arrays of data
+const users = fakerUtils.array(() => fakerUtils.user(), 10);
+```
+
+## Database Operations
+
+### Queries
+
+```typescript
+import { queries } from '@v1/database/queries';
+
+// Get all users
+const users = await queries.users.getAll();
+
+// Get user by ID
+const user = await queries.users.getById(id);
+```
+
+### Mutations
+
+```typescript
+import { mutations } from '@v1/database/mutations';
+
+// Create user
+const user = await mutations.users.create({
+  email: 'user@example.com',
+  fullName: 'John Doe'
+});
+
+// Update user
+await mutations.users.update(id, {
+  fullName: 'Jane Doe'
+});
+```
+
+## Schema
+
+The database schema is defined in `src/schema/`:
+
+- `users.ts` - User table definition
+- `posts.ts` - Posts table definition
+
+## Migrations
+
+```bash
+# Generate migration
 bun run generate
-```
 
-### Aplicar Migrações
-```bash
-# Para desenvolvimento (push direto)
+# Run migrations
+bun run migrate
+
+# Push schema changes
 bun run push
 
-# Para produção (migrações versionadas)
-bun run migrate
-```
-
-### Visualizar Dados
-```bash
-# Abrir Drizzle Studio
+# Open Drizzle Studio
 bun run studio
 ```
-
-## 📊 Migração de Dados
-
-O script `migrate-data` migra automaticamente:
-- Usuários do Supabase para Neon
-- Posts do Supabase para Neon
-- Preserva relacionamentos e timestamps
-
-## 🔐 Autenticação
-
-A autenticação continua usando Supabase Auth. O adapter do Drizzle integra com o Supabase Auth para obter o usuário autenticado.
-
-## 🚨 Importante
-
-- O banco Neon provisionado via Launchpad expira em 72 horas
-- Use o Claim URL para tornar o banco permanente
-- Sempre teste em ambiente de desenvolvimento antes de usar em produção

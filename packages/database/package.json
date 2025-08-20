@@ -20,9 +20,10 @@
     "seed:help": "bun run src/seed.ts help"
   },
   "dependencies": {
-    "drizzle-orm": "^0.29.0",
+    "@faker-js/faker": "^9.9.0",
     "@neondatabase/serverless": "^0.9.0",
-    "@v1/logger": "workspace:*"
+    "@v1/logger": "workspace:*",
+    "drizzle-orm": "^0.29.0"
   },
   "devDependencies": {
     "drizzle-kit": "^0.20.0",
