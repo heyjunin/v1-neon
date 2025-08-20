@@ -19,9 +19,15 @@
     "lint:repo:fix": "bunx sherif@latest --fix",
     "typecheck": "turbo typecheck",
     "setup:env": "node scripts/setup-env.js",
+    "setup:env:complete": "node scripts/setup-env-complete.js",
     "setup:neon": "node scripts/setup-neon.js",
     "setup:webhook": "node scripts/setup-webhook.js",
-    "setup:storage": "node scripts/setup-storage.js"
+    "setup:storage": "node scripts/setup-storage.js",
+    "supabase:local": "bash scripts/supabase-local.sh",
+    "supabase:remote": "bash scripts/supabase-remote.sh",
+    "supabase:status": "node scripts/supabase-status.js",
+    "dev:local": "npm run supabase:local && bun run dev",
+    "dev:remote": "npm run supabase:remote && bun run dev"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",

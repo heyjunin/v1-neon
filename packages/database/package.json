@@ -13,7 +13,11 @@
     "studio": "drizzle-kit studio",
     "migrate-data": "bun run src/migrate-data.ts",
     "provision-neon": "bun run src/provision-neon.ts",
-    "setup-complete": "bun run src/setup-complete.ts"
+    "setup-complete": "bun run src/setup-complete.ts",
+    "seed": "bun run src/seed.ts",
+    "seed:run": "bun run src/seed.ts run",
+    "seed:list": "bun run src/seed.ts list",
+    "seed:help": "bun run src/seed.ts help"
   },
   "dependencies": {
     "drizzle-orm": "^0.29.0",
@@ -30,6 +34,7 @@
     "./queries": "./src/queries/index.ts",
     "./mutations": "./src/mutations/index.ts",
     "./types": "./src/types.ts",
-    "./adapters": "./src/adapters/supabase-adapter.ts"
+    "./adapters": "./src/adapters/supabase-adapter.ts",
+    "./seeders": "./src/seeders/index.ts"
   }
 }
