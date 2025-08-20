@@ -9,9 +9,8 @@ export abstract class BaseSeeder implements Seeder {
     db: NeonHttpDatabase,
     operation: () => Promise<T>
   ): Promise<T> {
-    return await db.transaction(async (tx) => {
-      return await operation();
-    });
+    // Neon HTTP driver doesn't support transactions, so we'll just execute directly
+    return await operation();
   }
 
   protected async batchInsert<T>(

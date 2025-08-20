@@ -10,7 +10,7 @@ export async function PostsServer() {
 
   return (
     <div>
-      {data?.map((post: any) => (
+      {data?.data?.map((post: any) => (
         <div key={post.id}>{post.title}</div>
       ))}
     </div>

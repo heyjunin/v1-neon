@@ -1,15 +1,9 @@
-import { PostsLoading } from "@/components/posts/posts.loading";
-import { PostsServer } from "@/components/posts/posts.server";
-import { Suspense } from "react";
+import { PostsManager } from "@/components/posts/posts-manager";
 
 export const metadata = {
   title: "Posts",
 };
 
 export default function Page() {
-  return (
-    <Suspense fallback={<PostsLoading />}>
-      <PostsServer />
-    </Suspense>
-  );
+  return <PostsManager />;
 }
