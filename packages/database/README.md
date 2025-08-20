@@ -4,10 +4,12 @@ This package provides database functionality using Drizzle ORM with Neon Postgre
 
 ## Features
 
-- Database schema definitions
-- Query and mutation functions
+- **Neon PostgreSQL** database with Drizzle ORM
+- Complete CRUD operations for posts and users
+- Advanced filtering, pagination, and sorting
 - Migration management
-- **Seeder system** (Laravel-inspired)
+- **Seeder system** (Laravel-inspired) with faker-js
+- **Supabase Auth integration** (authentication only)
 
 ## Seeder System
 
@@ -179,32 +181,52 @@ const users = fakerUtils.array(() => fakerUtils.user(), 10);
 
 ## Database Operations
 
-### Queries
+### Using the Database Adapter
+
+```typescript
+import { createDatabaseAdapter } from '@v1/database/adapters';
+
+const adapter = createDatabaseAdapter();
+
+// Get posts with pagination and filters
+const result = await adapter.getPostsWithUsers(
+  { search: 'react', sortBy: 'createdAt', sortOrder: 'desc' },
+  { page: 1, limit: 10 }
+);
+
+// Create a new post
+const newPost = await adapter.createPost({
+  title: 'My Post',
+  content: 'Post content',
+  userId: 'user-id'
+});
+
+// Update a post
+const updatedPost = await adapter.updatePost('post-id', {
+  title: 'Updated Title'
+});
+
+// Delete a post
+const deleted = await adapter.deletePost('post-id');
+```
+
+### Direct Queries and Mutations
 
 ```typescript
 import { queries } from '@v1/database/queries';
-
-// Get all users
-const users = await queries.users.getAll();
-
-// Get user by ID
-const user = await queries.users.getById(id);
-```
-
-### Mutations
-
-```typescript
 import { mutations } from '@v1/database/mutations';
 
-// Create user
-const user = await mutations.users.create({
-  email: 'user@example.com',
-  fullName: 'John Doe'
-});
+// Get posts with filters and pagination
+const posts = await queries.getPosts(
+  { search: 'react' },
+  { page: 1, limit: 10 }
+);
 
-// Update user
-await mutations.users.update(id, {
-  fullName: 'Jane Doe'
+// Create post
+const post = await mutations.createPost({
+  title: 'My Post',
+  content: 'Post content',
+  userId: 'user-id'
 });
 ```
 
@@ -214,6 +236,20 @@ The database schema is defined in `src/schema/`:
 
 - `users.ts` - User table definition
 - `posts.ts` - Posts table definition
+
+## Database Configuration
+
+This package now uses **Neon PostgreSQL** exclusively for all database operations. Supabase is only used for authentication.
+
+### Environment Variables
+
+```bash
+# Required for database connection
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Optional: Enable Drizzle Studio
+DRIZZLE_STUDIO=true
+```
 
 ## Migrations
 
