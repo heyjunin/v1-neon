@@ -1,18 +1,23 @@
 // Main components
-export { PostForm } from './post-form';
-export { PostsList } from './posts-list';
 export { PostsManager } from './posts-manager';
 
-// Notification components
+// Forms
+export { PostForm } from './forms';
+
+// Lists
+export { PostsList } from './lists';
+
+// Components
+export { ConfirmationDialog } from './components/dialogs';
+export { FormField } from './components/form-field';
 export { PostNotification } from './components/notification';
 
-// Form components
-export { FormField } from './components/form-field';
-
 // Hooks
+export { useConfirmation } from './hooks/use-confirmation';
 export { useNotification } from './hooks/use-notification';
-export { useConfirmation } from './use-confirmation';
-export { useForm } from './use-form';
+
+// Utils
+export { maxLength, minLength, postValidation, requiredField, useForm } from './utils';
 
 // Types
 export type {
@@ -20,7 +25,4 @@ export type {
   PostFormData, SearchState, UseFormOptions,
   UseFormReturn
 } from './types';
-
-// Validations
-export { maxLength, minLength, postValidation, requiredField } from './validations';
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { FormState, UseFormOptions, UseFormReturn } from './types';
+import type { FormState, UseFormOptions, UseFormReturn } from '../types';
 
 export function useForm<T extends Record<string, any>>({
   initialValues,

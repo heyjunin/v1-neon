@@ -4,10 +4,9 @@ import { useCreatePost, useUpdatePost } from '@/lib/trpc';
 import { Button } from '@v1/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@v1/ui/dialog';
 import { Loader2, Save, X } from 'lucide-react';
-import type { Post, PostFormData } from './types';
-import { useForm } from './use-form';
-import { postValidation } from './validations';
-import { FormField } from './components/form-field';
+import { FormField } from '../components/form-field';
+import type { Post, PostFormData } from '../types';
+import { postValidation, useForm } from '../utils/index';
 
 interface PostFormProps {
   post?: Post | null;

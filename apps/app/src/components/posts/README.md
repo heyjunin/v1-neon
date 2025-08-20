@@ -1,27 +1,68 @@
 # Posts Components
 
-Esta pasta contém todos os componentes relacionados ao gerenciamento de posts, organizados seguindo princípios DRY (Don't Repeat Yourself).
+Esta pasta contém todos os componentes relacionados ao gerenciamento de posts, organizados seguindo princípios DRY (Don't Repeat Yourself) e com uma estrutura modular bem definida.
 
-## Estrutura
+## Estrutura Organizada
 
 ```
 posts/
 ├── components/           # Componentes reutilizáveis
+│   ├── dialogs/         # Diálogos modais
+│   │   ├── confirmation-dialog.tsx
+│   │   └── index.ts
 │   ├── form-field.tsx   # Campo de formulário genérico
 │   ├── notification.tsx # Componente de notificação unificado
 │   └── index.ts         # Exportações dos componentes
+├── forms/               # Formulários
+│   ├── post-form.tsx    # Formulário de criação/edição de posts
+│   └── index.ts         # Exportações dos formulários
 ├── hooks/               # Hooks customizados
 │   ├── use-notification.ts # Hook para gerenciar notificações
+│   ├── use-confirmation.ts # Hook para diálogos de confirmação
 │   └── index.ts         # Exportações dos hooks
-├── post-form.tsx        # Formulário de criação/edição de posts
-├── posts-list.tsx       # Lista de posts
+├── lists/               # Componentes de listagem
+│   ├── posts-list.tsx   # Lista de posts
+│   └── index.ts         # Exportações das listas
+├── utils/               # Utilitários e lógica reutilizável
+│   ├── use-form.ts      # Hook genérico para formulários
+│   ├── validations.ts   # Funções de validação
+│   └── index.ts         # Exportações dos utilitários
 ├── posts-manager.tsx    # Componente principal que gerencia posts
-├── use-form.ts          # Hook genérico para formulários
-├── use-confirmation.ts  # Hook para diálogos de confirmação
-├── validations.ts       # Funções de validação
-├── types.ts             # Tipos TypeScript
-└── index.ts             # Exportações principais
+├── types.ts             # Tipos TypeScript centralizados
+├── index.ts             # Exportações principais
+└── README.md            # Esta documentação
 ```
+
+## Organização por Responsabilidade
+
+### 📁 components/
+Componentes reutilizáveis e genéricos:
+
+- **dialogs/**: Diálogos modais reutilizáveis
+- **form-field.tsx**: Campo de formulário genérico
+- **notification.tsx**: Componente de notificação unificado
+
+### 📁 forms/
+Formulários específicos da aplicação:
+
+- **post-form.tsx**: Formulário de criação/edição de posts
+
+### 📁 hooks/
+Hooks customizados para lógica reutilizável:
+
+- **use-notification.ts**: Gerenciamento de notificações
+- **use-confirmation.ts**: Gerenciamento de diálogos de confirmação
+
+### 📁 lists/
+Componentes de listagem e exibição:
+
+- **posts-list.tsx**: Lista de posts com busca e ações
+
+### 📁 utils/
+Utilitários e lógica reutilizável:
+
+- **use-form.ts**: Hook genérico para formulários
+- **validations.ts**: Funções de validação reutilizáveis
 
 ## Componentes Principais
 
@@ -75,6 +116,23 @@ import { FormField } from './components/form-field';
 />
 ```
 
+### ConfirmationDialog
+Diálogo de confirmação reutilizável com diferentes tipos de ação:
+
+```typescript
+import { ConfirmationDialog } from './components/dialogs';
+
+<ConfirmationDialog
+  isOpen={isOpen}
+  onClose={onClose}
+  onConfirm={onConfirm}
+  title="Excluir Post"
+  description="Tem certeza que deseja excluir este post?"
+  actionType="delete"
+  isLoading={isLoading}
+/>
+```
+
 ## Hooks
 
 ### useNotification
@@ -90,11 +148,24 @@ showSuccess('Post criado com sucesso!');
 showError('Erro ao criar post');
 ```
 
+### useConfirmation
+Hook para gerenciar diálogos de confirmação:
+
+```typescript
+import { useConfirmation } from './hooks/use-confirmation';
+
+const { confirmation, openConfirmation, closeConfirmation, confirmAction } = useConfirmation();
+
+// Uso
+openConfirmation(post.id, post.title, 'delete');
+await confirmAction(handleDelete);
+```
+
 ### useForm
 Hook genérico para formulários com validação:
 
 ```typescript
-import { useForm } from './use-form';
+import { useForm } from './utils';
 
 const { values, errors, setValue, handleSubmit } = useForm({
   initialValues: { title: '', content: '' },
@@ -119,7 +190,7 @@ Todos os tipos estão centralizados em `types.ts`:
 
 ## Validações
 
-Funções de validação reutilizáveis em `validations.ts`:
+Funções de validação reutilizáveis em `utils/validations.ts`:
 
 - `postValidation`: Validação específica para posts
 - `requiredField`: Validação de campo obrigatório
@@ -128,25 +199,40 @@ Funções de validação reutilizáveis em `validations.ts`:
 
 ## Princípios DRY Aplicados
 
-1. **Componente de Notificação Unificado**: Elimina duplicação entre `Notification` e `InlineNotification`
-2. **FormField Reutilizável**: Componente genérico para campos de formulário
-3. **Hooks Centralizados**: Lógica reutilizável em hooks customizados
-4. **Tipos Organizados**: Todos os tipos em um local centralizado
-5. **Validações Reutilizáveis**: Funções de validação genéricas
-6. **Estrutura Modular**: Componentes organizados em pastas por responsabilidade
+1. **Estrutura Modular**: Organização por responsabilidade em pastas específicas
+2. **Componente de Notificação Unificado**: Elimina duplicação entre diferentes tipos de notificação
+3. **FormField Reutilizável**: Componente genérico para campos de formulário
+4. **Hooks Centralizados**: Lógica reutilizável em hooks customizados
+5. **Tipos Organizados**: Todos os tipos em um local centralizado
+6. **Validações Reutilizáveis**: Funções de validação genéricas
+7. **Diálogos Reutilizáveis**: Componentes de diálogo genéricos
 
 ## Como Usar
 
 ```typescript
+// Importação principal
+import { PostsManager } from './posts';
+
+// Ou importações específicas
 import {
   PostForm,
   PostsList,
-  PostsManager,
   PostNotification,
   FormField,
+  ConfirmationDialog,
   useNotification,
+  useConfirmation,
   useForm,
   type Post,
   type PostFormData,
 } from './posts';
 ```
+
+## Benefícios da Nova Estrutura
+
+1. **Manutenibilidade**: Código organizado por responsabilidade
+2. **Reutilização**: Componentes e hooks genéricos
+3. **Escalabilidade**: Fácil adição de novos componentes
+4. **Testabilidade**: Componentes isolados e testáveis
+5. **Legibilidade**: Estrutura clara e intuitiva
+6. **Performance**: Imports específicos reduzem bundle size

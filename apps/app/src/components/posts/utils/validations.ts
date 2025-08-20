@@ -1,4 +1,4 @@
-import type { PostFormData } from './types';
+import type { PostFormData } from '../types';
 
 export const postValidation = (values: PostFormData): Partial<Record<keyof PostFormData, string>> => {
   const errors: Partial<Record<keyof PostFormData, string>> = {};

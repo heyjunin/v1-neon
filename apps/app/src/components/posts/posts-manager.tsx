@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { PostNotification } from './components/notification';
+import { PostForm } from './forms';
 import { useNotification } from './hooks/use-notification';
-import { PostForm } from './post-form';
-import { PostsList } from './posts-list';
+import { PostsList } from './lists';
 import type { Post } from './types';
 
 export function PostsManager() {
