@@ -160,7 +160,17 @@ export function parseFileSize(sizeString: string): number {
   }
 
   const [, size, unit] = match;
-  return parseFloat(size) * units[unit.toUpperCase()];
+  if (!size || !unit) {
+    throw new Error('Invalid file size format');
+  }
+  
+  const upperUnit = unit.toUpperCase();
+  const unitValue = units[upperUnit];
+  if (!unitValue) {
+    throw new Error('Invalid file size unit');
+  }
+  
+  return parseFloat(size) * unitValue;
 }
 
 /**

@@ -14,6 +14,10 @@
         "SUPABASE_SERVICE_KEY",
         "SUPABASE_PROJECT_ID",
         "SUPABASE_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_SECRET",
+        "DISCORD_CLIENT_ID",
+        "DISCORD_SECRET",
         "RESEND_API_KEY",
         "LOOPS_ENDPOINT",
         "LOOPS_API_KEY",
@@ -46,6 +50,10 @@
         "SUPABASE_SERVICE_KEY",
         "SUPABASE_PROJECT_ID",
         "SUPABASE_API_KEY",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_SECRET",
+        "DISCORD_CLIENT_ID",
+        "DISCORD_SECRET",
         "RESEND_API_KEY",
         "LOOPS_ENDPOINT",
         "LOOPS_API_KEY",
@@ -82,6 +90,66 @@
         "TRIGGER_API_URL"
       ],
       "persistent": true,
+      "cache": false
+    },
+    "migrate": {
+      "env": [
+        "DATABASE_URL"
+      ],
+      "cache": false
+    },
+    "generate": {
+      "env": [
+        "DATABASE_URL"
+      ],
+      "cache": false
+    },
+    "push": {
+      "env": [
+        "DATABASE_URL"
+      ],
+      "cache": false
+    },
+    "studio": {
+      "env": [
+        "DATABASE_URL"
+      ],
+      "cache": false
+    },
+    "seed": {
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY"
+      ],
+      "cache": false
+    },
+    "seed:run": {
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY"
+      ],
+      "cache": false
+    },
+    "seed:list": {
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY"
+      ],
+      "cache": false
+    },
+    "seed:help": {
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "SUPABASE_SERVICE_KEY"
+      ],
       "cache": false
     },
     "lint": {

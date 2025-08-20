@@ -23,6 +23,8 @@
     "./cn": "./src/utils/cn.ts",
     "./button": "./src/components/button.tsx",
     "./input": "./src/components/input.tsx",
+    "./card": "./src/components/card.tsx",
+    "./badge": "./src/components/badge.tsx",
     "./tooltip": "./src/components/tooltip.tsx",
     "./dialog": "./src/components/dialog.tsx",
     "./icons": "./src/components/icons.tsx",

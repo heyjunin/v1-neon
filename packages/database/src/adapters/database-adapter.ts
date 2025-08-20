@@ -1,8 +1,7 @@
 import { logger } from '@v1/logger';
-import { getUser as getSupabaseUser } from '@v1/supabase/queries';
+import { createPost as createDrizzlePost, deletePost as deleteDrizzlePost, updatePost as updateDrizzlePost } from '../mutations/posts';
 import { createUser as createDrizzleUser, updateUser as updateDrizzleUser } from '../mutations/users';
-import { getPosts as getDrizzlePosts, getPostsWithUsers as getDrizzlePostsWithUsers, getPostById as getDrizzlePostById, getPostsByUserId as getDrizzlePostsByUserId } from '../queries/posts';
-import { createPost as createDrizzlePost, updatePost as updateDrizzlePost, deletePost as deleteDrizzlePost } from '../mutations/posts';
+import { getPostById as getDrizzlePostById, getPosts as getDrizzlePosts, getPostsByUserId as getDrizzlePostsByUserId, getPostsWithUsers as getDrizzlePostsWithUsers } from '../queries/posts';
 import { getUserById } from '../queries/users';
 
 export interface PostsFilters {
@@ -41,6 +40,10 @@ export interface DatabaseAdapter {
 export class DrizzleAdapter implements DatabaseAdapter {
   async getUser() {
     try {
+      // Import dinâmico para evitar problemas de build
+      const supabaseQueries = await import('@v1/supabase/queries');
+      const getSupabaseUser = supabaseQueries.getUser;
+      
       // Para manter compatibilidade, precisamos do usuário autenticado do Supabase
       const supabaseResult = await getSupabaseUser();
       

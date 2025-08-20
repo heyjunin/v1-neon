@@ -1,6 +1,5 @@
 'use client';
 
-import { createDatabaseAdapter } from '@v1/database/adapters';
 import { Button } from '@v1/ui/button';
 import { AlertCircle, CheckCircle } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -45,24 +44,30 @@ export function PostsManager() {
     message: string;
   } | null>(null);
 
-  const adapter = createDatabaseAdapter();
-
   const loadPosts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const result = await adapter.getPostsWithUsers(
-        { search: search || undefined },
-        { page, limit }
-      );
-
-      if (result.error) {
-        throw new Error(result.error.message || 'Erro ao carregar posts');
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+      });
+      
+      if (search) {
+        params.append('search', search);
       }
 
-      if (result.data) {
-        setPosts(result.data.data);
-        setTotal(result.data.total);
-        setTotalPages(result.data.totalPages);
+      const response = await fetch(`/api/posts?${params}`);
+      
+      if (!response.ok) {
+        throw new Error('Erro ao carregar posts');
+      }
+
+      const result = await response.json();
+      
+      if (result) {
+        setPosts(result.data);
+        setTotal(result.total);
+        setTotalPages(result.totalPages);
       }
     } catch (error) {
       console.error('Erro ao carregar posts:', error);
@@ -70,7 +75,7 @@ export function PostsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, [adapter, search, page, limit]);
+  }, [search, page, limit]);
 
   useEffect(() => {
     loadPosts();
@@ -106,16 +111,16 @@ export function PostsManager() {
     }
 
     try {
-      const result = await adapter.deletePost(postId);
+      const response = await fetch(`/api/posts/${postId}`, {
+        method: 'DELETE',
+      });
       
-      if (result.error) {
-        throw new Error(result.error.message || 'Erro ao excluir post');
+      if (!response.ok) {
+        throw new Error('Erro ao excluir post');
       }
 
-      if (result.data) {
-        showNotification('success', 'Post excluído com sucesso');
-        loadPosts(); // Reload posts
-      }
+      showNotification('success', 'Post excluído com sucesso');
+      loadPosts(); // Reload posts
     } catch (error) {
       console.error('Erro ao excluir post:', error);
       showNotification('error', 'Erro ao excluir post');
@@ -128,26 +133,34 @@ export function PostsManager() {
 
       if (editingPost) {
         // Update existing post
-        const result = await adapter.updatePost(editingPost.id, data);
+        const response = await fetch(`/api/posts/${editingPost.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
         
-        if (result.error) {
-          throw new Error(result.error.message || 'Erro ao atualizar post');
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar post');
         }
 
-        if (result.data) {
-          showNotification('success', 'Post atualizado com sucesso');
-        }
+        showNotification('success', 'Post atualizado com sucesso');
       } else {
         // Create new post
-        const result = await adapter.createPost(data);
+        const response = await fetch('/api/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
         
-        if (result.error) {
-          throw new Error(result.error.message || 'Erro ao criar post');
+        if (!response.ok) {
+          throw new Error('Erro ao criar post');
         }
 
-        if (result.data) {
-          showNotification('success', 'Post criado com sucesso');
-        }
+        showNotification('success', 'Post criado com sucesso');
       }
 
       setIsFormOpen(false);
