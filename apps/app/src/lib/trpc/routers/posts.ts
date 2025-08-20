@@ -2,7 +2,7 @@ import { createPost, deletePost, updatePost } from '@v1/database/mutations';
 import { getPostById, getPostsByUserId, getPostsWithUsers } from '@v1/database/queries';
 import { logger } from '@v1/logger';
 import { z } from 'zod';
-import { loggedProcedure, router } from '../server';
+import { loggedProcedure, protectedProcedure, router } from '../context';
 
 // Schemas
 const createPostSchema = z.object({
@@ -91,15 +91,13 @@ export const postsRouter = router({
     }),
 
   // Criar post
-  createPost: loggedProcedure
+  createPost: protectedProcedure
     .input(createPostSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
-        // TODO: Obter userId do contexto de autenticação
-        const userId = 'temp-user-id'; // Temporário para teste
         const post = await createPost({
           ...input,
-          userId,
+          userId: ctx.user.id,
         });
         return post;
       } catch (error) {
@@ -109,7 +107,7 @@ export const postsRouter = router({
     }),
 
   // Atualizar post
-  updatePost: loggedProcedure
+  updatePost: protectedProcedure
     .input(updatePostSchema)
     .mutation(async ({ input }) => {
       try {
@@ -125,7 +123,7 @@ export const postsRouter = router({
     }),
 
   // Deletar post
-  deletePost: loggedProcedure
+  deletePost: protectedProcedure
     .input(deletePostSchema)
     .mutation(async ({ input }) => {
       try {

@@ -138,11 +138,54 @@ export default function RootLayout({ children }) {
 }
 ```
 
+## Configuração do Banco de Dados
+
+A aplicação agora usa **Neon PostgreSQL** exclusivamente para todas as operações de posts. O Supabase é usado apenas para autenticação.
+
+### Estrutura do Banco
+
+- **Tabela posts**: Armazena todos os posts com relacionamento com usuários
+- **Tabela users**: Armazena informações dos usuários (sincronizada do Supabase via webhook)
+
+### Operações Suportadas
+
+- ✅ Listar posts com filtros e paginação
+- ✅ Buscar post por ID
+- ✅ Buscar posts por usuário
+- ✅ Criar novo post
+- ✅ Atualizar post existente
+- ✅ Deletar post
+
+## Autenticação
+
+A autenticação foi implementada usando o Supabase Auth integrado ao contexto do tRPC:
+
+### Contexto de Autenticação
+
+- **Contexto tRPC**: Inclui informações do usuário autenticado
+- **Middleware de Proteção**: `protectedProcedure` para rotas que requerem autenticação
+- **Integração Supabase**: Usuário obtido através do middleware do Next.js
+
+### Rotas Protegidas
+
+As seguintes rotas requerem autenticação:
+- `posts.createPost` - Criar post (usa userId do contexto)
+- `posts.updatePost` - Atualizar post
+- `posts.deletePost` - Deletar post
+
+### Rotas Públicas
+
+As seguintes rotas são públicas:
+- `posts.getPosts` - Listar posts
+- `posts.getPostById` - Buscar post por ID
+- `posts.getPostsByUserId` - Buscar posts por usuário
+
 ## Próximos Passos
 
-1. Implementar autenticação no contexto do tRPC
-2. Adicionar validação de permissões
+1. ✅ ~~Implementar autenticação no contexto do tRPC~~
+2. Adicionar validação de permissões (verificar se usuário pode editar/deletar posts)
 3. Implementar WebSockets para real-time
 4. Adicionar mais routers (users, comments, etc.)
 5. Implementar rate limiting
 6. Adicionar logging estruturado
+7. ✅ ~~Remover userId temporário e integrar com autenticação real~~

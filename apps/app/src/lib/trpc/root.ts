@@ -1,8 +1,2 @@
-import { router } from './server';
-import { postsRouter } from './routers/posts';
-
-export const appRouter = router({
-  posts: postsRouter,
-});
-
-export type AppRouter = typeof appRouter;
+// Este arquivo foi movido para server.ts
+// Importe de server.ts em vez deste arquivo

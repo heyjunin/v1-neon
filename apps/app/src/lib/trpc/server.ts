@@ -1,22 +1,11 @@
-import { initTRPC } from '@trpc/server';
-import { logger } from '@v1/logger';
+// Exportações do servidor - NÃO importar no cliente
+import { router } from './context';
+import { postsRouter } from './routers/posts';
 
-const t = initTRPC.create();
-
-export const router = t.router;
-export const publicProcedure = t.procedure;
-
-// Middleware para logging
-const loggingMiddleware = t.middleware(async ({ path, next }) => {
-  const start = Date.now();
-  logger.info(`tRPC ${path} started`);
-  
-  const result = await next();
-  
-  const duration = Date.now() - start;
-  logger.info(`tRPC ${path} completed in ${duration}ms`);
-  
-  return result;
+export const appRouter = router({
+  posts: postsRouter,
 });
 
-export const loggedProcedure = t.procedure.use(loggingMiddleware);
+export type AppRouter = typeof appRouter;
+export { createTRPCContext } from './context';
+
