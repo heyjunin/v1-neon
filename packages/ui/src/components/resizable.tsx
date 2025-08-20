@@ -1,8 +1,9 @@
 "use client"
-import * as ResizablePrimitive from "react-resizable-panels"
-
-import { cn } from "@/utils/index"
 import { DragHandleDots2Icon } from "@radix-ui/react-icons"
+import { cn } from "../utils/index"
+
+// @ts-ignore - react-resizable-panels has ESM/CommonJS compatibility issues
+import * as ResizablePrimitive from "react-resizable-panels"
 
 const ResizablePanelGroup = ({
   className,
@@ -41,4 +42,5 @@ const ResizableHandle = ({
   </ResizablePrimitive.PanelResizeHandle>
 )
 
-export { ResizablePanelGroup, ResizablePanel, ResizableHandle }
+export { ResizableHandle, ResizablePanel, ResizablePanelGroup }
+

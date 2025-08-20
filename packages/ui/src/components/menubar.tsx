@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import * as MenubarPrimitive from "@radix-ui/react-menubar"
-import { cn } from "@/utils/index"
+import { cn } from "../utils/index"
 import { CheckIcon, ChevronRightIcon, DotFilledIcon } from "@radix-ui/react-icons"
 
 function MenubarMenu({

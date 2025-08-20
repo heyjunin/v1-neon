@@ -9,45 +9,21 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
-import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
+import { ConfirmationDialog } from './confirmation-dialog';
 import { Notification } from './notification';
-import { useDeleteConfirmation } from './use-delete-confirmation';
+import { Post } from './types';
+import { useConfirmation } from './use-confirmation';
+import { useNotification } from './use-notification';
 
-interface Post {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  user?: {
-    id: string;
-    email: string;
-    fullName: string | null;
-  };
-}
-
-interface PostsListTRPCProps {
+interface PostsListProps {
   onEdit: (post: Post) => void;
   onCreate: () => void;
 }
 
-export function PostsList({
-  onEdit,
-  onCreate
-}: PostsListTRPCProps) {
+export function PostsList({ onEdit, onCreate }: PostsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit] = useState(10);
-  const [notification, setNotification] = useState<{
-    type: 'success' | 'error';
-    message: string;
-    isVisible: boolean;
-  }>({
-    type: 'success',
-    message: '',
-    isVisible: false,
-  });
 
   const { data, isLoading, error } = usePosts({
     search: searchTerm || undefined,
@@ -56,19 +32,12 @@ export function PostsList({
   });
 
   const deletePostMutation = useDeletePost();
-  const { deleteDialog, openDeleteDialog, closeDeleteDialog, confirmDelete } = useDeleteConfirmation();
-
-  const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message, isVisible: true });
-  };
-
-  const hideNotification = () => {
-    setNotification(prev => ({ ...prev, isVisible: false }));
-  };
+  const { confirmation, openConfirmation, closeConfirmation, confirmAction } = useConfirmation();
+  const { notification, showNotification, hideNotification } = useNotification();
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(1); // Reset to first page when searching
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -78,12 +47,12 @@ export function PostsList({
   };
 
   const handleDeleteClick = (post: Post) => {
-    openDeleteDialog(post.id, post.title);
+    openConfirmation(post.id, post.title, 'delete');
   };
 
   const handleDeleteConfirm = async () => {
     try {
-      await confirmDelete(async (id: string) => {
+      await confirmAction(async (id: string) => {
         await deletePostMutation.mutateAsync({ id });
         showNotification('success', 'Post excluído com sucesso!');
       });
@@ -93,7 +62,7 @@ export function PostsList({
     }
   };
 
-  const truncateContent = (content: string, maxLength: number = 150) => {
+  const truncateContent = (content: string, maxLength = 150) => {
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength) + '...';
   };
@@ -137,7 +106,7 @@ export function PostsList({
         <Input
           placeholder="Buscar posts..."
           value={searchTerm}
-          onChange={(e) => handleSearch(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
           className="pl-10"
         />
       </div>
@@ -282,14 +251,15 @@ export function PostsList({
         </div>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
-        isOpen={deleteDialog.isOpen}
-        onClose={closeDeleteDialog}
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={confirmation.isOpen}
+        onClose={closeConfirmation}
         onConfirm={handleDeleteConfirm}
         title="Confirmar exclusão"
-        description={`Tem certeza que deseja excluir o post "${deleteDialog.itemTitle}"? Esta ação não pode ser desfeita.`}
+        description={`Tem certeza que deseja excluir o post "${confirmation.itemTitle}"? Esta ação não pode ser desfeita.`}
         isLoading={deletePostMutation.isPending}
+        actionType="delete"
       />
 
       {/* Notification */}
