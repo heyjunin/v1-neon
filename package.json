@@ -18,7 +18,9 @@
     "lint:repo": "bunx sherif@latest",
     "lint:repo:fix": "bunx sherif@latest --fix",
     "typecheck": "turbo typecheck",
-    "setup:env": "node scripts/setup-env.js"
+    "setup:env": "node scripts/setup-env.js",
+    "setup:neon": "node scripts/setup-neon.js",
+    "setup:webhook": "node scripts/setup-webhook.js"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",

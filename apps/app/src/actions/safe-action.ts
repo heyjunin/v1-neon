@@ -2,8 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { setupAnalytics } from "@v1/analytics/server";
 import { ratelimit } from "@v1/kv/ratelimit";
 import { logger } from "@v1/logger";
-import { getUser } from "@v1/supabase/queries";
-import { createClient } from "@v1/supabase/server";
+import { createDatabaseAdapter } from "@v1/database/adapters";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
@@ -74,18 +73,16 @@ export const authActionClient = actionClientWithMeta
     });
   })
   .use(async ({ next, metadata }) => {
-    const {
-      data: { user },
-    } = await getUser();
-    const supabase = createClient();
+    const adapter = createDatabaseAdapter();
+    const { data, error } = await adapter.getUser();
 
-    if (!user) {
+    if (error || !data?.user) {
       throw new Error("Unauthorized");
     }
 
     if (metadata) {
       const analytics = await setupAnalytics({
-        userId: user.id,
+        userId: data.user.id,
       });
 
       if (metadata.track) {
@@ -96,8 +93,8 @@ export const authActionClient = actionClientWithMeta
     return Sentry.withServerActionInstrumentation(metadata.name, async () => {
       return next({
         ctx: {
-          supabase,
-          user,
+          adapter,
+          user: data.user,
         },
       });
     });

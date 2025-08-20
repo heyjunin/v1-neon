@@ -15,6 +15,7 @@ export const env = createEnv({
     SUPABASE_SERVICE_KEY: z.string(),
     UPSTASH_REDIS_REST_TOKEN: z.string(),
     UPSTASH_REDIS_REST_URL: z.string(),
+    DATABASE_URL: z.string(),
   },
   client: {
     NEXT_PUBLIC_OPENPANEL_CLIENT_ID: z.string(),
@@ -33,6 +34,7 @@ export const env = createEnv({
     SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    DATABASE_URL: process.env.DATABASE_URL,
     VERCEL_URL: process.env.VERCEL_URL,
   },
   skipValidation: !!process.env.CI || !!process.env.SKIP_ENV_VALIDATION,
