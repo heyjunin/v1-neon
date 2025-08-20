@@ -1,31 +1,7 @@
 import { useEffect, useState } from 'react';
+import type { FormState, UseFormOptions, UseFormReturn } from './types';
 
-interface FormState<T> {
-  values: T;
-  errors: Partial<Record<keyof T, string>>;
-  isDirty: boolean;
-}
-
-interface UseFormOptions<T> {
-  initialValues: T;
-  onSubmit: (values: T) => Promise<void>;
-  validation?: (values: T) => Partial<Record<keyof T, string>>;
-  onSuccess?: () => void;
-}
-
-interface UseFormReturn<T> {
-  values: T;
-  errors: Partial<Record<keyof T, string>>;
-  isDirty: boolean;
-  isLoading: boolean;
-  setValue: <K extends keyof T>(key: K, value: T[K]) => void;
-  setValues: (values: Partial<T>) => void;
-  reset: () => void;
-  handleSubmit: (e: React.FormEvent) => Promise<void>;
-  validate: () => boolean;
-}
-
-export function useForm<T extends Record<string, string | number | boolean>>({
+export function useForm<T extends Record<string, any>>({
   initialValues,
   onSubmit,
   validation,

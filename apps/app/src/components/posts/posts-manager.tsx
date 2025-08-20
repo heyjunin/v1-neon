@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { InlineNotification } from './inline-notification';
+import { PostNotification } from './components/notification';
+import { useNotification } from './hooks/use-notification';
 import { PostForm } from './post-form';
 import { PostsList } from './posts-list';
 import type { Post } from './types';
-import { useNotification } from './use-notification';
 
 export function PostsManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -35,10 +35,11 @@ export function PostsManager() {
     <div className="space-y-6">
       {/* Notification */}
       {notification.isVisible && (
-        <InlineNotification
+        <PostNotification
           type={notification.type}
           message={notification.message}
           onClose={hideNotification}
+          variant="inline"
         />
       )}
 

@@ -1,18 +1,25 @@
-// Components
-export { ConfirmationDialog } from './confirmation-dialog';
-export { InlineNotification } from './inline-notification';
-export { Notification } from './notification';
+// Main components
 export { PostForm } from './post-form';
 export { PostsList } from './posts-list';
 export { PostsManager } from './posts-manager';
 
+// Notification components
+export { PostNotification } from './components/notification';
+
+// Form components
+export { FormField } from './components/form-field';
+
 // Hooks
+export { useNotification } from './hooks/use-notification';
 export { useConfirmation } from './use-confirmation';
 export { useForm } from './use-form';
-export { useNotification } from './use-notification';
 
 // Types
-export type { ConfirmationState, NotificationState, PaginationState, Post, PostFormData, SearchState } from './types';
+export type {
+  ConfirmationState, FormState, NotificationState, NotificationType, PaginationState, Post,
+  PostFormData, SearchState, UseFormOptions,
+  UseFormReturn
+} from './types';
 
 // Validations
 export { maxLength, minLength, postValidation, requiredField } from './validations';

@@ -9,11 +9,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
+import { PostNotification } from './components/notification';
 import { ConfirmationDialog } from './confirmation-dialog';
-import { Notification } from './notification';
+import { useNotification } from './hooks/use-notification';
 import { Post } from './types';
 import { useConfirmation } from './use-confirmation';
-import { useNotification } from './use-notification';
 
 interface PostsListProps {
   onEdit: (post: Post) => void;
@@ -263,11 +263,12 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
       />
 
       {/* Notification */}
-      <Notification
+      <PostNotification
         type={notification.type}
         message={notification.message}
         isVisible={notification.isVisible}
         onClose={hideNotification}
+        variant="toast"
       />
     </div>
   );
