@@ -5,7 +5,7 @@ import { Button } from '@v1/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
 import { Input } from '@v1/ui/input';
 import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ConfirmationDialog } from '../components/dialogs';
 import { PostNotification } from '../components/notification';
 import { useConfirmation } from '../hooks/use-confirmation';
@@ -19,15 +19,38 @@ interface PostsListProps {
 
 export function PostsList({ onEdit, onCreate }: PostsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const { data: posts = [], isLoading, refetch } = usePosts();
+  const { data: posts, isLoading, refetch, error } = usePosts();
   const deletePostMutation = useDeletePost();
   const { notification, showNotification, hideNotification } = useNotification();
   const { confirmation, openConfirmation, closeConfirmation, confirmAction } = useConfirmation();
 
-  const filteredPosts = posts.filter((post: Post) =>
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.content.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Ensure posts is always an array and handle loading/error states
+  const postsArray = React.useMemo(() => {
+    if (!posts) return [];
+    
+    // If posts is an object with data property (paginated response)
+    if (typeof posts === 'object' && 'data' in posts && Array.isArray(posts.data)) {
+      return posts.data;
+    }
+    
+    // If posts is already an array
+    if (Array.isArray(posts)) {
+      return posts;
+    }
+    
+    // Fallback to empty array
+    return [];
+  }, [posts]);
+  
+  const filteredPosts = postsArray.filter((post: Post) => {
+    if (!post || typeof post !== 'object') return false;
+    
+    const title = post.title || '';
+    const content = post.content || '';
+    
+    return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           content.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const handleDelete = async (id: string) => {
     try {
@@ -46,6 +69,29 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
   const handleConfirmDelete = async () => {
     await confirmAction(handleDelete);
   };
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Posts</h2>
+          <Button onClick={onCreate}>
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Post
+          </Button>
+        </div>
+        <div className="text-center py-12">
+          <div className="text-red-500 mb-4">
+            Erro ao carregar posts: {error.message || 'Erro desconhecido'}
+          </div>
+          <Button onClick={() => refetch()}>
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
