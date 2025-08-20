@@ -46,17 +46,39 @@ const isAuthed = t.middleware(({ ctx, next }) => {
   });
 });
 
-// Middleware para logging
-const loggingMiddleware = t.middleware(async ({ path, next }) => {
+// Middleware para logging detalhado
+const loggingMiddleware = t.middleware(async ({ path, type, input, ctx, next }) => {
   const start = Date.now();
-  console.log(`tRPC ${path} started`);
+  const userId = ctx.user?.id || 'anonymous';
   
-  const result = await next();
+  console.log(`[tRPC Server] ${type.toUpperCase()} ${path} started`, {
+    userId,
+    input: input || 'no input',
+    timestamp: new Date().toISOString(),
+  });
   
-  const duration = Date.now() - start;
-  console.log(`tRPC ${path} completed in ${duration}ms`);
-  
-  return result;
+  try {
+    const result = await next();
+    
+    const duration = Date.now() - start;
+    console.log(`[tRPC Server] ${type.toUpperCase()} ${path} completed successfully`, {
+      userId,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return result;
+  } catch (error) {
+    const duration = Date.now() - start;
+    console.error(`[tRPC Server] ${type.toUpperCase()} ${path} failed`, {
+      userId,
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    });
+    
+    throw error;
+  }
 });
 
 export const loggedProcedure = t.procedure.use(loggingMiddleware);

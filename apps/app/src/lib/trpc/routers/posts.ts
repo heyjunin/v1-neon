@@ -2,7 +2,7 @@ import { createPost, deletePost, updatePost } from '@v1/database/mutations';
 import { getPostById, getPostsByUserId, getPostsWithUsers } from '@v1/database/queries';
 import { logger } from '@v1/logger';
 import { z } from 'zod';
-import { loggedProcedure, protectedProcedure, router } from '../context';
+import { loggedProcedure, protectedProcedure, publicProcedure, router } from '../context';
 
 // Schemas
 const createPostSchema = z.object({
@@ -39,6 +39,7 @@ export const postsRouter = router({
     .input(getPostsSchema)
     .query(async ({ input }) => {
       try {
+        // Primeiro, vamos tentar uma query simples para testar a conexão
         const posts = await getPostsWithUsers(
           {
             search: input.search,
@@ -55,7 +56,24 @@ export const postsRouter = router({
         return posts;
       } catch (error) {
         logger.error('Error in getPosts:', error);
-        throw new Error('Failed to get posts');
+        console.error('Detailed error:', error);
+        
+        // Se for um erro de conexão ou tabela não encontrada, vamos retornar dados vazios
+        if (error instanceof Error && (
+          error.message.includes('relation') || 
+          error.message.includes('table') ||
+          error.message.includes('connection')
+        )) {
+          return {
+            data: [],
+            total: 0,
+            page: input.page,
+            limit: input.limit,
+            totalPages: 0
+          };
+        }
+        
+        throw new Error(`Failed to get posts: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }),
 
@@ -132,6 +150,28 @@ export const postsRouter = router({
       } catch (error) {
         logger.error('Error in deletePost:', error);
         throw new Error('Failed to delete post');
+      }
+    }),
+
+  // Rota de teste para verificar a conexão
+  testConnection: publicProcedure
+    .query(async () => {
+      try {
+        // Tentar uma query simples
+        const { getPosts } = await import('@v1/database/queries');
+        const result = await getPosts({}, { page: 1, limit: 1 });
+        return { 
+          success: true, 
+          message: 'Database connection working',
+          totalPosts: result.total 
+        };
+      } catch (error) {
+        logger.error('Database connection test failed:', error);
+        return { 
+          success: false, 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          error: error 
+        };
       }
     }),
 });
