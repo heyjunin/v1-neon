@@ -9,6 +9,9 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
 import { useState } from 'react';
+import { DeleteConfirmationDialog } from './delete-confirmation-dialog';
+import { Notification } from './notification';
+import { useDeleteConfirmation } from './use-delete-confirmation';
 
 interface Post {
   id: string;
@@ -36,6 +39,15 @@ export function PostsList({
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [currentLimit] = useState(10);
+  const [notification, setNotification] = useState<{
+    type: 'success' | 'error';
+    message: string;
+    isVisible: boolean;
+  }>({
+    type: 'success',
+    message: '',
+    isVisible: false,
+  });
 
   const { data, isLoading, error } = usePosts({
     search: searchTerm || undefined,
@@ -44,6 +56,15 @@ export function PostsList({
   });
 
   const deletePostMutation = useDeletePost();
+  const { deleteDialog, openDeleteDialog, closeDeleteDialog, confirmDelete } = useDeleteConfirmation();
+
+  const showNotification = (type: 'success' | 'error', message: string) => {
+    setNotification({ type, message, isVisible: true });
+  };
+
+  const hideNotification = () => {
+    setNotification(prev => ({ ...prev, isVisible: false }));
+  };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -56,13 +77,19 @@ export function PostsList({
     }
   };
 
-  const handleDelete = async (postId: string) => {
-    if (confirm('Tem certeza que deseja excluir este post?')) {
-      try {
-        await deletePostMutation.mutateAsync({ id: postId });
-      } catch (error) {
-        console.error('Error deleting post:', error);
-      }
+  const handleDeleteClick = (post: Post) => {
+    openDeleteDialog(post.id, post.title);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await confirmDelete(async (id: string) => {
+        await deletePostMutation.mutateAsync({ id });
+        showNotification('success', 'Post excluído com sucesso!');
+      });
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      showNotification('error', 'Erro ao excluir post. Tente novamente.');
     }
   };
 
@@ -185,12 +212,12 @@ export function PostsList({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => handleDeleteClick(post)}
                       disabled={deletePostMutation.isPending}
                       className="flex items-center gap-1 text-destructive hover:text-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
-                      {deletePostMutation.isPending ? 'Excluindo...' : 'Excluir'}
+                      Excluir
                     </Button>
                   </div>
                 </div>
@@ -254,6 +281,24 @@ export function PostsList({
           </Button>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={closeDeleteDialog}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir o post "${deleteDialog.itemTitle}"? Esta ação não pode ser desfeita.`}
+        isLoading={deletePostMutation.isPending}
+      />
+
+      {/* Notification */}
+      <Notification
+        type={notification.type}
+        message={notification.message}
+        isVisible={notification.isVisible}
+        onClose={hideNotification}
+      />
     </div>
   );
 }
