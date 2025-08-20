@@ -2,7 +2,7 @@
   "name": "@v1/api",
   "private": true,
   "scripts": {
-    "dev": "supabase start",
+    "dev": "echo 'Using remote Supabase - no local instance needed'",
     "login": "supabase login",
     "migrate": "supabase migration up",
     "seed": "supabase db seed generate && supabase db seed run",
