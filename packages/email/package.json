@@ -9,9 +9,7 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "dev": "email dev -p 3005",
-    "start": "email start"
+    "build": "tsc"
   },
   "dependencies": {
     "@react-email/components": "^0.0.24",

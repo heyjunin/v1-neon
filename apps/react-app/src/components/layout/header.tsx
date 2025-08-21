@@ -1,3 +1,4 @@
+import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@v1/ui/button'
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from '@v1/ui/navigation-menu'
 import { BarChart3, Code2, FileText, Globe, Home, User } from 'lucide-react'
@@ -6,6 +7,7 @@ import { ThemeToggle } from '../theme'
 
 export function Header() {
   const location = useLocation()
+  const { isAuthenticated } = useAuth()
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
@@ -58,12 +60,23 @@ export function Header() {
 
           <div className="flex items-center space-x-2">
             <ThemeToggle />
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-            <Button size="sm">
-              Sign Up
-            </Button>
+            {isAuthenticated ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/profile">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link to="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

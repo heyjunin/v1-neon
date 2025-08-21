@@ -1,268 +1,287 @@
-import { useThemeContext } from '@/components/theme'
-import { usePWA } from '@/hooks/use-pwa'
-import { FEATURE_FLAGS } from '@/lib/constants'
-import { dev, storage } from '@/lib/utils'
 import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@v1/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
 import { Separator } from '@v1/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@v1/ui/tabs'
 import {
-    Bug,
-    Eye,
-    EyeOff,
-    Monitor,
-    Palette,
-    RefreshCw,
-    Settings,
-    Trash2,
-    X
+  Bug,
+  Code,
+  Cpu,
+  Database,
+  Globe,
+  HardDrive,
+  Monitor,
+  Network,
+  Settings,
+  Shield,
+  Smartphone
 } from 'lucide-react'
-import React, { useState } from 'react'
+import { useState } from 'react'
+
+// Tipos para as APIs do navegador
+interface PerformanceMemory {
+  usedJSHeapSize: number
+  totalJSHeapSize: number
+  jsHeapSizeLimit: number
+}
+
+interface NavigatorConnection {
+  effectiveType: string
+  downlink: number
+  rtt: number
+}
+
+interface ExtendedPerformance extends Performance {
+  memory?: PerformanceMemory
+}
+
+interface ExtendedNavigator extends Navigator {
+  connection?: NavigatorConnection
+  deviceMemory?: number
+}
 
 export function DevPanel() {
   const [isOpen, setIsOpen] = useState(false)
-  const [isVisible, setIsVisible] = useState(true)
-  const { theme, toggleTheme, isDark } = useThemeContext()
-  const { isInstalled, isOnline, isInstallable, isUpdateAvailable } = usePWA()
+  const [activeTab, setActiveTab] = useState('overview')
 
-  // Só renderiza em desenvolvimento
-  if (!import.meta.env.DEV || !FEATURE_FLAGS.enableDevTools) {
-    return null
-  }
-
-  if (!isVisible) {
-    return (
-      <div className="fixed bottom-4 right-4 z-[9999]">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setIsVisible(true)}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      </div>
-    )
-  }
-
+  // Informações do sistema
   const systemInfo = {
-    'React Version': React.version,
-    'Node Env': import.meta.env.MODE,
-    'Vite Version': import.meta.env.VITE_VERSION || 'N/A',
-    'Theme': theme,
-    'PWA Installed': isInstalled ? 'Yes' : 'No',
-    'Online': isOnline ? 'Yes' : 'No',
-    'Viewport': `${window.innerWidth}x${window.innerHeight}`,
-    'User Agent': navigator.userAgent.split(' ')[0]
-  }
-
-  const performanceInfo = {
-    'Memory Used': `${Math.round((performance as any).memory?.usedJSHeapSize / 1024 / 1024) || 0} MB`,
-    'Memory Total': `${Math.round((performance as any).memory?.totalJSHeapSize / 1024 / 1024) || 0} MB`,
-    'Connection': (navigator as any).connection?.effectiveType || 'Unknown',
-    'Device Memory': `${(navigator as any).deviceMemory || 'Unknown'} GB`,
+    'User Agent': navigator.userAgent,
+    'Platform': navigator.platform,
+    'Language': navigator.language,
+    'Cookie Enabled': navigator.cookieEnabled ? 'Yes' : 'No',
+    'Online': navigator.onLine ? 'Yes' : 'No',
+    'Do Not Track': navigator.doNotTrack || 'Not set',
     'Hardware Concurrency': navigator.hardwareConcurrency || 'Unknown'
   }
 
-  const clearStorage = () => {
-    storage.clear()
-    dev.log('Storage cleared')
-    window.location.reload()
+  // Informações de performance
+  const performanceInfo = {
+    'Memory Used': `${Math.round(((performance as ExtendedPerformance).memory?.usedJSHeapSize || 0) / 1024 / 1024)} MB`,
+    'Memory Total': `${Math.round(((performance as ExtendedPerformance).memory?.totalJSHeapSize || 0) / 1024 / 1024)} MB`,
+    'Connection': ((navigator as ExtendedNavigator).connection?.effectiveType || 'Unknown'),
+    'Device Memory': `${(navigator as ExtendedNavigator).deviceMemory || 'Unknown'} GB`,
+    'Hardware Concurrency': navigator.hardwareConcurrency || 'Unknown'
   }
 
-  const triggerError = () => {
-    throw new Error('Dev Panel: Erro de teste disparado')
+  // Informações de tela
+  const screenInfo = {
+    'Width': `${screen.width}px`,
+    'Height': `${screen.height}px`,
+    'Available Width': `${screen.availWidth}px`,
+    'Available Height': `${screen.availHeight}px`,
+    'Color Depth': `${screen.colorDepth} bits`,
+    'Pixel Depth': `${screen.pixelDepth} bits`,
+    'Device Pixel Ratio': window.devicePixelRatio || 'Unknown'
   }
 
-  const logSystemInfo = () => {
-    dev.log('System Info:', systemInfo)
-    dev.log('Performance Info:', performanceInfo)
-    dev.log('Feature Flags:', FEATURE_FLAGS)
+  // Informações de localização
+  const locationInfo = {
+    'Protocol': window.location.protocol,
+    'Host': window.location.host,
+    'Pathname': window.location.pathname,
+    'Search': window.location.search || 'None',
+    'Hash': window.location.hash || 'None',
+    'Origin': window.location.origin
   }
 
-  if (!isOpen) {
-    return (
-      <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setIsVisible(false)}
-          className="h-8 w-8 p-0"
-        >
-          <EyeOff className="h-4 w-4" />
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => setIsOpen(true)}
-          className="shadow-lg"
-        >
-          <Bug className="h-4 w-4 mr-2" />
-          Dev Tools
-        </Button>
-      </div>
-    )
+  // Informações de storage
+  const storageInfo = {
+    'Local Storage': localStorage ? 'Available' : 'Not Available',
+    'Session Storage': sessionStorage ? 'Available' : 'Not Available',
+    'IndexedDB': 'indexedDB' in window ? 'Available' : 'Not Available',
+    'WebSQL': 'openDatabase' in window ? 'Available' : 'Not Available'
+  }
+
+  // Informações de APIs
+  const apiInfo = {
+    'Service Workers': 'serviceWorker' in navigator ? 'Available' : 'Not Available',
+    'Push Notifications': 'PushManager' in window ? 'Available' : 'Not Available',
+    'Geolocation': 'geolocation' in navigator ? 'Available' : 'Not Available',
+    'WebGL': 'WebGLRenderingContext' in window ? 'Available' : 'Not Available',
+    'Web Audio': 'AudioContext' in window ? 'Available' : 'Not Available',
+    'WebRTC': 'RTCPeerConnection' in window ? 'Available' : 'Not Available'
+  }
+
+  if (!import.meta.env.DEV) {
+    return null
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] w-96 max-h-[80vh] overflow-hidden">
-      <Card className="shadow-2xl border-2">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Bug className="h-4 w-4" />
-              <CardTitle className="text-sm">Dev Tools</CardTitle>
-              <Badge variant="secondary" className="text-xs">
-                {import.meta.env.MODE}
-              </Badge>
+    <div className="fixed bottom-4 right-4 z-50">
+      {!isOpen && (
+        <Button
+          onClick={() => setIsOpen(true)}
+          size="sm"
+          className="rounded-full w-12 h-12 shadow-lg"
+        >
+          <Bug className="h-4 w-4" />
+        </Button>
+      )}
+
+      {isOpen && (
+        <Card className="w-96 max-h-96 overflow-hidden shadow-xl">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Bug className="h-4 w-4" />
+                Dev Tools
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsOpen(false)}
+                className="h-6 w-6 p-0"
+              >
+                ×
+              </Button>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(false)}
-              className="h-6 w-6 p-0"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="p-3 max-h-[60vh] overflow-y-auto">
-          <Tabs defaultValue="system" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-3">
-              <TabsTrigger value="system" className="text-xs">
-                <Monitor className="h-3 w-3 mr-1" />
-                System
-              </TabsTrigger>
-              <TabsTrigger value="theme" className="text-xs">
-                <Palette className="h-3 w-3 mr-1" />
-                Theme
-              </TabsTrigger>
-              <TabsTrigger value="tools" className="text-xs">
-                <Settings className="h-3 w-3 mr-1" />
-                Tools
-              </TabsTrigger>
-              <TabsTrigger value="debug" className="text-xs">
-                <Bug className="h-3 w-3 mr-1" />
-                Debug
-              </TabsTrigger>
-            </TabsList>
+            <CardDescription>
+              Development information and debugging tools
+            </CardDescription>
+          </CardHeader>
 
-            <TabsContent value="system" className="space-y-3 mt-0">
-              <div>
-                <h4 className="text-xs font-medium mb-2">System Info</h4>
-                <div className="space-y-1">
-                  {Object.entries(systemInfo).map(([key, value]) => (
-                    <div key={key} className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{key}:</span>
-                      <span className="font-mono">{value}</span>
+          <CardContent className="p-0">
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
+                <TabsTrigger value="system" className="text-xs">System</TabsTrigger>
+                <TabsTrigger value="performance" className="text-xs">Performance</TabsTrigger>
+                <TabsTrigger value="apis" className="text-xs">APIs</TabsTrigger>
+              </TabsList>
+
+              <div className="max-h-64 overflow-y-auto p-4">
+                <TabsContent value="overview" className="space-y-4">
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-3 w-3" />
+                      <span>React 18</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div>
-                <h4 className="text-xs font-medium mb-2">Performance</h4>
-                <div className="space-y-1">
-                  {Object.entries(performanceInfo).map(([key, value]) => (
-                    <div key={key} className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">{key}:</span>
-                      <span className="font-mono">{value}</span>
+                    <div className="flex items-center gap-2">
+                      <Code className="h-3 w-3" />
+                      <span>TypeScript</span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="theme" className="space-y-3 mt-0">
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={toggleTheme}
-                  className="w-full justify-start"
-                >
-                  <Palette className="h-3 w-3 mr-2" />
-                  Toggle Theme ({isDark ? 'Dark' : 'Light'})
-                </Button>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-2 rounded bg-background border text-xs text-center">
-                    Light Mode
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-3 w-3" />
+                      <span>Vite</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-3 w-3" />
+                      <span>Custom Auth</span>
+                    </div>
                   </div>
-                  <div className="p-2 rounded bg-foreground text-background text-xs text-center">
-                    Dark Mode
+                </TabsContent>
+
+                <TabsContent value="system" className="space-y-3">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Cpu className="h-3 w-3" />
+                      System Info
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(systemInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <span className="font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              </div>
-            </TabsContent>
 
-            <TabsContent value="tools" className="space-y-2 mt-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.location.reload()}
-                className="w-full justify-start"
-              >
-                <RefreshCw className="h-3 w-3 mr-2" />
-                Reload Page
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearStorage}
-                className="w-full justify-start"
-              >
-                <Trash2 className="h-3 w-3 mr-2" />
-                Clear Storage
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={logSystemInfo}
-                className="w-full justify-start"
-              >
-                <Monitor className="h-3 w-3 mr-2" />
-                Log System Info
-              </Button>
+                  <Separator />
 
-              <div className="text-xs text-muted-foreground mt-2">
-                <div>PWA: {isInstallable ? '✅ Installable' : '❌ Not Installable'}</div>
-                <div>Update: {isUpdateAvailable ? '🔄 Available' : '✅ Up to date'}</div>
-                <div>Network: {isOnline ? '🟢 Online' : '🔴 Offline'}</div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="debug" className="space-y-2 mt-0">
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={triggerError}
-                className="w-full justify-start"
-              >
-                <Bug className="h-3 w-3 mr-2" />
-                Trigger Error
-              </Button>
-              
-              <div className="text-xs space-y-1">
-                <div className="text-muted-foreground">Feature Flags:</div>
-                {Object.entries(FEATURE_FLAGS).map(([key, value]) => (
-                  <div key={key} className="flex justify-between">
-                    <span>{key}:</span>
-                    <Badge variant={value ? 'default' : 'secondary'} className="text-xs h-4">
-                      {value ? 'ON' : 'OFF'}
-                    </Badge>
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Smartphone className="h-3 w-3" />
+                      Screen Info
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(screenInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <span className="font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                </TabsContent>
+
+                <TabsContent value="performance" className="space-y-3">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <HardDrive className="h-3 w-3" />
+                      Performance
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(performanceInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <span className="font-mono">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Database className="h-3 w-3" />
+                      Storage
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(storageInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <Badge variant={value === 'Available' ? 'default' : 'secondary'} className="text-xs">
+                            {value}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="apis" className="space-y-3">
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Settings className="h-3 w-3" />
+                      Web APIs
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(apiInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <Badge variant={value === 'Available' ? 'default' : 'secondary'} className="text-xs">
+                            {value}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium flex items-center gap-2">
+                      <Network className="h-3 w-3" />
+                      Location
+                    </h4>
+                    <div className="space-y-1 text-xs">
+                      {Object.entries(locationInfo).map(([key, value]) => (
+                        <div key={key} className="flex justify-between">
+                          <span className="text-muted-foreground">{key}:</span>
+                          <span className="font-mono max-w-32 truncate">{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
               </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

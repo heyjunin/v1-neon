@@ -1,380 +1,339 @@
+import { DashboardPageHeader } from '@/components/templates'
 import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
+import { Input } from '@v1/ui/input'
+import { Label } from '@v1/ui/label'
+import { Separator } from '@v1/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@v1/ui/tabs'
+import { Textarea } from '@v1/ui/textarea'
 import {
-    AlertCircle,
-    BookOpen,
-    Code2,
-    Layout,
-    Loader2,
-    Sparkles
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  FileText,
+  Globe,
+  Mail,
+  MapPin,
+  Phone,
+  Plus,
+  Search,
+  Settings,
+  Star,
+  User
 } from 'lucide-react'
-import { useState } from 'react'
-
-// Importar todos os templates e componentes
-import { PageLayout } from '@/components/layouts'
-import {
-    ContentPageHeader, DashboardPageHeader, EmptyPosts,
-    EmptySearch,
-    EmptyStateCard, LoadingList, LoadingSkeleton, LoadingSpinner, LoadingTable, PageHeader
-} from '@/components/templates'
+import { Link } from 'react-router-dom'
 
 export function ExamplesPage() {
-  const [currentExample, setCurrentExample] = useState<string>('layouts')
-  const [isLoading, setIsLoading] = useState(false)
-  const [showEmpty, setShowEmpty] = useState(false)
-
-  const triggerLoading = () => {
-    setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 2000)
-  }
-
-  const examples = [
-    {
-      id: 'layouts',
-      title: 'Layouts',
-      description: 'Diferentes tipos de layout para páginas',
-      icon: Layout
-    },
-    {
-      id: 'headers',
-      title: 'Page Headers',
-      description: 'Cabeçalhos padronizados para páginas',
-      icon: BookOpen
-    },
-    {
-      id: 'loading',
-      title: 'Loading States',
-      description: 'Estados de carregamento reutilizáveis',
-      icon: Loader2
-    },
-    {
-      id: 'empty',
-      title: 'Empty States',
-      description: 'Estados vazios com call-to-actions',
-      icon: AlertCircle
-    }
-  ]
-
   return (
-    <PageLayout
-      meta={{
-        title: 'Exemplos de Componentes - V1 React App',
-        description: 'Guia prático de como usar os componentes e templates da aplicação'
-      }}
-      maxWidth="full"
-    >
-      <PageHeader
-        title="Guia de Componentes"
-        description="Exemplos práticos de como usar layouts, templates e componentes da aplicação. Use este guia como referência para criar novas páginas."
-        badge={{ text: 'Dev Guide', variant: 'secondary' }}
+    <div className="space-y-8">
+      <DashboardPageHeader
+        title="Examples & Components"
+        description="Explore various UI components and examples"
         actions={
-          <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              <Code2 className="h-4 w-4 mr-2" />
-              Ver Código
-            </Button>
-            <Button size="sm">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Novo Exemplo
-            </Button>
-          </div>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Example
+          </Button>
         }
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar com navegação */}
-        <div className="space-y-2">
-          <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-            Exemplos
-          </h3>
-          {examples.map((example) => {
-            const Icon = example.icon
-            return (
-              <Button
-                key={example.id}
-                variant={currentExample === example.id ? 'default' : 'ghost'}
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => setCurrentExample(example.id)}
-              >
-                <Icon className="h-4 w-4 mr-2" />
-                {example.title}
-              </Button>
-            )
-          })}
-        </div>
+      <Tabs defaultValue="components" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="components">Components</TabsTrigger>
+          <TabsTrigger value="forms">Forms</TabsTrigger>
+          <TabsTrigger value="layouts">Layouts</TabsTrigger>
+          <TabsTrigger value="pages">Pages</TabsTrigger>
+        </TabsList>
 
-        {/* Conteúdo principal */}
-        <div className="lg:col-span-3">
-          <Tabs value={currentExample} onValueChange={setCurrentExample}>
-            <TabsList className="hidden">
-              {examples.map(example => (
-                <TabsTrigger key={example.id} value={example.id} />
-              ))}
-            </TabsList>
-
-            {/* Layouts Examples */}
-            <TabsContent value="layouts" className="space-y-6">
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Sistema de Layouts</h2>
-                <p className="text-muted-foreground mb-4">
-                  Diferentes tipos de layout para diferentes necessidades de páginas.
+        <TabsContent value="components" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Cards */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Basic Card
+                </CardTitle>
+                <CardDescription>
+                  A simple card component with header and content
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  This is a basic card example with some content inside.
                 </p>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">PageLayout</CardTitle>
-                    <CardDescription>Layout padrão para páginas gerais</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-muted/30 p-4 rounded-md text-sm font-mono">
-                      {`<PageLayout maxWidth="xl" padding="md">
-  {children}
-</PageLayout>`}
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* Badges */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5" />
+                  Badges
+                </CardTitle>
+                <CardDescription>
+                  Different badge variants and styles
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Badge>Default</Badge>
+                  <Badge variant="secondary">Secondary</Badge>
+                  <Badge variant="destructive">Destructive</Badge>
+                  <Badge variant="outline">Outline</Badge>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">DashboardLayout</CardTitle>
-                    <CardDescription>Layout otimizado para dashboards</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-muted/30 p-4 rounded-md text-sm font-mono">
-                      {`<DashboardLayout>
-  {children}
-</DashboardLayout>`}
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* Buttons */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Buttons
+                </CardTitle>
+                <CardDescription>
+                  Button variants and sizes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm">Small</Button>
+                  <Button>Default</Button>
+                  <Button size="lg">Large</Button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline">Outline</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="destructive">Destructive</Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">ContentLayout</CardTitle>
-                    <CardDescription>Layout para artigos e conteúdo</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-muted/30 p-4 rounded-md text-sm font-mono">
-                      {`<ContentLayout>
-  {children}
-</ContentLayout>`}
-                    </div>
-                  </CardContent>
-                </Card>
+        <TabsContent value="forms" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Contact Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Mail className="h-5 w-5" />
+                  Contact Form
+                </CardTitle>
+                <CardDescription>
+                  A simple contact form with validation
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Name</Label>
+                  <Input id="name" placeholder="Enter your name" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" placeholder="Enter your email" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="message">Message</Label>
+                  <Textarea id="message" placeholder="Enter your message" />
+                </div>
+                <Button className="w-full">
+                  <Mail className="h-4 w-4 mr-2" />
+                  Send Message
+                </Button>
+              </CardContent>
+            </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">CenteredLayout</CardTitle>
-                    <CardDescription>Layout centralizado para auth, erro, etc</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="bg-muted/30 p-4 rounded-md text-sm font-mono">
-                      {`<CenteredLayout>
-  {children}
-</CenteredLayout>`}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+            {/* Search Form */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Search Form
+                </CardTitle>
+                <CardDescription>
+                  Advanced search with filters
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="search">Search</Label>
+                  <Input id="search" placeholder="Search for anything..." />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="category">Category</Label>
+                  <select className="w-full p-2 border border-input rounded-md">
+                    <option>All Categories</option>
+                    <option>Technology</option>
+                    <option>Design</option>
+                    <option>Business</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input id="location" placeholder="Enter location" />
+                </div>
+                <Button className="w-full">
+                  <Search className="h-4 w-4 mr-2" />
+                  Search
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-            {/* Headers Examples */}
-            <TabsContent value="headers" className="space-y-6">
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Page Headers</h2>
-                <p className="text-muted-foreground mb-4">
-                  Cabeçalhos padronizados que podem ser reutilizados em diferentes páginas.
-                </p>
-              </div>
+        <TabsContent value="layouts" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* User Profile */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  User Profile
+                </CardTitle>
+                <CardDescription>
+                  User profile layout with avatar and info
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
+                    <User className="h-6 w-6 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">John Doe</h3>
+                    <p className="text-sm text-muted-foreground">Software Developer</p>
+                  </div>
+                </div>
+                <Separator />
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    <span>john.doe@example.com</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    <span>San Francisco, CA</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    <span>+1 (555) 123-4567</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="space-y-4">
-                <Card>
-                  <CardContent className="p-0">
-                    <PageHeader
-                      title="Exemplo de Page Header"
-                      description="Este é um exemplo de como usar o PageHeader com descrição e ações."
-                      badge={{ text: 'Exemplo', variant: 'outline' }}
-                      actions={
-                        <Button size="sm">
-                          Ação Principal
-                        </Button>
-                      }
-                    />
-                  </CardContent>
-                </Card>
+            {/* Stats Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Statistics
+                </CardTitle>
+                <CardDescription>
+                  Statistics display with icons and trends
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">1,234</div>
+                    <div className="text-sm text-muted-foreground">Total Users</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">+12%</div>
+                    <div className="text-sm text-muted-foreground">Growth</div>
+                  </div>
+                </div>
+                <Separator />
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Active Users</span>
+                    <span className="font-medium">892</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>New Users</span>
+                    <span className="font-medium">156</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Premium Users</span>
+                    <span className="font-medium">89</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
 
-                <Card>
-                  <CardContent className="p-0">
-                    <DashboardPageHeader
-                      title="Dashboard Header"
-                      description="Header específico para páginas de dashboard."
-                      backTo={{ path: '/', label: 'Voltar' }}
-                    />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-0">
-                    <ContentPageHeader
-                      title="Content Header"
-                      description="Header para páginas de conteúdo, centralizado em telas menores."
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Loading Examples */}
-            <TabsContent value="loading" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Loading States</h2>
-                  <p className="text-muted-foreground mb-4">
-                    Diferentes tipos de loading para diferentes contextos.
+        <TabsContent value="pages" className="space-y-6">
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Landing Page */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Landing Page
+                </CardTitle>
+                <CardDescription>
+                  Hero section with call-to-action
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center space-y-2">
+                  <h2 className="text-2xl font-bold">Welcome to Our Platform</h2>
+                  <p className="text-muted-foreground">
+                    The best solution for your business needs
                   </p>
                 </div>
-                <Button onClick={triggerLoading} disabled={isLoading}>
-                  {isLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                  Testar Loading
-                </Button>
-              </div>
+                <div className="flex gap-2 justify-center">
+                  <Button>
+                    Get Started
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                  <Button variant="outline">
+                    Learn More
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Loading Spinner</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <LoadingSpinner text="Carregando..." />
-                    ) : (
-                      <div className="text-center p-8 text-muted-foreground">
-                        Clique em "Testar Loading" para ver o spinner
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Loading Skeleton</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {isLoading ? (
-                      <LoadingSkeleton />
-                    ) : (
-                      <div className="text-center p-8 text-muted-foreground">
-                        Clique em "Testar Loading" para ver o skeleton
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Loading List</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <LoadingList items={3} />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Loading Table</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <LoadingTable rows={3} columns={3} />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Empty States Examples */}
-            <TabsContent value="empty" className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold mb-2">Empty States</h2>
-                  <p className="text-muted-foreground mb-4">
-                    Estados vazios com call-to-actions para engajar o usuário.
+            {/* Error Page */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5" />
+                  Error Page
+                </CardTitle>
+                <CardDescription>
+                  404 or error page layout
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center space-y-2">
+                  <div className="mx-auto h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                    <AlertTriangle className="h-6 w-6 text-destructive" />
+                  </div>
+                  <h2 className="text-xl font-semibold">Page Not Found</h2>
+                  <p className="text-muted-foreground">
+                    The page you're looking for doesn't exist
                   </p>
                 </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowEmpty(!showEmpty)}
-                >
-                  {showEmpty ? 'Mostrar Conteúdo' : 'Mostrar Empty State'}
-                </Button>
-              </div>
-
-              {showEmpty ? (
-                <div className="grid gap-4 md:grid-cols-2">
-                  <EmptyStateCard
-                    title="Empty State Genérico"
-                    description="Estado vazio genérico com ação personalizada."
-                    action={{
-                      label: 'Criar Novo',
-                      onClick: () => alert('Ação executada!')
-                    }}
-                  />
-
-                  <Card>
-                    <CardContent className="p-0">
-                      <EmptyPosts onCreatePost={() => alert('Criar post!')} />
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-0">
-                      <EmptySearch 
-                        query="React"
-                        onClearSearch={() => alert('Busca limpa!')} 
-                      />
-                    </CardContent>
-                  </Card>
-
-                  <EmptyStateCard
-                    title="Estado Customizado"
-                    description="Você pode personalizar completamente o empty state."
-                  >
-                    <div className="flex gap-2 mt-4">
-                      <Button size="sm">Ação 1</Button>
-                      <Button size="sm" variant="outline">Ação 2</Button>
-                    </div>
-                  </EmptyStateCard>
+                <div className="flex gap-2 justify-center">
+                  <Button asChild>
+                    <Link to="/">Go Home</Link>
+                  </Button>
+                  <Button variant="outline">
+                    Go Back
+                  </Button>
                 </div>
-              ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <Card key={i}>
-                      <CardHeader>
-                        <CardTitle>Item {i + 1}</CardTitle>
-                        <CardDescription>
-                          Descrição do item {i + 1}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                          Conteúdo do card {i + 1}. Este é um exemplo de como
-                          o conteúdo aparece quando não está vazio.
-                        </p>
-                        <div className="mt-3">
-                          <Badge variant="secondary">Tag {i + 1}</Badge>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    </PageLayout>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </div>
   )
 }

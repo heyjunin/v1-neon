@@ -8,7 +8,7 @@ Este documento descreve o mapeamento de portas utilizado pelos diferentes apps e
 |-------|-----|-----------|---------|
 | **3000** | `@v1/app` | Next.js App (Aplicação principal) | `bun run dev:app` |
 | **3001** | `@v1/web` | Next.js Web (Site público) | `bun run dev:web` |
-| **3002** | `@v1/email-app` | Hono Email Service | `bun run dev:email-app` |
+| **3002** | - | Disponível | - |
 | **3003** | `@v1/react-app` | Vite React App (App PWA) | `bun run dev:react-app` |
 | **3004** | `@v1/engine` | Hono API | `bun run dev:engine` |
 | **3005** | `@v1/email` | React Email Dev Server | `bun run dev --filter=@v1/email` |

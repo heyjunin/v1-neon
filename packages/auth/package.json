@@ -1,0 +1,36 @@
+{
+  "name": "@v1/auth",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.5.1",
+    "@supabase/supabase-js": "^2.45.3",
+    "@v1/logger": "workspace:*",
+    "@v1/ui": "workspace:*",
+    "react": "^18.3.1",
+    "react-router-dom": "^6.22.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5.5.4"
+  },
+  "exports": {
+    "./providers/supabase": "./src/providers/supabase/index.ts",
+    "./hooks": "./src/hooks/index.ts",
+    "./components": "./src/components/index.ts",
+    "./utils": "./src/utils/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

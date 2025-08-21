@@ -1,8 +1,8 @@
 declare global {
   interface Window {
-    deferredPrompt: any
+    deferredPrompt: unknown
   }
 }
 
-export { }
+export type { }
 

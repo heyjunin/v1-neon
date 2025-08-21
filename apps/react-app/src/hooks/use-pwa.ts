@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface PWAState {
   isInstalled: boolean
   isInstallable: boolean
   isOnline: boolean
   isUpdateAvailable: boolean
-  deferredPrompt: any
+  deferredPrompt: unknown
 }
 
 export function usePWA() {
@@ -20,59 +20,55 @@ export function usePWA() {
   useEffect(() => {
     // Verificar se a PWA está instalada
     const checkIfInstalled = () => {
-      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      if (window.matchMedia?.('(display-mode: standalone)').matches) {
         setPwaState(prev => ({ ...prev, isInstalled: true }))
       }
     }
 
-    // Verificar conectividade
-    const handleOnline = () => setPwaState(prev => ({ ...prev, isOnline: true }))
-    const handleOffline = () => setPwaState(prev => ({ ...prev, isOnline: false }))
+    // Verificar se a PWA pode ser instalada
+    const checkIfInstallable = () => {
+      if ('serviceWorker' in navigator && 'PushManager' in window) {
+        setPwaState(prev => ({ ...prev, isInstallable: true }))
+      }
+    }
 
-    // Capturar evento de instalação
+    // Listener para o evento beforeinstallprompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setPwaState(prev => ({ 
         ...prev, 
-        isInstallable: true, 
-        deferredPrompt: e 
+        deferredPrompt: e,
+        isInstallable: true 
       }))
     }
 
-    // Capturar evento de instalação concluída
-    const handleAppInstalled = () => {
-      setPwaState(prev => ({ 
-        ...prev, 
-        isInstalled: true, 
-        isInstallable: false,
-        deferredPrompt: null 
-      }))
-    }
+    // Listener para mudanças de conectividade
+    const handleOnline = () => setPwaState(prev => ({ ...prev, isOnline: true }))
+    const handleOffline = () => setPwaState(prev => ({ ...prev, isOnline: false }))
 
-    // Capturar evento de atualização disponível
+    // Listener para atualizações do service worker
     const handleUpdateFound = () => {
       setPwaState(prev => ({ ...prev, isUpdateAvailable: true }))
     }
 
-    // Verificar instalação inicial
+    // Inicializar verificações
     checkIfInstalled()
+    checkIfInstallable()
 
     // Adicionar event listeners
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
 
-    // Service Worker events
+    // Verificar se há atualizações do service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('updatefound', handleUpdateFound)
     }
 
     return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
       
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('updatefound', handleUpdateFound)
@@ -80,26 +76,27 @@ export function usePWA() {
     }
   }, [])
 
+  // Função para instalar a PWA
   const installPWA = async () => {
     if (pwaState.deferredPrompt) {
-      pwaState.deferredPrompt.prompt()
-      const { outcome } = await pwaState.deferredPrompt.userChoice
+      const promptEvent = pwaState.deferredPrompt as { prompt: () => Promise<{ outcome: string }> }
+      const result = await promptEvent.prompt()
       
-      if (outcome === 'accepted') {
+      if (result.outcome === 'accepted') {
         setPwaState(prev => ({ 
           ...prev, 
-          isInstalled: true, 
-          isInstallable: false,
+          isInstalled: true,
           deferredPrompt: null 
         }))
       }
     }
   }
 
+  // Função para atualizar a PWA
   const updatePWA = () => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration().then(registration => {
-        if (registration && registration.waiting) {
+        if (registration?.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' })
           window.location.reload()
         }

@@ -1,14 +1,18 @@
 "use client";
 
-import { createClient } from "@v1/supabase/client";
+import { useAuth } from "@v1/auth/hooks";
 import { Button } from "@v1/ui/button";
 import { Icons } from "@v1/ui/icons";
 
 export function SignOut() {
-  const supabase = createClient();
+  const { signOut, isLoading } = useAuth();
 
-  const handleSignOut = () => {
-    supabase.auth.signOut();
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   return (
@@ -16,6 +20,7 @@ export function SignOut() {
       onClick={handleSignOut}
       variant="outline"
       className="font-mono gap-2 flex items-center"
+      disabled={isLoading}
     >
       <Icons.SignOut className="size-4" />
       <span>Sign out</span>

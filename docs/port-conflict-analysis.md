@@ -26,7 +26,7 @@
 ### ✅ Apps de Serviço (Sem Conflitos)
 | Porta | App | Tipo | Arquivo de Config |
 |-------|-----|------|-------------------|
-| **3002** | `@v1/email-app` | Hono | `apps/email/src/config/index.ts` |
+| **3002** | - | - | - |
 
 ### ❌ Apps em Conflito
 | Porta | App | Tipo | Arquivo de Config | Status |
@@ -51,7 +51,7 @@
 # Mapeamento Sugerido
 3000 → @v1/app (Next.js App)
 3001 → @v1/web (Next.js Web)
-3002 → @v1/email-app (Hono Email Service)
+3002 → (Disponível)
 3003 → @v1/react-app (Vite React App)
 3004 → @v1/engine (Hono API)
 3005 → @v1/email (React Email Dev Server) ← NOVA PORTA
@@ -61,7 +61,7 @@
 
 O package `@v1/email` não deveria ter um servidor de desenvolvimento próprio, pois:
 - É um package, não um app
-- O servidor de email já existe em `@v1/email-app`
+- O servidor de email foi removido (mantido apenas o pacote @v1/email)
 - O script `email dev` é para desenvolvimento de templates, não para rodar como serviço
 
 ## 🔧 Correções Necessárias
@@ -86,7 +86,7 @@ const PORT_MAPPING = {
   // Apps principais
   3000: '@v1/app (Next.js App)',
   3001: '@v1/web (Next.js Web)', 
-  3002: '@v1/email-app (Hono Email Service)',
+      3002: '(Disponível)',
   3003: '@v1/react-app (Vite React App)',
   3004: '@v1/engine (Hono API)',
   3005: '@v1/email (React Email Dev)', // Adicionar se necessário
@@ -108,7 +108,7 @@ const PORT_MAPPING = {
 |-------|-----|-----------|
 | 3000 | @v1/app | Next.js App |
 | 3001 | @v1/web | Next.js Web |
-| 3002 | @v1/email-app | Email Service |
+| 3002 | - | Disponível |
 | 3003 | @v1/react-app | Vite React App |
 | 3004 | @v1/engine | Hono API |
 | 3005 | @v1/email | Email Dev Server |
@@ -141,7 +141,7 @@ bun run dev:react-app # Porta 3003
 bun run dev:engine   # Porta 3004
 
 # Teste 2: Email services
-bun run dev:email-app # Porta 3002
+# Porta 3002 disponível
 # bun run dev --filter=@v1/email # Porta 3005 (se mantido)
 
 # Teste 3: Supabase local
@@ -155,7 +155,7 @@ bun run dev:safe
 
 | Status | Apps | Portas |
 |--------|------|--------|
-| ✅ **OK** | @v1/app, @v1/web, @v1/engine, @v1/email-app | 3000, 3001, 3002, 3004 |
+| ✅ **OK** | @v1/app, @v1/web, @v1/engine | 3000, 3001, 3004 |
 | ❌ **Conflito** | @v1/react-app, @v1/email | 3003 |
 | ✅ **OK** | Supabase Services | 54321-54328 |
 
@@ -178,7 +178,7 @@ bun run dev:safe
 |-------|-----|------|--------|
 | **3000** | `@v1/app` | Next.js App | ✅ OK |
 | **3001** | `@v1/web` | Next.js Web | ✅ OK |
-| **3002** | `@v1/email-app` | Hono Email Service | ✅ OK |
+| **3002** | - | Disponível | ✅ OK |
 | **3003** | `@v1/react-app` | Vite React App | ✅ OK |
 | **3004** | `@v1/engine` | Hono API | ✅ OK |
 | **3005** | `@v1/email` | React Email Dev | ✅ OK |

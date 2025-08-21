@@ -24,7 +24,7 @@ export interface PWAState {
   isInstallable: boolean
   isOnline: boolean
   isUpdateAvailable: boolean
-  deferredPrompt: any
+  deferredPrompt: unknown
 }
 
 // Page Types
@@ -67,7 +67,7 @@ export interface ErrorInfo {
 export interface DevToolsInfo {
   renderCount: number
   lastRender: Date
-  props: Record<string, any>
+  props: Record<string, unknown>
 }
 
 // Utility Types
@@ -85,11 +85,11 @@ export interface FormField {
     min?: number
     max?: number
     pattern?: string
-    custom?: (value: any) => string | null
+    custom?: (value: unknown) => string | null
   }
 }
 
-export interface FormState<T = Record<string, any>> {
+export interface FormState<T = Record<string, unknown>> {
   values: T
   errors: Record<keyof T, string>
   touched: Record<keyof T, boolean>

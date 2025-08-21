@@ -1,41 +1,35 @@
 "use client";
 
-import { createClient } from "@v1/supabase/client";
+import { useAuth } from "@v1/auth/hooks";
 import { Button } from "@v1/ui/button";
 
 export function GoogleSignin() {
-  const supabase = createClient();
+  const { signIn, isLoading } = useAuth();
 
   const handleSignin = () => {
-    supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
+    signIn("google", {
+      redirectTo: `${window.location.origin}/api/auth/callback`,
     });
   };
 
   return (
-    <Button onClick={handleSignin} variant="outline" className="font-mono">
+    <Button onClick={handleSignin} variant="outline" className="font-mono" disabled={isLoading}>
       Sign in with Google
     </Button>
   );
 }
 
 export function DiscordSignin() {
-  const supabase = createClient();
+  const { signIn, isLoading } = useAuth();
 
   const handleSignin = () => {
-    supabase.auth.signInWithOAuth({
-      provider: "discord",
-      options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
-      },
+    signIn("discord", {
+      redirectTo: `${window.location.origin}/api/auth/callback`,
     });
   };
 
   return (
-    <Button onClick={handleSignin} variant="outline" className="font-mono">
+    <Button onClick={handleSignin} variant="outline" className="font-mono" disabled={isLoading}>
       Sign in with Discord
     </Button>
   );

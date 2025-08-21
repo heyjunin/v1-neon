@@ -1,5 +1,5 @@
-import { DashboardLayout } from '@/components/layouts'
 import { DashboardPageHeader } from '@/components/templates'
+import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
@@ -16,6 +16,16 @@ import {
 } from 'lucide-react'
 
 export function DashboardPage() {
+  const { isAuthenticated } = useAuth()
+
+  // Mock user data
+  const mockUser = {
+    displayName: 'John Doe',
+    primaryEmail: 'john.doe@example.com',
+    signedUpAt: '2024-01-15T00:00:00Z',
+    id: 'user-123'
+  }
+
   // Mock data
   const stats = [
     { title: 'Total Posts', value: '24', icon: FileText, trend: '+12%' },
@@ -31,16 +41,19 @@ export function DashboardPage() {
     { id: 4, title: 'Modern CSS with Tailwind', author: 'Sarah Wilson', date: '2024-01-12', status: 'published' },
   ]
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">Please sign in to view your dashboard</p>
+      </div>
+    )
+  }
+
   return (
-    <DashboardLayout
-      meta={{
-        title: 'Dashboard - V1 React App',
-        description: 'Painel de controle com métricas e informações importantes'
-      }}
-    >
+    <div className="space-y-8">
       <DashboardPageHeader
         title="Dashboard"
-        description="Welcome back! Here's what's happening today."
+        description={`Welcome back, ${mockUser.displayName}! Here's what's happening today.`}
         actions={
           <Button>
             <Calendar className="h-4 w-4 mr-2" />
@@ -85,20 +98,22 @@ export function DashboardPage() {
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Email:</span>
-              <span className="font-medium">user@example.com</span>
+              <span className="font-medium">{mockUser.primaryEmail}</span>
             </div>
 
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Member since:</span>
-              <span className="font-medium">Jan 15, 2024</span>
+              <span className="font-medium">
+                {new Date(mockUser.signedUpAt).toLocaleDateString()}
+              </span>
             </div>
 
             <div className="flex items-center gap-3">
               <User className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">User ID:</span>
               <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                usr_123456
+                {mockUser.id}
               </span>
             </div>
           </CardContent>
@@ -169,6 +184,6 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   )
 }

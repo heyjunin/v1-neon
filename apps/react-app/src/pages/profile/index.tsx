@@ -6,25 +6,27 @@ import { Input } from '@v1/ui/input'
 import { Label } from '@v1/ui/label'
 import { Separator } from '@v1/ui/separator'
 import {
-    Bell,
-    Calendar,
-    Globe,
-    Key,
-    Mail,
-    Save,
-    Settings,
-    Shield,
-    User
+  Bell,
+  Calendar,
+  Globe,
+  Key,
+  Mail,
+  Save,
+  Settings,
+  Shield,
+  User
 } from 'lucide-react'
 
 export function ProfilePage() {
-  // Mock user data
+  // Mock data for demonstration
   const user = {
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    avatar: '',
-    joinDate: '2024-01-15',
-    role: 'admin',
+    displayName: 'John Doe',
+    primaryEmail: 'john.doe@example.com',
+    profileImageUrl: '',
+    signedUpAt: '2024-01-15T00:00:00Z'
+  }
+
+  const mockData = {
     postsCount: 24,
     viewsCount: 12470,
     bio: 'Full-stack developer passionate about React, TypeScript, and modern web technologies.',
@@ -57,17 +59,17 @@ export function ProfilePage() {
             <CardContent className="space-y-6">
               <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={user.profileImageUrl} alt={user.displayName} />
                   <AvatarFallback className="text-lg">
-                    {user.name.split(' ').map(n => n[0]).join('')}
+                    {user.displayName.split(' ').map((n: string) => n[0]).join('')}
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-2">
-                  <h3 className="text-xl font-semibold">{user.name}</h3>
+                  <h3 className="text-xl font-semibold">{user.displayName}</h3>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline">{user.role}</Badge>
+                    <Badge variant="outline">{user.primaryEmail}</Badge>
                     <span className="text-sm text-muted-foreground">
-                      Member since {new Date(user.joinDate).toLocaleDateString()}
+                      Member since {new Date(user.signedUpAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
@@ -78,19 +80,19 @@ export function ProfilePage() {
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
-                  <Input id="name" defaultValue={user.name} />
+                  <Input id="name" defaultValue={user.displayName} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue={user.email} />
+                  <Input id="email" type="email" defaultValue={user.primaryEmail} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input id="location" defaultValue={user.location} />
+                  <Input id="location" defaultValue={mockData.location} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="website">Website</Label>
-                  <Input id="website" defaultValue={user.website} />
+                  <Input id="website" defaultValue={mockData.website} />
                 </div>
               </div>
 
@@ -99,7 +101,7 @@ export function ProfilePage() {
                 <textarea
                   id="bio"
                   className="w-full min-h-[100px] p-3 border border-input rounded-md resize-none"
-                  defaultValue={user.bio}
+                  defaultValue={mockData.bio}
                 />
               </div>
 
@@ -119,11 +121,11 @@ export function ProfilePage() {
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="text-center p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">{user.postsCount}</div>
+                  <div className="text-2xl font-bold text-primary">{mockData.postsCount}</div>
                   <div className="text-sm text-muted-foreground">Posts Published</div>
                 </div>
                 <div className="text-center p-4 rounded-lg border">
-                  <div className="text-2xl font-bold text-primary">{user.viewsCount.toLocaleString()}</div>
+                  <div className="text-2xl font-bold text-primary">{mockData.viewsCount.toLocaleString()}</div>
                   <div className="text-sm text-muted-foreground">Total Views</div>
                 </div>
                 <div className="text-center p-4 rounded-lg border">
@@ -172,7 +174,7 @@ export function ProfilePage() {
                 <Mail className="h-4 w-4 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{user.email}</p>
+                  <p className="text-sm text-muted-foreground">{user.primaryEmail}</p>
                 </div>
               </div>
 
@@ -181,7 +183,7 @@ export function ProfilePage() {
                 <div>
                   <p className="text-sm font-medium">Member Since</p>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(user.joinDate).toLocaleDateString()}
+                    {new Date(user.signedUpAt).toLocaleDateString()}
                   </p>
                 </div>
               </div>
@@ -190,7 +192,7 @@ export function ProfilePage() {
                 <Globe className="h-4 w-4 text-gray-500" />
                 <div>
                   <p className="text-sm font-medium">Location</p>
-                  <p className="text-sm text-muted-foreground">{user.location}</p>
+                  <p className="text-sm text-muted-foreground">{mockData.location}</p>
                 </div>
               </div>
             </CardContent>

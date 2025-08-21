@@ -25,7 +25,7 @@ const PORT_MAPPING = {
   // Apps principais
   3000: '@v1/app (Next.js App)',
   3001: '@v1/web (Next.js Web)', 
-  3002: '@v1/email-app (Hono Email Service)',
+      3002: '(Disponível)',
   3003: '@v1/react-app (Vite React App)',
   3004: '@v1/engine (Hono API)',
   3005: '@v1/email (React Email Dev)',

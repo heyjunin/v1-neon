@@ -1,103 +1,85 @@
-import { cn } from '@/lib/utils'
-import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
+import { Card, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
 import { Separator } from '@v1/ui/separator'
 import { ArrowLeft } from 'lucide-react'
-import React from 'react'
+import type React from 'react'
 import { Link } from 'react-router-dom'
 
 interface PageHeaderProps {
   title: string
   description?: string
-  badge?: {
-    text: string
-    variant?: 'default' | 'secondary' | 'destructive' | 'outline'
-  }
-  backTo?: {
-    path: string
-    label?: string
-  }
+  backLink?: string
   actions?: React.ReactNode
-  className?: string
-  children?: React.ReactNode
 }
 
-export function PageHeader({
-  title,
-  description,
-  badge,
-  backTo,
-  actions,
-  className,
-  children
-}: PageHeaderProps) {
+export function PageHeader({ title, description, backLink, actions }: PageHeaderProps) {
   return (
-    <div className={cn('space-y-4 pb-6', className)}>
-      {/* Back Navigation */}
-      {backTo && (
-        <div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link to={backTo.path}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {backTo.label || 'Voltar'}
-            </Link>
-          </Button>
+    <Card className="mb-6">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            {backLink && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to={backLink}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Link>
+              </Button>
+            )}
+            <div>
+              <CardTitle className="text-2xl">{title}</CardTitle>
+              {description && (
+                <CardDescription className="text-base">{description}</CardDescription>
+              )}
+            </div>
+          </div>
+          {actions && <div className="flex items-center space-x-2">{actions}</div>}
         </div>
-      )}
+      </CardHeader>
+    </Card>
+  )
+}
 
-      {/* Header Content */}
-      <div className="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {title}
-            </h1>
-            {badge && (
-              <Badge variant={badge.variant || 'default'}>
-                {badge.text}
-              </Badge>
+export function ContentPageHeader({ title, description, backLink, actions }: PageHeaderProps) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          {backLink && (
+            <Button variant="outline" size="sm" asChild>
+              <Link to={backLink}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Link>
+            </Button>
+          )}
+          <div>
+            <h1 className="text-3xl font-bold">{title}</h1>
+            {description && (
+              <p className="text-muted-foreground text-lg">{description}</p>
             )}
           </div>
-          {description && (
-            <p className="text-muted-foreground max-w-2xl">
-              {description}
-            </p>
-          )}
         </div>
-
-        {/* Actions */}
-        {actions && (
-          <div className="flex items-center space-x-2">
-            {actions}
-          </div>
-        )}
+        {actions && <div className="flex items-center space-x-2">{actions}</div>}
       </div>
-
-      {/* Custom Children */}
-      {children}
-
-      <Separator />
+      <Separator className="mt-6" />
     </div>
   )
 }
 
-// Variantes específicas do PageHeader
-export function DashboardPageHeader({ title, ...props }: Omit<PageHeaderProps, 'title'> & { title: string }) {
+export function DashboardPageHeader({ title, description, actions }: PageHeaderProps) {
   return (
-    <PageHeader
-      title={title}
-      badge={{ text: 'Dashboard', variant: 'secondary' }}
-      {...props}
-    />
-  )
-}
-
-export function ContentPageHeader({ title, ...props }: Omit<PageHeaderProps, 'title'> & { title: string }) {
-  return (
-    <PageHeader
-      title={title}
-      className="text-center sm:text-left"
-      {...props}
-    />
+    <div className="mb-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">{title}</h1>
+          {description && (
+            <p className="text-muted-foreground text-lg">{description}</p>
+          )}
+        </div>
+        {actions && <div className="flex items-center space-x-2">{actions}</div>}
+      </div>
+      <Separator className="mt-6" />
+    </div>
   )
 }
