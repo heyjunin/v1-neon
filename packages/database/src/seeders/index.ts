@@ -3,6 +3,7 @@ export * from './database-seeder';
 export * from './example-advanced-seeder';
 export * from './example-programmatic';
 export * from './orchestrator';
+export * from './organizations';
 export * from './posts-seeder';
 export * from './types';
 export * from './users-seeder';

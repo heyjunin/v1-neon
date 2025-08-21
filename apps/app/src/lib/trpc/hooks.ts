@@ -2,88 +2,188 @@
 
 import { trpc } from './client';
 
-// Hook para buscar posts
-export function usePosts(options?: {
+// Posts hooks
+export const usePosts = (options?: {
   search?: string;
   page?: number;
   limit?: number;
   userId?: string;
   sortBy?: 'createdAt' | 'updatedAt' | 'title';
   sortOrder?: 'asc' | 'desc';
-}) {
-  return trpc.posts.getPosts.useQuery(
-    {
-      search: options?.search,
-      page: options?.page || 1,
-      limit: options?.limit || 10,
-      userId: options?.userId,
-      sortBy: options?.sortBy,
-      sortOrder: options?.sortOrder,
-    },
-    {
-      staleTime: 1000 * 60 * 5, // 5 minutos
-    }
-  );
-}
-
-// Hook para buscar post por ID
-export function usePost(id: string) {
-  return trpc.posts.getPostById.useQuery(
-    { id },
-    {
-      enabled: !!id,
-      staleTime: 1000 * 60 * 5, // 5 minutos
-    }
-  );
-}
-
-// Hook para buscar posts por usuário
-export function usePostsByUser(userId: string) {
-  return trpc.posts.getPostsByUserId.useQuery(
-    { userId },
-    {
-      enabled: !!userId,
-      staleTime: 1000 * 60 * 5, // 5 minutos
-    }
-  );
-}
-
-// Hook para criar post
-export function useCreatePost() {
-  const utils = trpc.useUtils();
-  
-  return trpc.posts.createPost.useMutation({
-    onSuccess: () => {
-      // Invalidate queries relacionadas a posts
-      utils.posts.getPosts.invalidate();
-      utils.posts.getPostsByUserId.invalidate();
-    },
+}) => {
+  return trpc.posts.getPosts.useQuery(options || {}, {
+    refetchOnWindowFocus: false,
   });
-}
+};
 
-// Hook para atualizar post
-export function useUpdatePost() {
-  const utils = trpc.useUtils();
-  
-  return trpc.posts.updatePost.useMutation({
-    onSuccess: (data) => {
-      // Invalidate queries relacionadas a posts
-      utils.posts.getPosts.invalidate();
-      utils.posts.getPostById.invalidate({ id: data.id });
-      utils.posts.getPostsByUserId.invalidate();
-    },
+export const usePost = (id: string) => {
+  return trpc.posts.getPostById.useQuery({ id }, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
   });
-}
+};
 
-// Hook para deletar post
-export function useDeletePost() {
-  const utils = trpc.useUtils();
-  
-  return trpc.posts.deletePost.useMutation({
-    onSuccess: () => {
-      // Invalidate queries relacionadas a posts
-      utils.posts.getPosts.invalidate();
-      utils.posts.getPostsByUserId.invalidate();
-    },
+export const usePostsByUser = (userId: string) => {
+  return trpc.posts.getPostsByUserId.useQuery({ userId }, {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
   });
-}
+};
+
+export const useCreatePost = () => {
+  return trpc.posts.createPost.useMutation();
+};
+
+export const useUpdatePost = () => {
+  return trpc.posts.updatePost.useMutation();
+};
+
+export const useDeletePost = () => {
+  return trpc.posts.deletePost.useMutation();
+};
+
+// Organizations hooks
+export const useOrganizations = (options?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  ownerId?: string;
+  memberId?: string;
+  isActive?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  return trpc.organizations.getOrganizations.useQuery(options || {}, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganization = (id: string) => {
+  return trpc.organizations.getOrganizationById.useQuery({ id }, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganizationBySlug = (slug: string) => {
+  return trpc.organizations.getOrganizationBySlug.useQuery({ slug }, {
+    enabled: !!slug,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganizationsByOwner = (ownerId: string) => {
+  return trpc.organizations.getOrganizationsByOwnerId.useQuery({ ownerId }, {
+    enabled: !!ownerId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganizationsByMember = (memberId: string) => {
+  return trpc.organizations.getOrganizationsByMemberId.useQuery({ memberId }, {
+    enabled: !!memberId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useUserOrganizations = () => {
+  return trpc.organizations.getUserOrganizations.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganizationMembers = (organizationId: string) => {
+  return trpc.organizations.getOrganizationMembers.useQuery({ id: organizationId }, {
+    enabled: !!organizationId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useOrganizationInvites = (organizationId: string) => {
+  return trpc.organizations.getOrganizationInvites.useQuery({ id: organizationId }, {
+    enabled: !!organizationId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const usePendingInvitesByEmail = (email: string) => {
+  return trpc.organizations.getPendingInvitesByEmail.useQuery({ email }, {
+    enabled: !!email,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useInviteByToken = (token: string) => {
+  return trpc.organizations.getInviteByToken.useQuery({ token }, {
+    enabled: !!token,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Organization mutations
+export const useCreateOrganization = () => {
+  return trpc.organizations.createOrganization.useMutation();
+};
+
+export const useUpdateOrganization = () => {
+  return trpc.organizations.updateOrganization.useMutation();
+};
+
+export const useDeleteOrganization = () => {
+  return trpc.organizations.deleteOrganization.useMutation();
+};
+
+export const useDeactivateOrganization = () => {
+  return trpc.organizations.deactivateOrganization.useMutation();
+};
+
+export const useActivateOrganization = () => {
+  return trpc.organizations.activateOrganization.useMutation();
+};
+
+// Member mutations
+export const useAddMember = () => {
+  return trpc.organizations.addMember.useMutation();
+};
+
+export const useUpdateMemberRole = () => {
+  return trpc.organizations.updateMemberRole.useMutation();
+};
+
+export const useRemoveMember = () => {
+  return trpc.organizations.removeMember.useMutation();
+};
+
+export const useSuspendMember = () => {
+  return trpc.organizations.suspendMember.useMutation();
+};
+
+export const useActivateMember = () => {
+  return trpc.organizations.activateMember.useMutation();
+};
+
+// Invite mutations
+export const useCreateInvite = () => {
+  return trpc.organizations.createInvite.useMutation();
+};
+
+export const useAcceptInvite = () => {
+  return trpc.organizations.acceptInvite.useMutation();
+};
+
+export const useCancelInvite = () => {
+  return trpc.organizations.cancelInvite.useMutation();
+};
+
+export const useResendInvite = () => {
+  return trpc.organizations.resendInvite.useMutation();
+};
+
+// Utility mutations
+export const useTransferOwnership = () => {
+  return trpc.organizations.transferOwnership.useMutation();
+};
+
+export const useBulkAddMembers = () => {
+  return trpc.organizations.bulkAddMembers.useMutation();
+};
