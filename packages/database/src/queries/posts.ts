@@ -4,10 +4,10 @@ import { db } from "../drizzle";
 import { posts, type Post } from "../schema/posts";
 import { users } from "../schema/users";
 import {
-  PaginatedResult,
-  PaginationOptions,
-  QueryBuilder,
-  executePaginatedQuery,
+    PaginatedResult,
+    PaginationOptions,
+    QueryBuilder,
+    executePaginatedQuery,
 } from "../utils";
 
 export interface PostsFilters {
@@ -48,7 +48,7 @@ export async function getPosts(
       countQuery,
       filters,
       pagination,
-      sortBy,
+      sortBy: posts[sortBy as keyof typeof posts],
       sortOrder,
     });
   } catch (error) {
