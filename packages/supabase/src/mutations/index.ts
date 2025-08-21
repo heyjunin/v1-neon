@@ -4,7 +4,7 @@ import type { Tables, TablesUpdate } from "../types";
 
 export interface UpdateUserResult {
   data: Tables<"users"> | null;
-  error: any;
+  error: unknown;
 }
 
 export async function updateUser(

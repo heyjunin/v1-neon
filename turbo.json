@@ -59,6 +59,16 @@
     },
     "setup-complete": {
       "cache": false
+    },
+    "test": {
+      "cache": false
+    },
+    "test:ui": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:run": {
+      "cache": false
     }
   }
 }

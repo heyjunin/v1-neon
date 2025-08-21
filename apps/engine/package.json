@@ -1,0 +1,33 @@
+{
+  "name": "@v1/engine",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "format": "biome format --write .",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@hono/swagger-ui": "^0.5.2",
+    "@hono/zod-openapi": "^0.19.8",
+    "@hono/zod-validator": "^0.7.0",
+    "hono": "^4.8.12",
+    "jose": "^6.0.11",
+    "plaid": "^36.0.0",
+    "xior": "^0.7.8",
+    "zod": "3.25.64"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.8.3",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.8",
+    "@vitest/ui": "^2.1.8"
+  }
+}

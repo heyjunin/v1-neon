@@ -382,9 +382,7 @@ export async function getOrganizationsByMemberId(
 }
 
 // Member queries
-export async function getOrganizationMembers(
-  organizationId: string,
-): Promise<
+export async function getOrganizationMembers(organizationId: string): Promise<
   (OrganizationMember & {
     user: { id: string; email: string; fullName: string | null };
   })[]
@@ -477,9 +475,7 @@ export async function getUserOrganizations(
 }
 
 // Invite queries
-export async function getOrganizationInvites(
-  organizationId: string,
-): Promise<
+export async function getOrganizationInvites(organizationId: string): Promise<
   (OrganizationInvite & {
     invitedByUser: { id: string; email: string; fullName: string | null };
   })[]

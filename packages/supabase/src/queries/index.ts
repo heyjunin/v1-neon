@@ -1,12 +1,12 @@
+import type { User } from "@supabase/supabase-js";
 import { logger } from "@v1/logger";
 import { createClient } from "@v1/supabase/server";
-import type { User } from "@supabase/supabase-js";
 
 export interface GetUserResult {
   data: {
     user: User | null;
   } | null;
-  error: any;
+  error: unknown;
 }
 
 export async function getUser(): Promise<GetUserResult> {
