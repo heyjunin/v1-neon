@@ -244,3 +244,49 @@ export const useChangePassword = () => {
 export const useDeleteAccount = () => {
   return trpc.auth.deleteAccount.useMutation();
 };
+
+// Notification hooks
+export const useNotifications = (filters?: {
+  limit?: number;
+  offset?: number;
+  includeRead?: boolean;
+  includeArchived?: boolean;
+}) => {
+  return trpc.notifications.getNotifications.useQuery(filters || {});
+};
+
+export const useUnreadNotificationsCount = () => {
+  return trpc.notifications.getUnreadCount.useQuery();
+};
+
+export const useNotification = (id: string) => {
+  return trpc.notifications.getNotification.useQuery({ id });
+};
+
+export const useMarkNotificationAsRead = () => {
+  return trpc.notifications.markAsRead.useMutation();
+};
+
+export const useMarkNotificationAsUnread = () => {
+  return trpc.notifications.markAsUnread.useMutation();
+};
+
+export const useMarkAllNotificationsAsRead = () => {
+  return trpc.notifications.markAllAsRead.useMutation();
+};
+
+export const useArchiveNotification = () => {
+  return trpc.notifications.archive.useMutation();
+};
+
+export const useUnarchiveNotification = () => {
+  return trpc.notifications.unarchive.useMutation();
+};
+
+export const useDeleteNotification = () => {
+  return trpc.notifications.delete.useMutation();
+};
+
+export const useCreateNotification = () => {
+  return trpc.notifications.create.useMutation();
+};

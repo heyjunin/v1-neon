@@ -1,0 +1,481 @@
+# tRPC Server Rules
+
+## Server Structure
+- Use the established tRPC server structure in `apps/app/src/lib/trpc/`
+- Follow the established patterns for routers, context, and middleware
+- Implement proper TypeScript interfaces and error handling
+
+## Router Structure
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/routers/
+import { z } from 'zod';
+import { loggedProcedure, protectedProcedure, publicProcedure, router } from '../context';
+import { logger } from '@v1/logger';
+
+// Define schemas at the top
+const createItemSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
+  description: z.string().optional(),
+  category: z.enum(['category1', 'category2', 'category3']),
+});
+
+const updateItemSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().optional(),
+  category: z.enum(['category1', 'category2', 'category3']).optional(),
+});
+
+const getItemsSchema = z.object({
+  search: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+  category: z.string().optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'name']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+});
+
+export const itemsRouter = router({
+  // Query procedures
+  getItems: loggedProcedure
+    .input(getItemsSchema)
+    .query(async ({ input }) => {
+      try {
+        // Implementation here
+        const items = await getItems(input);
+        return items;
+      } catch (error) {
+        logger.error('Error in getItems:', error);
+        throw new Error(`Failed to get items: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }),
+
+  getItemById: loggedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      try {
+        const item = await getItemById(input.id);
+        if (!item) {
+          throw new Error('Item not found');
+        }
+        return item;
+      } catch (error) {
+        logger.error('Error in getItemById:', error);
+        throw new Error('Failed to get item');
+      }
+    }),
+
+  // Mutation procedures
+  createItem: protectedProcedure
+    .input(createItemSchema)
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const item = await createItem({
+          ...input,
+          userId: ctx.user.id,
+        });
+        return item;
+      } catch (error) {
+        logger.error('Error in createItem:', error);
+        throw new Error('Failed to create item');
+      }
+    }),
+
+  updateItem: protectedProcedure
+    .input(updateItemSchema)
+    .mutation(async ({ input }) => {
+      try {
+        const { id, ...updateData } = input;
+        const item = await updateItem(id, updateData);
+        return item;
+      } catch (error) {
+        logger.error('Error in updateItem:', error);
+        throw new Error('Failed to update item');
+      }
+    }),
+
+  deleteItem: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        await deleteItem(input.id);
+        return { success: true };
+      } catch (error) {
+        logger.error('Error in deleteItem:', error);
+        throw new Error('Failed to delete item');
+      }
+    }),
+
+  // Test connection procedure
+  testConnection: publicProcedure
+    .query(async () => {
+      try {
+        // Test database connection
+        const result = await testDatabaseConnection();
+        return { 
+          success: true, 
+          message: 'Database connection working',
+          timestamp: new Date().toISOString()
+        };
+      } catch (error) {
+        logger.error('Database connection test failed:', error);
+        return { 
+          success: false, 
+          message: error instanceof Error ? error.message : 'Unknown error',
+          error: error 
+        };
+      }
+    }),
+});
+```
+
+## Context and Middleware
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/context.ts
+import { TRPCError, initTRPC } from '@trpc/server';
+import { type NextRequest } from 'next/server';
+
+export const createInnerTRPCContext = (opts: CreateContextOptions) => {
+  return {
+    req: opts.req,
+    user: opts.user,
+  };
+};
+
+export const createTRPCContext = async (opts: { 
+  req: NextRequest; 
+  user?: { id: string; email: string } | null 
+}) => {
+  try {
+    return createInnerTRPCContext({
+      req: opts.req,
+      user: opts.user || null,
+    });
+  } catch (error) {
+    console.error('Error creating TRPC context:', error);
+    return createInnerTRPCContext({
+      req: opts.req,
+      user: null,
+    });
+  }
+};
+
+const t = initTRPC.context<typeof createTRPCContext>().create();
+
+export const router = t.router;
+export const publicProcedure = t.procedure;
+
+// Authentication middleware
+const isAuthed = t.middleware(({ ctx, next }) => {
+  if (!ctx.user) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'User not authenticated',
+    });
+  }
+
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});
+
+// Logging middleware
+const loggingMiddleware = t.middleware(async ({ path, type, input, ctx, next }) => {
+  const start = Date.now();
+  const userId = ctx.user?.id || 'anonymous';
+  
+  console.log(`[tRPC Server] ${type.toUpperCase()} ${path} started`, {
+    userId,
+    input: input || 'no input',
+    timestamp: new Date().toISOString(),
+  });
+  
+  try {
+    const result = await next();
+    
+    const duration = Date.now() - start;
+    console.log(`[tRPC Server] ${type.toUpperCase()} ${path} completed successfully`, {
+      userId,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return result;
+  } catch (error) {
+    const duration = Date.now() - start;
+    console.error(`[tRPC Server] ${type.toUpperCase()} ${path} failed`, {
+      userId,
+      duration: `${duration}ms`,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+    });
+    
+    throw error;
+  }
+});
+
+export const loggedProcedure = t.procedure.use(loggingMiddleware);
+export const protectedProcedure = t.procedure.use(isAuthed).use(loggingMiddleware);
+```
+
+## Server Configuration
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/server.ts
+import { router } from './context';
+import { authRouter } from './routers/auth';
+import { notificationsRouter } from './routers/notifications';
+import { organizationsRouter } from './routers/organizations';
+import { postsRouter } from './routers/posts';
+
+export const appRouter = router({
+  posts: postsRouter,
+  organizations: organizationsRouter,
+  auth: authRouter,
+  notifications: notificationsRouter,
+});
+
+export type AppRouter = typeof appRouter;
+export { createTRPCContext } from './context';
+```
+
+## Error Handling
+```typescript
+// Implement proper error handling in procedures
+export const exampleRouter = router({
+  getData: loggedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input }) => {
+      try {
+        const data = await getDataFromDatabase(input.id);
+        
+        if (!data) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Data not found',
+          });
+        }
+
+        return data;
+      } catch (error) {
+        logger.error('Error in getData:', error);
+        
+        // Handle specific database errors
+        if (error instanceof Error && (
+          error.message.includes('relation') || 
+          error.message.includes('table') ||
+          error.message.includes('connection')
+        )) {
+          throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Database connection error',
+          });
+        }
+
+        // Re-throw tRPC errors
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+
+        // Handle other errors
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Failed to get data',
+        });
+      }
+    }),
+});
+```
+
+## Input Validation
+```typescript
+// Use Zod schemas for input validation
+const createUserSchema = z.object({
+  email: z.string().email("Email inválido"),
+  fullName: z.string().min(1, "Nome é obrigatório").max(100, "Nome deve ter no máximo 100 caracteres"),
+  avatarUrl: z.string().url().optional(),
+  role: z.enum(['user', 'admin', 'moderator']).default('user'),
+});
+
+const updateUserSchema = z.object({
+  id: z.string(),
+  email: z.string().email("Email inválido").optional(),
+  fullName: z.string().min(1).max(100).optional(),
+  avatarUrl: z.string().url().optional(),
+  role: z.enum(['user', 'admin', 'moderator']).optional(),
+});
+
+const getUserSchema = z.object({
+  search: z.string().optional(),
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+  role: z.enum(['user', 'admin', 'moderator']).optional(),
+  sortBy: z.enum(['createdAt', 'updatedAt', 'fullName', 'email']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+});
+```
+
+## Database Integration
+```typescript
+// Use the established database patterns
+import { 
+  createUser, 
+  updateUser, 
+  deleteUser, 
+  getUsers,
+  getUserById 
+} from '@v1/database/mutations';
+import { 
+  getUsersWithFilters,
+  getUserById as getUserByIdQuery 
+} from '@v1/database/queries';
+
+export const usersRouter = router({
+  getUsers: loggedProcedure
+    .input(getUserSchema)
+    .query(async ({ input }) => {
+      try {
+        const users = await getUsersWithFilters(
+          {
+            search: input.search,
+            role: input.role,
+            sortBy: input.sortBy,
+            sortOrder: input.sortOrder,
+          },
+          {
+            page: input.page,
+            limit: input.limit,
+          }
+        );
+
+        return users;
+      } catch (error) {
+        logger.error('Error in getUsers:', error);
+        throw new Error(`Failed to get users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
+    }),
+
+  createUser: protectedProcedure
+    .input(createUserSchema)
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const user = await createUser({
+          ...input,
+          createdBy: ctx.user.id,
+        });
+        return user;
+      } catch (error) {
+        logger.error('Error in createUser:', error);
+        throw new Error('Failed to create user');
+      }
+    }),
+});
+```
+
+## Logging Configuration
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/logger-config.ts
+import { loggerLink } from '@trpc/client';
+
+export const createLoggerLink = () => {
+  return loggerLink({
+    enabled: (opts) => {
+      // Development: full logs
+      if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+        return true;
+      }
+      
+      // Production: only errors
+      if (opts.direction === 'down' && opts.result instanceof Error) {
+        return true;
+      }
+      
+      return false;
+    },
+    console: {
+      log: (message: string) => {
+        console.log(`[tRPC Client] ${message}`);
+      },
+      error: (message: string) => {
+        console.error(`[tRPC Client Error] ${message}`);
+      },
+    },
+    colorMode: typeof window === 'undefined' ? 'ansi' : 'css',
+  });
+};
+```
+
+## Provider Configuration
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/provider.tsx
+'use client';
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { httpBatchLink } from '@trpc/client';
+import React, { useState } from 'react';
+import { trpc } from './client';
+import { createLoggerLink } from './logger-config';
+
+export function TRPCProvider({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(() => new QueryClient());
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      links: [
+        createLoggerLink(),
+        httpBatchLink({
+          url: '/api/trpc',
+        }),
+      ],
+    })
+  );
+
+  return (
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </trpc.Provider>
+  );
+}
+```
+
+## File Structure
+```
+lib/trpc/
+├── server.ts                    # Main server configuration
+├── context.ts                   # Context and middleware
+├── client.ts                    # Client configuration
+├── provider.tsx                 # React provider
+├── hooks.ts                     # Custom hooks
+├── logger-config.ts             # Logging configuration
+├── types.ts                     # Type definitions
+├── index.ts                     # Main exports
+├── root.ts                      # Root router
+└── routers/
+    ├── auth.ts                  # Authentication router
+    ├── organizations.ts         # Organizations router
+    ├── posts.ts                 # Posts router
+    └── notifications.ts         # Notifications router
+```
+
+## Best Practices
+- Use proper error handling with TRPCError
+- Implement comprehensive logging
+- Use Zod schemas for input validation
+- Follow the established naming conventions
+- Use appropriate procedure types (public, logged, protected)
+- Implement proper database error handling
+- Use TypeScript for type safety
+- Follow the established patterns
+
+## Testing
+- Test all procedure types
+- Test error scenarios
+- Test input validation
+- Test authentication middleware
+- Test logging functionality
+- Test database integration
+description:
+globs:
+alwaysApply: false
+---

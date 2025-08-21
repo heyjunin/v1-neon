@@ -1,0 +1,445 @@
+# Organizations Management Rules
+
+## Organization Components
+- Use the established organization components from `apps/app/src/components/organizations/`
+- Follow the component structure: forms, lists, views, hooks
+- Implement proper TypeScript interfaces for organization data
+
+## Component Structure
+```typescript
+// Organization component template
+interface OrganizationProps {
+  organization: Organization;
+  onUpdate?: (data: Partial<Organization>) => void;
+  onDelete?: (id: string) => void;
+  onInviteMember?: (email: string, role: MemberRole) => void;
+}
+
+export function OrganizationCard({ 
+  organization, 
+  onUpdate, 
+  onDelete, 
+  onInviteMember 
+}: OrganizationProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+
+  const handleUpdate = async (data: Partial<Organization>) => {
+    setIsLoading(true);
+    try {
+      await onUpdate?.(data);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="organization-card">
+      <div className="organization-header">
+        <h3>{organization.name}</h3>
+        <div className="organization-actions">
+          <button onClick={() => setShowInviteModal(true)}>
+            Invite Member
+          </button>
+          <button onClick={() => onDelete?.(organization.id)}>
+            Delete
+          </button>
+        </div>
+      </div>
+      
+      <div className="organization-content">
+        <p>{organization.description}</p>
+        <div className="organization-meta">
+          <span>Slug: {organization.slug}</span>
+          <span>Members: {organization.memberCount}</span>
+        </div>
+      </div>
+
+      {showInviteModal && (
+        <InviteMemberModal
+          organizationId={organization.id}
+          onInvite={onInviteMember}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## Organization Types
+```typescript
+// Define organization types
+export type MemberRole = 'owner' | 'admin' | 'member';
+export type MemberStatus = 'active' | 'invited' | 'suspended';
+export type InviteStatus = 'pending' | 'accepted' | 'expired' | 'cancelled';
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  logoUrl?: string;
+  ownerId: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  memberCount: number;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  role: MemberRole;
+  status: MemberStatus;
+  invitedBy?: string;
+  invitedAt?: Date;
+  joinedAt?: Date;
+  user: User;
+}
+
+export interface OrganizationInvite {
+  id: string;
+  organizationId: string;
+  email: string;
+  role: MemberRole;
+  invitedBy: string;
+  token: string;
+  expiresAt: Date;
+  status: InviteStatus;
+  acceptedAt?: Date;
+  acceptedBy?: string;
+}
+```
+
+## Organization Forms
+```typescript
+// Use the established form patterns
+export function CreateOrganizationForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const createOrganizationMutation = useMutation({
+    mutationFn: createOrganization,
+    onSuccess: (data) => {
+      // Handle success
+      router.push(`/organizations/${data.slug}`);
+    },
+    onError: (error) => {
+      setError(error.message);
+    },
+  });
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = {
+        name: formData.get('name') as string,
+        slug: formData.get('slug') as string,
+        description: formData.get('description') as string,
+        logoUrl: formData.get('logoUrl') as string,
+      };
+
+      await createOrganizationMutation.mutateAsync(data);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <label htmlFor="name">Organization Name</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          required
+          className="form-input"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="slug">Slug</label>
+        <input
+          id="slug"
+          name="slug"
+          type="text"
+          required
+          pattern="[a-z0-9-]+"
+          className="form-input"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="description">Description</label>
+        <textarea
+          id="description"
+          name="description"
+          className="form-textarea"
+        />
+      </div>
+
+      {error && <div className="error">{error}</div>}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Creating...' : 'Create Organization'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Member Management
+```typescript
+// Implement member management
+export function OrganizationMembers({ organizationId }: { organizationId: string }) {
+  const { data: members, isLoading, refetch } = useQuery({
+    queryKey: ['organization-members', organizationId],
+    queryFn: () => getOrganizationMembers(organizationId),
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: updateMemberRole,
+    onSuccess: () => refetch(),
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: removeMember,
+    onSuccess: () => refetch(),
+  });
+
+  return (
+    <div className="organization-members">
+      <h3>Members</h3>
+      
+      {isLoading ? (
+        <div>Loading members...</div>
+      ) : (
+        <div className="members-list">
+          {members?.map(member => (
+            <div key={member.id} className="member-item">
+              <div className="member-info">
+                <img src={member.user.avatarUrl} alt={member.user.fullName} />
+                <div>
+                  <h4>{member.user.fullName}</h4>
+                  <p>{member.user.email}</p>
+                </div>
+              </div>
+              
+              <div className="member-actions">
+                <select
+                  value={member.role}
+                  onChange={(e) => updateRoleMutation.mutate({
+                    organizationId,
+                    userId: member.userId,
+                    role: e.target.value as MemberRole,
+                  })}
+                >
+                  <option value="member">Member</option>
+                  <option value="admin">Admin</option>
+                  <option value="owner">Owner</option>
+                </select>
+                
+                <button
+                  onClick={() => removeMemberMutation.mutate({
+                    organizationId,
+                    userId: member.userId,
+                  })}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Invite System
+```typescript
+// Implement invite system
+export function InviteMemberModal({ 
+  organizationId, 
+  onInvite, 
+  onClose 
+}: InviteMemberModalProps) {
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState<MemberRole>('member');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const createInviteMutation = useMutation({
+    mutationFn: createInvite,
+    onSuccess: () => {
+      onClose();
+      // Show success message
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      await createInviteMutation.mutateAsync({
+        organizationId,
+        email,
+        role,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal">
+      <div className="modal-content">
+        <h3>Invite Member</h3>
+        
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="role">Role</label>
+            <select
+              id="role"
+              value={role}
+              onChange={(e) => setRole(e.target.value as MemberRole)}
+            >
+              <option value="member">Member</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Sending...' : 'Send Invite'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+
+## tRPC Integration
+```typescript
+// Use tRPC for organization operations
+export const organizationsRouter = router({
+  getOrganizations: protectedProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(10),
+    }))
+    .query(async ({ input, ctx }) => {
+      return await getOrganizations({
+        userId: ctx.user.id,
+        ...input,
+      });
+    }),
+
+  createOrganization: protectedProcedure
+    .input(createOrganizationSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await createOrganization({
+        ...input,
+        ownerId: ctx.user.id,
+      });
+    }),
+
+  updateOrganization: protectedProcedure
+    .input(updateOrganizationSchema)
+    .mutation(async ({ input, ctx }) => {
+      // Check if user is owner or admin
+      const member = await getOrganizationMember(input.id, ctx.user.id);
+      if (!member || !['owner', 'admin'].includes(member.role)) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to update this organization',
+        });
+      }
+
+      return await updateOrganization(input.id, input);
+    }),
+
+  getOrganizationMembers: protectedProcedure
+    .input(z.object({ organizationId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      // Check if user is member
+      const member = await getOrganizationMember(input.organizationId, ctx.user.id);
+      if (!member) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have access to this organization',
+        });
+      }
+
+      return await getOrganizationMembers(input.organizationId);
+    }),
+});
+```
+
+## File Structure
+```
+components/organizations/
+├── index.ts                    # Export all organization components
+├── organizations-manager.tsx   # Main organization manager
+├── types.ts                    # Organization type definitions
+├── forms/
+│   ├── create-organization.tsx # Create organization form
+│   ├── update-organization.tsx # Update organization form
+│   └── invite-member.tsx       # Invite member form
+├── lists/
+│   ├── organizations-list.tsx  # Organizations list
+│   └── members-list.tsx        # Members list
+├── views/
+│   ├── organization-detail.tsx # Organization detail view
+│   └── organization-settings.tsx # Organization settings
+└── hooks/
+    ├── use-organizations.ts    # Organizations hook
+    ├── use-organization.ts     # Single organization hook
+    └── use-members.ts          # Members hook
+```
+
+## Best Practices
+- Implement proper role-based access control
+- Use optimistic updates for better UX
+- Handle loading and error states
+- Implement proper validation
+- Use consistent naming conventions
+- Implement proper error handling
+- Use TypeScript for type safety
+- Follow the established patterns
+
+## Testing
+- Test organization CRUD operations
+- Test member management
+- Test invite system
+- Test role-based access
+- Test error scenarios
+- Test validation
+- Test real-time updates
+description:
+globs:
+alwaysApply: false
+---

@@ -1,0 +1,413 @@
+# tRPC Hooks Rules
+
+## Hooks Structure
+- Use the established tRPC hooks structure in `apps/app/src/lib/trpc/hooks.ts`
+- Follow the established patterns for query and mutation hooks
+- Implement proper TypeScript interfaces and error handling
+
+## Query Hooks Pattern
+```typescript
+// Follow the pattern in apps/app/src/lib/trpc/hooks.ts
+'use client';
+
+import { trpc } from './client';
+
+// Generic query hook with options
+export const useItems = (options?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  category?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  return trpc.items.getItems.useQuery(options || {}, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Single item query hook
+export const useItem = (id: string) => {
+  return trpc.items.getItemById.useQuery({ id }, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// User-specific query hook
+export const useItemsByUser = (userId: string) => {
+  return trpc.items.getItemsByUserId.useQuery({ userId }, {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Filtered query hook
+export const useItemsByCategory = (category: string) => {
+  return trpc.items.getItemsByCategory.useQuery({ category }, {
+    enabled: !!category,
+    refetchOnWindowFocus: false,
+  });
+};
+```
+
+## Mutation Hooks Pattern
+```typescript
+// Create mutation hook
+export const useCreateItem = () => {
+  return trpc.items.createItem.useMutation();
+};
+
+// Update mutation hook
+export const useUpdateItem = () => {
+  return trpc.items.updateItem.useMutation();
+};
+
+// Delete mutation hook
+export const useDeleteItem = () => {
+  return trpc.items.deleteItem.useMutation();
+};
+
+// Bulk operations
+export const useBulkDeleteItems = () => {
+  return trpc.items.bulkDeleteItems.useMutation();
+};
+
+export const useBulkUpdateItems = () => {
+  return trpc.items.bulkUpdateItems.useMutation();
+};
+```
+
+## Complex Query Hooks
+```typescript
+// Organizations hooks with comprehensive options
+export const useOrganizations = (options?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  ownerId?: string;
+  memberId?: string;
+  isActive?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'name';
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  return trpc.organizations.getOrganizations.useQuery(options || {}, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+// User organizations hook
+export const useUserOrganizations = () => {
+  return trpc.organizations.getUserOrganizations.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Organization members hook
+export const useOrganizationMembers = (organizationId: string) => {
+  return trpc.organizations.getOrganizationMembers.useQuery({ id: organizationId }, {
+    enabled: !!organizationId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Organization invites hook
+export const useOrganizationInvites = (organizationId: string) => {
+  return trpc.organizations.getOrganizationInvites.useQuery({ id: organizationId }, {
+    enabled: !!organizationId,
+    refetchOnWindowFocus: false,
+  });
+};
+```
+
+## Authentication Hooks
+```typescript
+// Auth mutation hooks
+export const useSignUp = () => {
+  return trpc.auth.signUp.useMutation();
+};
+
+export const useSignIn = () => {
+  return trpc.auth.signIn.useMutation();
+};
+
+export const useSignOut = () => {
+  return trpc.auth.signOut.useMutation();
+};
+
+export const useResetPassword = () => {
+  return trpc.auth.resetPassword.useMutation();
+};
+
+export const useUpdatePassword = () => {
+  return trpc.auth.updatePassword.useMutation();
+};
+
+// Auth query hooks
+export const useGetCurrentUser = () => {
+  return trpc.auth.getCurrentUser.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useIsAuthenticated = () => {
+  return trpc.auth.isAuthenticated.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Auth utility hooks
+export const useSendMagicLink = () => {
+  return trpc.auth.sendMagicLink.useMutation();
+};
+
+export const useSendOtp = () => {
+  return trpc.auth.sendOtp.useMutation();
+};
+
+export const useVerifyOtp = () => {
+  return trpc.auth.verifyOtp.useMutation();
+};
+
+export const useUpdateProfile = () => {
+  return trpc.auth.updateProfile.useMutation();
+};
+
+export const useChangePassword = () => {
+  return trpc.auth.changePassword.useMutation();
+};
+
+export const useDeleteAccount = () => {
+  return trpc.auth.deleteAccount.useMutation();
+};
+```
+
+## Notification Hooks
+```typescript
+// Notification query hooks
+export const useNotifications = (filters?: {
+  limit?: number;
+  offset?: number;
+  includeRead?: boolean;
+  includeArchived?: boolean;
+}) => {
+  return trpc.notifications.getNotifications.useQuery(filters || {});
+};
+
+export const useUnreadNotificationsCount = () => {
+  return trpc.notifications.getUnreadCount.useQuery();
+};
+
+export const useNotification = (id: string) => {
+  return trpc.notifications.getNotification.useQuery({ id });
+};
+
+// Notification mutation hooks
+export const useMarkNotificationAsRead = () => {
+  return trpc.notifications.markAsRead.useMutation();
+};
+
+export const useMarkNotificationAsUnread = () => {
+  return trpc.notifications.markAsUnread.useMutation();
+};
+
+export const useMarkAllNotificationsAsRead = () => {
+  return trpc.notifications.markAllAsRead.useMutation();
+};
+
+export const useArchiveNotification = () => {
+  return trpc.notifications.archive.useMutation();
+};
+
+export const useUnarchiveNotification = () => {
+  return trpc.notifications.unarchive.useMutation();
+};
+
+export const useDeleteNotification = () => {
+  return trpc.notifications.delete.useMutation();
+};
+
+export const useCreateNotification = () => {
+  return trpc.notifications.create.useMutation();
+};
+```
+
+## Posts Hooks
+```typescript
+// Posts query hooks
+export const usePosts = (options?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+  userId?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'title';
+  sortOrder?: 'asc' | 'desc';
+}) => {
+  return trpc.posts.getPosts.useQuery(options || {}, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const usePost = (id: string) => {
+  return trpc.posts.getPostById.useQuery({ id }, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const usePostsByUser = (userId: string) => {
+  return trpc.posts.getPostsByUserId.useQuery({ userId }, {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+  });
+};
+
+// Posts mutation hooks
+export const useCreatePost = () => {
+  return trpc.posts.createPost.useMutation();
+};
+
+export const useUpdatePost = () => {
+  return trpc.posts.updatePost.useMutation();
+};
+
+export const useDeletePost = () => {
+  return trpc.posts.deletePost.useMutation();
+};
+```
+
+## Hook Usage Patterns
+```typescript
+// Component using query hook
+export function ItemsList() {
+  const { data: items, isLoading, error } = useItems({
+    page: 1,
+    limit: 10,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
+  });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div>
+      {items?.map(item => (
+        <div key={item.id}>{item.name}</div>
+      ))}
+    </div>
+  );
+}
+
+// Component using mutation hook
+export function CreateItemForm() {
+  const createItemMutation = useCreateItem();
+
+  const handleSubmit = async (formData: FormData) => {
+    try {
+      await createItemMutation.mutateAsync({
+        name: formData.get('name') as string,
+        description: formData.get('description') as string,
+      });
+      // Handle success
+    } catch (error) {
+      // Handle error
+      console.error('Failed to create item:', error);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      <button 
+        type="submit" 
+        disabled={createItemMutation.isLoading}
+      >
+        {createItemMutation.isLoading ? 'Creating...' : 'Create Item'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Error Handling in Hooks
+```typescript
+// Hook with error handling
+export const useItemWithErrorHandling = (id: string) => {
+  const query = trpc.items.getItemById.useQuery({ id }, {
+    enabled: !!id,
+    refetchOnWindowFocus: false,
+    retry: (failureCount, error) => {
+      // Don't retry on 404 errors
+      if (error?.data?.code === 'NOT_FOUND') {
+        return false;
+      }
+      // Retry up to 3 times for other errors
+      return failureCount < 3;
+    },
+  });
+
+  return {
+    ...query,
+    error: query.error?.message || null,
+  };
+};
+```
+
+## Optimistic Updates
+```typescript
+// Hook with optimistic updates
+export const useUpdateItemOptimistic = () => {
+  const utils = trpc.useUtils();
+  
+  return trpc.items.updateItem.useMutation({
+    onMutate: async (newItem) => {
+      // Cancel outgoing refetches
+      await utils.items.getItemById.cancel({ id: newItem.id });
+      
+      // Snapshot previous value
+      const previousItem = utils.items.getItemById.getData({ id: newItem.id });
+      
+      // Optimistically update
+      utils.items.getItemById.setData({ id: newItem.id }, newItem);
+      
+      return { previousItem };
+    },
+    onError: (err, newItem, context) => {
+      // Rollback on error
+      if (context?.previousItem) {
+        utils.items.getItemById.setData(
+          { id: newItem.id }, 
+          context.previousItem
+        );
+      }
+    },
+    onSettled: (data, error, variables) => {
+      // Always refetch after error or success
+      utils.items.getItemById.invalidate({ id: variables.id });
+    },
+  });
+};
+```
+
+## Best Practices
+- Use descriptive hook names
+- Implement proper error handling
+- Use appropriate query options
+- Follow the established patterns
+- Use TypeScript for type safety
+- Implement optimistic updates when appropriate
+- Use proper loading states
+- Handle edge cases
+
+## Testing
+- Test hook behavior
+- Test error scenarios
+- Test loading states
+- Test optimistic updates
+- Test query invalidation
+- Test mutation success/failure
+description:
+globs:
+alwaysApply: false
+---

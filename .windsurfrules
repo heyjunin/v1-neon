@@ -1,0 +1,32 @@
+# Windsurf Assistant Guide for V1 Project
+
+This file serves as the main entry point for the Windsurf assistant's context. The detailed project rules and conventions are organized in the files listed below, located in the `./.windsurf/rules/` directory.
+
+Please reference these files for specific guidelines.
+
+## Project Rules Index
+
+- [CURSORRULES_IMPLEMENTATION_SUMMARY.md](./.windsurf/rules/CURSORRULES_IMPLEMENTATION_SUMMARY.md)
+- [IMPLEMENTATION_SUMMARY.md](./.windsurf/rules/IMPLEMENTATION_SUMMARY.md)
+- [README.md](./.windsurf/rules/README.md)
+- [TRPC_ANALYSIS_SUMMARY.md](./.windsurf/rules/TRPC_ANALYSIS_SUMMARY.md)
+- [api-routes.mdc](./.windsurf/rules/api-routes.mdc)
+- [auth.mdc](./.windsurf/rules/auth.mdc)
+- [database.mdc](./.windsurf/rules/database.mdc)
+- [email.mdc](./.windsurf/rules/email.mdc)
+- [general.mdc](./.windsurf/rules/general.mdc)
+- [i18n.mdc](./.windsurf/rules/i18n.mdc)
+- [monorepo.mdc](./.windsurf/rules/monorepo.mdc)
+- [nextjs.mdc](./.windsurf/rules/nextjs.mdc)
+- [notifications.mdc](./.windsurf/rules/notifications.mdc)
+- [organizations.mdc](./.windsurf/rules/organizations.mdc)
+- [performance.mdc](./.windsurf/rules/performance.mdc)
+- [posts.mdc](./.windsurf/rules/posts.mdc)
+- [server-actions.mdc](./.windsurf/rules/server-actions.mdc)
+- [storage.mdc](./.windsurf/rules/storage.mdc)
+- [testing.mdc](./.windsurf/rules/testing.mdc)
+- [trpc-hooks.mdc](./.windsurf/rules/trpc-hooks.mdc)
+- [trpc-server.mdc](./.windsurf/rules/trpc-server.mdc)
+- [trpc.mdc](./.windsurf/rules/trpc.mdc)
+- [typescript.mdc](./.windsurf/rules/typescript.mdc)
+- [ui-components.mdc](./.windsurf/rules/ui-components.mdc)

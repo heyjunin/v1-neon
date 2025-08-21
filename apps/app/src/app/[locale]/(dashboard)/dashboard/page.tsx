@@ -1,4 +1,5 @@
-import { LogoutButton, ProtectedRoute } from '@/components/auth';
+import { ProtectedRoute } from '@/components/auth';
+import { Navbar } from '@/components/layout/navbar';
 import { useGetCurrentUser } from '@/lib/trpc';
 import { Button } from '@v1/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
@@ -8,7 +9,10 @@ import Link from 'next/link';
 export default function DashboardPage() {
   return (
     <ProtectedRoute>
-      <DashboardContent />
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <DashboardContent />
+      </div>
     </ProtectedRoute>
   );
 }
@@ -44,7 +48,6 @@ function DashboardContent() {
                 Profile
               </Link>
             </Button>
-            <LogoutButton />
           </div>
         </div>
 

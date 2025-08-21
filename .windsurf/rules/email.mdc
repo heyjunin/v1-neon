@@ -1,0 +1,332 @@
+# Email Service Rules
+
+## Email Service Structure
+- Use the established email service in `apps/email/`
+- Follow the Resend integration pattern
+- Implement proper email templates and components
+
+## Email Service Configuration
+```typescript
+// Follow the pattern in apps/email/src/config/
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const emailConfig = {
+  from: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
+  replyTo: process.env.REPLY_TO_EMAIL || 'support@yourdomain.com',
+  defaultSubject: 'Notification from Your App',
+};
+```
+
+## Email Templates
+```typescript
+// Use React components for email templates
+import { Html, Head, Body, Container, Text, Link } from '@react-email/components';
+
+interface WelcomeEmailProps {
+  user: {
+    name: string;
+    email: string;
+  };
+  verificationUrl: string;
+}
+
+export function WelcomeEmail({ user, verificationUrl }: WelcomeEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Body style={{ fontFamily: 'Arial, sans-serif' }}>
+        <Container>
+          <Text>Hello {user.name},</Text>
+          <Text>Welcome to our platform!</Text>
+          <Text>
+            Please verify your email by clicking the link below:
+          </Text>
+          <Link href={verificationUrl}>
+            Verify Email
+          </Link>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+```
+
+## Email Service Functions
+```typescript
+// Implement email service functions
+import { resend } from '@/config/email';
+import { WelcomeEmail } from '@/emails/welcome';
+
+export async function sendWelcomeEmail(user: User, verificationUrl: string) {
+  try {
+    const result = await resend.emails.send({
+      from: emailConfig.from,
+      to: user.email,
+      subject: 'Welcome to Our Platform',
+      react: WelcomeEmail({ user, verificationUrl }),
+    });
+
+    logger.info('Welcome email sent successfully', { 
+      userId: user.id, 
+      emailId: result.id 
+    });
+
+    return { success: true, emailId: result.id };
+  } catch (error) {
+    logger.error('Failed to send welcome email', { 
+      userId: user.id, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    });
+
+    throw new Error('Failed to send welcome email');
+  }
+}
+```
+
+## Email Queue Management
+```typescript
+// Implement email queue for better performance
+import { Queue } from 'bull';
+
+const emailQueue = new Queue('email-queue', {
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT || '6379'),
+  },
+});
+
+// Add email to queue
+export async function queueEmail(emailData: EmailData) {
+  await emailQueue.add('send-email', emailData, {
+    attempts: 3,
+    backoff: {
+      type: 'exponential',
+      delay: 2000,
+    },
+  });
+}
+
+// Process email queue
+emailQueue.process('send-email', async (job) => {
+  const { type, data } = job.data;
+  
+  switch (type) {
+    case 'welcome':
+      return await sendWelcomeEmail(data.user, data.verificationUrl);
+    case 'password-reset':
+      return await sendPasswordResetEmail(data.user, data.resetUrl);
+    case 'notification':
+      return await sendNotificationEmail(data.user, data.notification);
+    default:
+      throw new Error(`Unknown email type: ${type}`);
+  }
+});
+```
+
+## Email Types and Templates
+```typescript
+// Define email types and their templates
+export const emailTemplates = {
+  welcome: {
+    subject: 'Welcome to Our Platform',
+    template: WelcomeEmail,
+  },
+  passwordReset: {
+    subject: 'Reset Your Password',
+    template: PasswordResetEmail,
+  },
+  notification: {
+    subject: 'New Notification',
+    template: NotificationEmail,
+  },
+  organizationInvite: {
+    subject: 'You\'ve been invited to join an organization',
+    template: OrganizationInviteEmail,
+  },
+} as const;
+
+export type EmailType = keyof typeof emailTemplates;
+```
+
+## Email Validation
+```typescript
+// Implement email validation
+import { z } from 'zod';
+
+const emailSchema = z.object({
+  to: z.string().email('Invalid email address'),
+  subject: z.string().min(1, 'Subject is required'),
+  template: z.string().min(1, 'Template is required'),
+  data: z.record(z.any()),
+});
+
+export function validateEmailData(data: unknown) {
+  return emailSchema.safeParse(data);
+}
+```
+
+## Email Tracking
+```typescript
+// Implement email tracking
+export async function sendTrackedEmail(emailData: EmailData) {
+  const trackingId = generateTrackingId();
+  
+  const result = await resend.emails.send({
+    ...emailData,
+    headers: {
+      'X-Tracking-ID': trackingId,
+    },
+  });
+
+  // Store tracking information
+  await storeEmailTracking({
+    trackingId,
+    emailId: result.id,
+    recipient: emailData.to,
+    template: emailData.template,
+    sentAt: new Date(),
+  });
+
+  return { success: true, trackingId, emailId: result.id };
+}
+```
+
+## Email Health Check
+```typescript
+// Implement email service health check
+export async function checkEmailServiceHealth() {
+  try {
+    // Test Resend API connection
+    const result = await resend.emails.send({
+      from: emailConfig.from,
+      to: 'test@example.com',
+      subject: 'Health Check',
+      html: '<p>This is a health check email.</p>',
+    });
+
+    return {
+      status: 'healthy',
+      provider: 'resend',
+      lastCheck: new Date().toISOString(),
+    };
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      provider: 'resend',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      lastCheck: new Date().toISOString(),
+    };
+  }
+}
+```
+
+## File Structure
+```
+apps/email/
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── health/
+│   │   │       └── route.ts    # Health check endpoint
+│   │   └── page.tsx            # Email service dashboard
+│   ├── config/
+│   │   └── email.ts            # Email configuration
+│   ├── emails/
+│   │   ├── welcome.tsx         # Welcome email template
+│   │   ├── password-reset.tsx  # Password reset template
+│   │   ├── notification.tsx    # Notification template
+│   │   └── organization-invite.tsx # Organization invite template
+│   ├── services/
+│   │   ├── email-service.ts    # Email service functions
+│   │   ├── queue-service.ts    # Queue management
+│   │   └── tracking-service.ts # Email tracking
+│   └── utils/
+│       ├── validation.ts       # Email validation
+│       └── tracking.ts         # Tracking utilities
+
+packages/email/
+├── components/
+│   └── logo.tsx               # Email logo component
+└── emails/
+    └── welcome.tsx            # Shared email templates
+```
+
+## Environment Variables
+```typescript
+// Required environment variables
+const requiredEnvVars = [
+  'RESEND_API_KEY',
+  'FROM_EMAIL',
+  'REPLY_TO_EMAIL',
+  'REDIS_HOST',
+  'REDIS_PORT',
+];
+
+// Validate environment variables
+requiredEnvVars.forEach(varName => {
+  if (!process.env[varName]) {
+    throw new Error(`Missing required environment variable: ${varName}`);
+  }
+});
+```
+
+## Error Handling
+```typescript
+// Implement comprehensive error handling
+export async function sendEmailWithRetry(emailData: EmailData, maxRetries = 3) {
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await resend.emails.send(emailData);
+      
+      logger.info('Email sent successfully', {
+        attempt,
+        emailId: result.id,
+        recipient: emailData.to,
+      });
+
+      return result;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('Unknown error');
+      
+      logger.warn('Email send attempt failed', {
+        attempt,
+        recipient: emailData.to,
+        error: lastError.message,
+      });
+
+      if (attempt < maxRetries) {
+        // Wait before retry (exponential backoff)
+        await new Promise(resolve => 
+          setTimeout(resolve, Math.pow(2, attempt) * 1000)
+        );
+      }
+    }
+  }
+
+  // All attempts failed
+  logger.error('All email send attempts failed', {
+    recipient: emailData.to,
+    maxRetries,
+    lastError: lastError?.message,
+  });
+
+  throw lastError || new Error('Email sending failed');
+}
+```
+
+## Testing
+- Test email templates
+- Test email sending functionality
+- Test queue processing
+- Test error scenarios
+- Test email validation
+- Test tracking functionality
+- Test health checks
+description:
+globs:
+alwaysApply: false
+---

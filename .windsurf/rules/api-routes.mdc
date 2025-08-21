@@ -1,0 +1,461 @@
+# API Routes Rules
+
+## API Route Structure
+- Use the established API route structure in `apps/app/src/app/api/`
+- Follow Next.js App Router patterns for API routes
+- Implement proper error handling and validation
+
+## Route Structure
+```typescript
+// Follow the pattern in apps/app/src/app/api/
+import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@v1/logger';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Handle GET request
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('query');
+
+    // Validate input
+    if (!query) {
+      return NextResponse.json(
+        { error: 'Query parameter is required' }, 
+        { status: 400 }
+      );
+    }
+
+    // Process request
+    const result = await processRequest(query);
+
+    // Return response
+    return NextResponse.json(result);
+  } catch (error) {
+    logger.error('API route error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Parse request body
+    const body = await request.json();
+
+    // Validate input
+    const validation = validateInput(body);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error }, 
+        { status: 400 }
+      );
+    }
+
+    // Process request
+    const result = await processRequest(body);
+
+    // Return response
+    return NextResponse.json(result, { status: 201 });
+  } catch (error) {
+    logger.error('API route error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Webhook Handlers
+```typescript
+// Follow the pattern in apps/app/src/app/api/webhooks/supabase/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@v1/logger';
+
+export async function POST(request: NextRequest) {
+  try {
+    // Verify webhook signature
+    const signature = request.headers.get('x-webhook-signature');
+    if (!verifyWebhookSignature(request, signature)) {
+      return NextResponse.json(
+        { error: 'Invalid signature' }, 
+        { status: 401 }
+      );
+    }
+
+    // Parse webhook payload
+    const payload = await request.json();
+    const { type, table, record, old_record } = payload;
+
+    logger.info('Webhook received:', { type, table, recordId: record?.id });
+
+    // Process webhook based on type
+    switch (type) {
+      case 'INSERT':
+        await handleInsert(table, record);
+        break;
+      case 'UPDATE':
+        await handleUpdate(table, record, old_record);
+        break;
+      case 'DELETE':
+        await handleDelete(table, record);
+        break;
+      default:
+        logger.warn('Unknown webhook type:', type);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    logger.error('Webhook processing error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+
+function verifyWebhookSignature(request: NextRequest, signature: string | null): boolean {
+  // Implement webhook signature verification
+  const secret = process.env.WEBHOOK_SECRET;
+  if (!secret || !signature) return false;
+
+  // Verify signature logic here
+  return true;
+}
+```
+
+## File Upload Routes
+```typescript
+// Follow the pattern in apps/app/src/app/api/upload/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { logger } from '@v1/logger';
+import { createR2Storage } from '@v1/storage/server';
+
+const storage = createR2Storage({
+  accountId: process.env.R2_ACCOUNT_ID!,
+  accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  bucketName: process.env.R2_BUCKET_NAME!,
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const key = formData.get('key') as string;
+    const contentType = formData.get('contentType') as string;
+    const metadata = formData.get('metadata') as string;
+    
+    if (!file) {
+      return NextResponse.json(
+        { error: 'No file provided' }, 
+        { status: 400 }
+      );
+    }
+
+    // Validate file
+    const validationResult = validateFile(file);
+    if (!validationResult.valid) {
+      return NextResponse.json(
+        { error: validationResult.error }, 
+        { status: 400 }
+      );
+    }
+
+    // Generate key if not provided
+    const fileKey = key || `uploads/${Date.now()}-${file.name}`;
+
+    // Upload to storage
+    const result = await storage.upload(fileKey, buffer, {
+      contentType: contentType || file.type,
+      public: true,
+      metadata: {
+        originalName: file.name,
+        size: file.size.toString(),
+        uploadedAt: new Date().toISOString(),
+        ...parsedMetadata
+      }
+    });
+
+    logger.info('File uploaded successfully:', { key: fileKey, size: file.size });
+    return NextResponse.json(result);
+  } catch (error) {
+    logger.error('Upload error:', error);
+    return NextResponse.json(
+      { error: 'Upload failed' }, 
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const prefix = searchParams.get('prefix') || '';
+    const maxKeys = parseInt(searchParams.get('maxKeys') || '100');
+
+    const result = await storage.list({ prefix, maxKeys });
+    return NextResponse.json(result);
+  } catch (error) {
+    logger.error('List files error:', error);
+    return NextResponse.json(
+      { error: 'Failed to list files' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Rate Limiting
+```typescript
+// Implement rate limiting for API routes
+import { ratelimit } from '@v1/kv/ratelimit';
+
+export async function POST(request: NextRequest) {
+  try {
+    // Get client IP
+    const ip = request.headers.get('x-forwarded-for') || 'unknown';
+    
+    // Check rate limit
+    const { success, remaining } = await ratelimit.limit(`api-${ip}`);
+    
+    if (!success) {
+      return NextResponse.json(
+        { error: 'Too many requests' }, 
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': remaining.toString(),
+            'Retry-After': '60',
+          }
+        }
+      );
+    }
+
+    // Process request
+    const result = await processRequest(request);
+
+    return NextResponse.json(result, {
+      headers: {
+        'X-RateLimit-Remaining': remaining.toString(),
+      }
+    });
+  } catch (error) {
+    logger.error('API route error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## CORS Configuration
+```typescript
+// Implement CORS for API routes
+import { NextRequest, NextResponse } from 'next/server';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': process.env.ALLOWED_ORIGIN || '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Max-Age': '86400',
+};
+
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: corsHeaders,
+  });
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const result = await processRequest(request);
+    
+    return NextResponse.json(result, {
+      headers: corsHeaders,
+    });
+  } catch (error) {
+    logger.error('API route error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { 
+        status: 500,
+        headers: corsHeaders,
+      }
+    );
+  }
+}
+```
+
+## Authentication Middleware
+```typescript
+// Implement authentication for API routes
+import { createDatabaseAdapter } from '@v1/database/adapters';
+
+async function authenticateRequest(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader?.startsWith('Bearer ')) {
+    throw new Error('Missing or invalid authorization header');
+  }
+
+  const token = authHeader.substring(7);
+  const adapter = createDatabaseAdapter();
+  
+  const { data, error } = await adapter.getUser();
+  if (error || !data?.user) {
+    throw new Error('Invalid token');
+  }
+
+  return data.user;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    // Authenticate request
+    const user = await authenticateRequest(request);
+
+    // Process request with user context
+    const result = await processRequest(request, user);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    if (error.message.includes('authorization') || error.message.includes('token')) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
+    }
+
+    logger.error('API route error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Error Handling
+```typescript
+// Implement comprehensive error handling
+export async function POST(request: NextRequest) {
+  try {
+    // Validate request
+    const validation = await validateRequest(request);
+    if (!validation.valid) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: validation.errors 
+        }, 
+        { status: 400 }
+      );
+    }
+
+    // Process request
+    const result = await processRequest(request);
+
+    // Return success response
+    return NextResponse.json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    // Log error with context
+    logger.error('API route error:', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      url: request.url,
+      method: request.method,
+      headers: Object.fromEntries(request.headers.entries()),
+    });
+
+    // Return appropriate error response
+    if (error instanceof ValidationError) {
+      return NextResponse.json(
+        { 
+          error: 'Validation failed',
+          details: error.details 
+        }, 
+        { status: 400 }
+      );
+    }
+
+    if (error instanceof AuthenticationError) {
+      return NextResponse.json(
+        { error: 'Unauthorized' }, 
+        { status: 401 }
+      );
+    }
+
+    if (error instanceof AuthorizationError) {
+      return NextResponse.json(
+        { error: 'Forbidden' }, 
+        { status: 403 }
+      );
+    }
+
+    // Default error response
+    return NextResponse.json(
+      { 
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' 
+          ? error instanceof Error ? error.message : 'Unknown error'
+          : 'Something went wrong'
+      }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## File Structure
+```
+app/api/
+├── upload/
+│   └── route.ts                 # File upload endpoint
+├── webhooks/
+│   └── supabase/
+│       └── route.ts             # Supabase webhook handler
+├── auth/
+│   ├── callback/
+│   │   └── route.ts             # OAuth callback
+│   └── logout/
+│       └── route.ts             # Logout endpoint
+├── health/
+│   └── route.ts                 # Health check endpoint
+└── [dynamic]/
+    └── route.ts                 # Dynamic API routes
+```
+
+## Best Practices
+- Implement proper input validation
+- Use rate limiting for public endpoints
+- Implement CORS for cross-origin requests
+- Use proper error handling and logging
+- Implement authentication where needed
+- Use TypeScript for type safety
+- Follow RESTful conventions
+- Implement proper HTTP status codes
+- Use environment variables for configuration
+- Implement proper security measures
+
+## Testing
+- Test all HTTP methods
+- Test error scenarios
+- Test rate limiting
+- Test authentication
+- Test CORS
+- Test webhook signatures
+- Test file uploads
+- Test validation
+description:
+globs:
+alwaysApply: false
+---

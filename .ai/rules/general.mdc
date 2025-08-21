@@ -1,0 +1,99 @@
+# V1 Project - General Development Rules
+
+## Project Structure
+This is a monorepo using Turbo with the following structure:
+- `apps/` - Next.js applications (app, web, email, api)
+- `packages/` - Shared packages (ui, database, supabase, analytics, etc.)
+- `scripts/` - Setup and utility scripts
+- `docs/` - Project documentation
+
+## Code Style and Structure
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+
+## Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/auth-wizard)
+- Favor named exports for components
+- Use workspace package names: `@v1/ui`, `@v1/database`, `@v1/supabase`, etc.
+
+## TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead
+- Use functional components with TypeScript interfaces
+- Follow strict TypeScript configuration
+
+## Syntax and Formatting
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Use declarative JSX
+- Use Biome for formatting and linting
+
+## Error Handling and Validation
+- Prioritize error handling: handle errors and edge cases early
+- Use early returns and guard clauses
+- Implement proper error logging and user-friendly messages
+- Use Zod for form validation
+- Model expected errors as return values in Server Actions
+- Use error boundaries for unexpected errors
+
+## UI and Styling
+- Use Shadcn UI components from `@v1/ui` package
+- Implement responsive design with Tailwind CSS; use a mobile-first approach
+- Use Radix UI primitives for complex components
+- Follow design system patterns
+
+## Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC)
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize images: use WebP format, include size data, implement lazy loading
+
+## Key Conventions
+- Use 'nuqs' for URL search parameter state management
+- Optimize Web Vitals (LCP, CLS, FID)
+- Limit 'use client':
+  - Favor server components and Next.js SSR
+  - Use only for Web API access in small components
+  - Avoid for data fetching or state management
+
+## Database and Data Layer
+- Use Drizzle ORM for database operations
+- Follow the database package structure: queries, mutations, schema
+- Use adapters pattern for different data sources
+- Implement proper error handling in database operations
+
+## tRPC Integration
+- Use tRPC for type-safe API communication
+- Follow the established router structure in `apps/app/src/lib/trpc/`
+- Use the loggerLink for debugging and monitoring
+- Implement proper error handling in procedures
+
+## Package Management
+- Use Bun as package manager
+- Follow workspace dependencies correctly
+- Use proper exports in package.json files
+- Maintain consistent versioning across packages
+
+## Environment and Configuration
+- Use proper environment variable management
+- Follow the established env setup scripts
+- Use Turbo for task orchestration
+- Maintain proper .env file structure
+
+## Testing and Quality
+- Write comprehensive tests for critical functionality
+- Use proper TypeScript checking
+- Follow linting rules with Biome
+- Maintain code quality standards
+
+## Documentation
+- Keep documentation up to date
+- Use proper JSDoc comments
+- Document complex business logic
+- Maintain README files for each package
+  - Avoid for data fetching or state management
+
+Follow Next.js docs for Data Fetching, Rendering, and Routing

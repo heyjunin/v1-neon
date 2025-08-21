@@ -1,0 +1,329 @@
+# Notifications Rules
+
+## Notification Components
+- Use the established notification components from `apps/app/src/components/notifications/`
+- Follow the component structure: dropdown, items, modals
+- Implement proper TypeScript interfaces for notification data
+
+## Component Structure
+```typescript
+// Notification component template
+interface NotificationProps {
+  notification: Notification;
+  onMarkAsRead?: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onView?: (id: string) => void;
+}
+
+export function NotificationItem({ 
+  notification, 
+  onMarkAsRead, 
+  onDelete, 
+  onView 
+}: NotificationProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleMarkAsRead = async () => {
+    setIsLoading(true);
+    try {
+      await onMarkAsRead?.(notification.id);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className={`notification-item ${notification.read ? 'read' : 'unread'}`}>
+      <div className="notification-content">
+        <h4>{notification.title}</h4>
+        <p>{notification.message}</p>
+        <span className="timestamp">{formatDate(notification.createdAt)}</span>
+      </div>
+      <div className="notification-actions">
+        {!notification.read && (
+          <button onClick={handleMarkAsRead} disabled={isLoading}>
+            Mark as Read
+          </button>
+        )}
+        <button onClick={() => onView?.(notification.id)}>
+          View
+        </button>
+        <button onClick={() => onDelete?.(notification.id)}>
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Notification Types
+```typescript
+// Define notification types
+export type NotificationType = 
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'organization_invite'
+  | 'post_comment'
+  | 'mention'
+  | 'system';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  userId: string;
+  metadata?: Record<string, any>;
+  actionUrl?: string;
+}
+```
+
+## Notification Dropdown
+```typescript
+// Use the established dropdown pattern
+export function NotificationDropdown() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => getNotifications(),
+  });
+
+  const markAsReadMutation = useMutation({
+    mutationFn: markNotificationAsRead,
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  return (
+    <div className="notification-dropdown">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="notification-trigger"
+      >
+        <BellIcon />
+        {unreadCount > 0 && (
+          <span className="notification-badge">{unreadCount}</span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="notification-panel">
+          <div className="notification-header">
+            <h3>Notifications</h3>
+            <button onClick={() => markAllAsRead()}>
+              Mark all as read
+            </button>
+          </div>
+
+          <div className="notification-list">
+            {isLoading ? (
+              <div className="loading">Loading notifications...</div>
+            ) : notifications.length === 0 ? (
+              <div className="empty">No notifications</div>
+            ) : (
+              notifications.map(notification => (
+                <NotificationItem
+                  key={notification.id}
+                  notification={notification}
+                  onMarkAsRead={markAsReadMutation.mutate}
+                  onView={handleViewNotification}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Real-time Updates
+```typescript
+// Implement real-time notifications with tRPC
+export function useNotifications() {
+  const utils = useUtils();
+  
+  const { data: notifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => getNotifications(),
+  });
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const subscription = subscribeToNotifications((newNotification) => {
+      utils.setQueryData(['notifications'], (old) => {
+        if (!old) return [newNotification];
+        return [newNotification, ...old];
+      });
+    });
+
+    return () => subscription.unsubscribe();
+  }, [utils]);
+
+  return notifications;
+}
+```
+
+## Toast Notifications
+```typescript
+// Implement toast notifications
+import { toast } from 'sonner';
+
+export function useToastNotifications() {
+  const showNotification = useCallback((notification: Notification) => {
+    toast(notification.title, {
+      description: notification.message,
+      action: notification.actionUrl ? {
+        label: 'View',
+        onClick: () => window.open(notification.actionUrl, '_blank'),
+      } : undefined,
+    });
+  }, []);
+
+  return { showNotification };
+}
+```
+
+## Notification Preferences
+```typescript
+// Implement notification preferences
+interface NotificationPreferences {
+  email: boolean;
+  push: boolean;
+  inApp: boolean;
+  types: {
+    [K in NotificationType]: boolean;
+  };
+}
+
+export function useNotificationPreferences() {
+  const { data: preferences, mutate } = useSWR(
+    '/api/notifications/preferences',
+    fetcher
+  );
+
+  const updatePreferences = useCallback(async (updates: Partial<NotificationPreferences>) => {
+    const response = await fetch('/api/notifications/preferences', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+
+    if (response.ok) {
+      mutate();
+    }
+  }, [mutate]);
+
+  return { preferences, updatePreferences };
+}
+```
+
+## tRPC Integration
+```typescript
+// Use tRPC for notification operations
+export const notificationsRouter = router({
+  getNotifications: protectedProcedure
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(20),
+      unreadOnly: z.boolean().default(false),
+    }))
+    .query(async ({ input, ctx }) => {
+      return await getNotifications({
+        userId: ctx.user.id,
+        ...input,
+      });
+    }),
+
+  markAsRead: protectedProcedure
+    .input(z.object({
+      notificationId: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      return await markNotificationAsRead({
+        notificationId: input.notificationId,
+        userId: ctx.user.id,
+      });
+    }),
+
+  markAllAsRead: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      return await markAllNotificationsAsRead(ctx.user.id);
+    }),
+
+  deleteNotification: protectedProcedure
+    .input(z.object({
+      notificationId: z.string(),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      return await deleteNotification({
+        notificationId: input.notificationId,
+        userId: ctx.user.id,
+      });
+    }),
+});
+```
+
+## File Structure
+```
+components/notifications/
+├── index.ts                    # Export all notification components
+├── notification-dropdown.tsx   # Main notification dropdown
+├── notification-item.tsx       # Individual notification item
+├── notification-detail-modal.tsx # Notification detail modal
+├── notifications-page.tsx      # Full notifications page
+├── notification-badge.tsx      # Unread count badge
+├── notification-settings.tsx   # Notification preferences
+└── types.ts                    # Notification type definitions
+```
+
+## Database Schema
+```typescript
+// Notification database schema
+export const notifications = pgTable('notifications', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id),
+  type: text('type').notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  read: boolean('read').default(false),
+  metadata: jsonb('metadata'),
+  actionUrl: text('action_url'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+});
+```
+
+## Best Practices
+- Implement proper loading states
+- Handle empty states gracefully
+- Use optimistic updates for better UX
+- Implement proper error handling
+- Use real-time updates when possible
+- Respect user notification preferences
+- Implement proper accessibility features
+- Use consistent notification styling
+
+## Testing
+- Test notification creation
+- Test notification reading
+- Test real-time updates
+- Test notification preferences
+- Test error scenarios
+- Test accessibility features
+- Test mobile responsiveness
+description:
+globs:
+alwaysApply: false
+---

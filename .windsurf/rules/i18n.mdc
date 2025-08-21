@@ -1,0 +1,190 @@
+# Internationalization (i18n) Rules
+
+## Locale Structure
+- Use the established locale structure in `apps/app/src/locales/`
+- Follow the pattern: `client.ts`, `server.ts`, `en.ts`, `fr.ts`
+- Implement proper TypeScript interfaces for translations
+
+## Locale Files Structure
+```typescript
+// locales/en.ts
+export default {
+  common: {
+    loading: 'Loading...',
+    error: 'An error occurred',
+    success: 'Success!',
+  },
+  auth: {
+    signIn: 'Sign In',
+    signUp: 'Sign Up',
+    email: 'Email',
+    password: 'Password',
+  },
+  // Add more translation namespaces
+} as const;
+
+// locales/fr.ts
+export default {
+  common: {
+    loading: 'Chargement...',
+    error: 'Une erreur est survenue',
+    success: 'Succès !',
+  },
+  auth: {
+    signIn: 'Se connecter',
+    signUp: "S'inscrire",
+    email: 'Email',
+    password: 'Mot de passe',
+  },
+  // Add more translation namespaces
+} as const;
+```
+
+## Client-Side Usage
+```typescript
+// Use the client hook for client components
+import { useTranslations } from 'next-international/client';
+
+export function ClientComponent() {
+  const t = useTranslations();
+  
+  return (
+    <div>
+      <h1>{t('auth.signIn')}</h1>
+      <p>{t('common.loading')}</p>
+    </div>
+  );
+}
+```
+
+## Server-Side Usage
+```typescript
+// Use the server function for server components
+import { getTranslations } from 'next-international/server';
+
+export async function ServerComponent() {
+  const t = await getTranslations();
+  
+  return (
+    <div>
+      <h1>{t('auth.signIn')}</h1>
+      <p>{t('common.loading')}</p>
+    </div>
+  );
+}
+```
+
+## Locale Routing
+- Use the `[locale]` dynamic route structure
+- Follow the pattern in `apps/app/src/app/[locale]/`
+- Implement proper locale detection and fallbacks
+- Use the middleware for locale handling
+
+## Middleware Integration
+```typescript
+// Follow the pattern in middleware.ts
+import { createI18nMiddleware } from "next-international/middleware";
+
+const I18nMiddleware = createI18nMiddleware({
+  locales: ["en", "fr"],
+  defaultLocale: "en",
+  urlMappingStrategy: "rewrite",
+});
+```
+
+## Locale Detection
+- Use browser language detection
+- Implement proper fallback to default locale
+- Handle locale switching gracefully
+- Store user locale preference
+
+## Translation Keys
+- Use hierarchical key structure (e.g., `auth.signIn`)
+- Keep keys descriptive and organized
+- Use consistent naming conventions
+- Group related translations together
+
+## Pluralization
+```typescript
+// Handle pluralization properly
+export default {
+  items: {
+    one: '1 item',
+    other: '{{count}} items',
+  },
+} as const;
+```
+
+## Date and Number Formatting
+```typescript
+// Use proper date and number formatting
+import { formatDate, formatNumber } from 'next-international';
+
+const formattedDate = formatDate(new Date(), { locale: 'fr' });
+const formattedNumber = formatNumber(1234.56, { locale: 'fr' });
+```
+
+## Dynamic Content
+```typescript
+// Handle dynamic content in translations
+export default {
+  welcome: 'Welcome, {{name}}!',
+  items: 'You have {{count}} items',
+} as const;
+
+// Usage
+const message = t('welcome', { name: 'John' });
+const itemCount = t('items', { count: 5 });
+```
+
+## SEO and Meta Tags
+```typescript
+// Implement proper SEO for different locales
+export async function generateMetadata({ params }: { params: { locale: string } }) {
+  const t = await getTranslations();
+  
+  return {
+    title: t('meta.title'),
+    description: t('meta.description'),
+    alternates: {
+      languages: {
+        'en': '/en',
+        'fr': '/fr',
+      },
+    },
+  };
+}
+```
+
+## File Structure
+```
+locales/
+├── client.ts          # Client-side translation hook
+├── server.ts          # Server-side translation function
+├── en.ts             # English translations
+└── fr.ts             # French translations
+
+app/[locale]/
+├── layout.tsx         # Locale-aware layout
+├── page.tsx          # Locale-aware pages
+└── ...               # Other locale-specific routes
+```
+
+## Best Practices
+- Keep translations organized by feature
+- Use TypeScript for type safety
+- Implement proper fallbacks
+- Test translations thoroughly
+- Use consistent formatting
+- Handle missing translations gracefully
+
+## Testing
+- Test all locales
+- Verify translation completeness
+- Test locale switching
+- Validate SEO meta tags
+- Test date/number formatting
+description:
+globs:
+alwaysApply: false
+---

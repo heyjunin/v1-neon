@@ -1,0 +1,58 @@
+# tRPC Development Rules
+
+## Router Structure
+- Organize routers by feature (posts, users, auth)
+- Use the established structure in `apps/app/src/lib/trpc/`
+- Export router from `server.ts`
+- Use proper procedure types (public, protected, logged)
+
+## Procedure Types
+```typescript
+// Public procedures - no authentication required
+publicProcedure
+
+// Protected procedures - require authentication
+protectedProcedure
+
+// Logged procedures - with logging middleware
+loggedProcedure
+```
+
+## Input Validation
+- Use Zod schemas for input validation
+- Define schemas at the top of router files
+- Use descriptive error messages
+- Validate all inputs, even optional ones
+
+## Error Handling
+- Use TRPCError for structured errors
+- Implement proper error codes
+- Log errors with context
+- Return user-friendly error messages
+
+## Middleware Usage
+- Use authentication middleware for protected routes
+- Use logging middleware for debugging
+- Implement custom middleware when needed
+- Follow the pattern in `context.ts`
+
+## Client Usage
+- Use the established hooks in `hooks.ts`
+- Implement proper loading states
+- Handle errors gracefully
+- Use optimistic updates when appropriate
+
+## Logger Integration
+- Use loggerLink for client-side logging
+- Use logging middleware for server-side logging
+- Configure logging based on environment
+- Include relevant context in logs
+
+## Type Safety
+- Leverage tRPC's type inference
+- Export AppRouter type for client usage
+- Use proper TypeScript interfaces
+- Maintain type safety across client/server boundary
+---
+globs: "**/trpc/**/*.ts,**/trpc/**/*.tsx"
+---

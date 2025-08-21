@@ -1,0 +1,223 @@
+# Server Actions Rules
+
+## Action Structure
+- Use the established action structure in `apps/app/src/actions/`
+- Follow the pattern from `safe-action.ts` for type-safe actions
+- Implement proper error handling and validation
+
+## Safe Action Client
+```typescript
+// Use the established safe action client
+import { actionClient, authActionClient } from '@/actions/safe-action';
+
+// For public actions
+export const publicAction = actionClient
+  .input(z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+  }))
+  .action(async ({ input }) => {
+    // Action logic here
+    return { success: true, data: result };
+  });
+
+// For authenticated actions
+export const authenticatedAction = authActionClient
+  .input(z.object({
+    title: z.string().min(1),
+    content: z.string().min(1),
+  }))
+  .action(async ({ input, ctx }) => {
+    // ctx.user is available for authenticated actions
+    const result = await createPost({
+      ...input,
+      userId: ctx.user.id,
+    });
+    
+    return { success: true, data: result };
+  });
+```
+
+## Input Validation
+- Use Zod schemas for all input validation
+- Define schemas at the top of action files
+- Use descriptive error messages
+- Validate all inputs, even optional ones
+
+```typescript
+import { z } from 'zod';
+
+const createUserSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  fullName: z.string().min(1, 'Full name is required'),
+  avatarUrl: z.string().url().optional(),
+});
+
+export const createUserAction = actionClient
+  .input(createUserSchema)
+  .action(async ({ input }) => {
+    // Action implementation
+  });
+```
+
+## Error Handling
+- Use proper error handling patterns
+- Return structured error responses
+- Log errors for debugging
+- Provide user-friendly error messages
+
+```typescript
+export const createPostAction = authActionClient
+  .input(createPostSchema)
+  .action(async ({ input, ctx }) => {
+    try {
+      const result = await createPost({
+        ...input,
+        userId: ctx.user.id,
+      });
+      
+      return { success: true, data: result };
+    } catch (error) {
+      logger.error('Failed to create post:', error);
+      throw new Error('Failed to create post. Please try again.');
+    }
+  });
+```
+
+## Rate Limiting
+- Use the established rate limiting with `@v1/kv/ratelimit`
+- Configure appropriate limits for different actions
+- Handle rate limit errors gracefully
+
+```typescript
+export const rateLimitedAction = authActionClient
+  .input(z.object({ data: z.string() }))
+  .action(async ({ input, ctx }) => {
+    // Rate limiting is automatically applied via authActionClient
+    // ctx.ratelimit.remaining shows remaining requests
+    
+    return { success: true, remaining: ctx.ratelimit.remaining };
+  });
+```
+
+## Database Integration
+- Use the database adapter pattern
+- Implement proper transactions when needed
+- Handle database errors gracefully
+- Use the established query/mutation patterns
+
+```typescript
+export const createOrganizationAction = authActionClient
+  .input(createOrganizationSchema)
+  .action(async ({ input, ctx }) => {
+    const adapter = ctx.adapter;
+    
+    const result = await adapter.createOrganization({
+      ...input,
+      ownerId: ctx.user.id,
+    });
+    
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    
+    return { success: true, data: result.data };
+  });
+```
+
+## Analytics Integration
+- Use the analytics integration for tracking
+- Track important user actions
+- Include relevant metadata
+
+```typescript
+export const trackableAction = authActionClient
+  .input(z.object({ action: z.string() }))
+  .action(async ({ input, ctx }) => {
+    // Analytics tracking is automatically handled via authActionClient
+    // metadata.track will be processed if provided
+    
+    return { success: true };
+  });
+
+// Usage with tracking
+trackableAction({
+  action: 'button_clicked',
+}, {
+  track: {
+    event: 'user_action',
+    channel: 'web',
+  },
+});
+```
+
+## File Structure
+```
+actions/
+├── safe-action.ts           # Safe action client configuration
+├── user/
+│   ├── create-user.ts       # User creation action
+│   ├── update-user.ts       # User update action
+│   └── delete-user.ts       # User deletion action
+├── posts/
+│   ├── create-post.ts       # Post creation action
+│   ├── update-post.ts       # Post update action
+│   └── delete-post.ts       # Post deletion action
+└── organizations/
+    ├── create-org.ts        # Organization creation action
+    ├── update-org.ts        # Organization update action
+    └── delete-org.ts        # Organization deletion action
+```
+
+## Client-Side Usage
+```typescript
+// Use the action in client components
+'use client';
+
+import { createPostAction } from '@/actions/posts/create-post';
+import { useAction } from 'next-safe-action/hooks';
+
+export function CreatePostForm() {
+  const { execute, result, isExecuting } = useAction(createPostAction);
+  
+  const handleSubmit = async (formData: FormData) => {
+    const result = await execute({
+      title: formData.get('title') as string,
+      content: formData.get('content') as string,
+    });
+    
+    if (result.data) {
+      // Handle success
+    } else if (result.error) {
+      // Handle error
+    }
+  };
+  
+  return (
+    <form action={handleSubmit}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+## Best Practices
+- Keep actions focused and single-purpose
+- Use proper TypeScript types
+- Implement comprehensive error handling
+- Use rate limiting for public actions
+- Track important user actions
+- Test actions thoroughly
+- Use proper logging for debugging
+
+## Testing
+- Test action inputs and outputs
+- Test error scenarios
+- Test rate limiting
+- Test authentication requirements
+- Test database operations
+- Test analytics tracking
+description:
+globs:
+alwaysApply: false
+---

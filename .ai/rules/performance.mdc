@@ -1,0 +1,353 @@
+# Performance & Monitoring Rules
+
+## Web Vitals Optimization
+- Optimize Core Web Vitals (LCP, CLS, FID)
+- Use proper image optimization
+- Implement lazy loading for components
+- Minimize bundle size
+
+## Image Optimization
+```typescript
+// Use Next.js Image component for optimization
+import Image from 'next/image';
+
+export function OptimizedImage({ src, alt, width, height }: ImageProps) {
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      placeholder="blur"
+      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+      priority={false}
+      loading="lazy"
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    />
+  );
+}
+```
+
+## Component Lazy Loading
+```typescript
+// Implement lazy loading for heavy components
+import { Suspense, lazy } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+export function LazyLoadedComponent() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+
+// Use dynamic imports for conditional loading
+import dynamic from 'next/dynamic';
+
+const DynamicComponent = dynamic(() => import('./DynamicComponent'), {
+  loading: () => <div>Loading...</div>,
+  ssr: false, // Disable SSR if component uses browser APIs
+});
+```
+
+## Bundle Analysis
+```typescript
+// Monitor bundle size
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
+
+// next.config.mjs
+const nextConfig = {
+  webpack: (config, { isServer }) => {
+    if (!isServer && process.env.ANALYZE === 'true') {
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          openAnalyzer: false,
+        })
+      );
+    }
+    return config;
+  },
+};
+```
+
+## Performance Monitoring
+```typescript
+// Implement performance monitoring
+import { getCLS, getFID, getFCP, getLCP, getTTFB } from 'web-vitals';
+
+function sendToAnalytics(metric: any) {
+  // Send to analytics service
+  console.log(metric);
+}
+
+// Report Web Vitals
+getCLS(sendToAnalytics);
+getFID(sendToAnalytics);
+getFCP(sendToAnalytics);
+getLCP(sendToAnalytics);
+getTTFB(sendToAnalytics);
+```
+
+## Error Tracking
+```typescript
+// Implement error tracking with Sentry
+import * as Sentry from '@sentry/nextjs';
+
+// Initialize Sentry
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV,
+  tracesSampleRate: 1.0,
+});
+
+// Track errors in components
+export function ErrorBoundary({ children }: { children: React.ReactNode }) {
+  return (
+    <Sentry.ErrorBoundary
+      fallback={({ error }) => (
+        <div>
+          <h2>Something went wrong</h2>
+          <p>{error.message}</p>
+        </div>
+      )}
+    >
+      {children}
+    </Sentry.ErrorBoundary>
+  );
+}
+
+// Track errors in API routes
+export async function POST(request: NextRequest) {
+  try {
+    // API logic
+  } catch (error) {
+    Sentry.captureException(error);
+    return NextResponse.json(
+      { error: 'Internal server error' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Analytics Integration
+```typescript
+// Implement analytics tracking
+import { analytics } from '@v1/analytics';
+
+export function useAnalytics() {
+  const trackEvent = useCallback((event: string, properties?: Record<string, any>) => {
+    analytics.track(event, {
+      timestamp: new Date().toISOString(),
+      ...properties,
+    });
+  }, []);
+
+  const trackPageView = useCallback((page: string) => {
+    analytics.page(page, {
+      timestamp: new Date().toISOString(),
+    });
+  }, []);
+
+  return { trackEvent, trackPageView };
+}
+
+// Use in components
+export function ComponentWithTracking() {
+  const { trackEvent } = useAnalytics();
+
+  const handleClick = () => {
+    trackEvent('button_clicked', {
+      button: 'submit',
+      page: 'home',
+    });
+  };
+
+  return <button onClick={handleClick}>Submit</button>;
+}
+```
+
+## Database Performance
+```typescript
+// Optimize database queries
+export async function getOptimizedData() {
+  // Use proper indexing
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.isActive, true))
+    .limit(10)
+    .orderBy(desc(users.createdAt));
+
+  return result;
+}
+
+// Implement query caching
+import { unstable_cache } from 'next/cache';
+
+export const getCachedData = unstable_cache(
+  async () => {
+    // Expensive database query
+    return await getOptimizedData();
+  },
+  ['users-active'],
+  {
+    revalidate: 3600, // Cache for 1 hour
+    tags: ['users'],
+  }
+);
+```
+
+## Memory Management
+```typescript
+// Implement proper memory management
+export function useMemoryOptimizedHook() {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchData = async () => {
+      try {
+        const result = await fetch('/api/data');
+        if (isMounted) {
+          setData(await result.json());
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error('Failed to fetch data:', error);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  return data;
+}
+```
+
+## Performance Monitoring Dashboard
+```typescript
+// Create performance monitoring dashboard
+export function PerformanceDashboard() {
+  const [metrics, setMetrics] = useState({
+    lcp: 0,
+    fid: 0,
+    cls: 0,
+    ttfb: 0,
+  });
+
+  useEffect(() => {
+    // Fetch performance metrics
+    const fetchMetrics = async () => {
+      const response = await fetch('/api/performance-metrics');
+      const data = await response.json();
+      setMetrics(data);
+    };
+
+    fetchMetrics();
+    const interval = setInterval(fetchMetrics, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="performance-dashboard">
+      <h2>Performance Metrics</h2>
+      <div className="metrics-grid">
+        <div className="metric">
+          <h3>LCP</h3>
+          <p>{metrics.lcp}ms</p>
+        </div>
+        <div className="metric">
+          <h3>FID</h3>
+          <p>{metrics.fid}ms</p>
+        </div>
+        <div className="metric">
+          <h3>CLS</h3>
+          <p>{metrics.cls}</p>
+        </div>
+        <div className="metric">
+          <h3>TTFB</h3>
+          <p>{metrics.ttfb}ms</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## Caching Strategies
+```typescript
+// Implement caching strategies
+import { cache } from 'react';
+
+// Cache expensive computations
+export const getExpensiveData = cache(async (id: string) => {
+  // Expensive operation
+  return await processData(id);
+});
+
+// Use React cache for data fetching
+export const getCachedUser = cache(async (userId: string) => {
+  const response = await fetch(`/api/users/${userId}`);
+  return response.json();
+});
+```
+
+## File Structure
+```
+monitoring/
+├── performance/
+│   ├── web-vitals.ts            # Web Vitals tracking
+│   ├── bundle-analyzer.ts       # Bundle analysis
+│   └── metrics-dashboard.tsx    # Performance dashboard
+├── error-tracking/
+│   ├── sentry-config.ts         # Sentry configuration
+│   └── error-boundary.tsx       # Error boundary component
+├── analytics/
+│   ├── tracking.ts              # Analytics tracking
+│   └── events.ts                # Event definitions
+└── caching/
+    ├── cache-utils.ts           # Caching utilities
+    └── cache-strategies.ts      # Caching strategies
+```
+
+## Best Practices
+- Monitor Core Web Vitals
+- Optimize images and assets
+- Implement lazy loading
+- Use proper caching strategies
+- Monitor error rates
+- Track user interactions
+- Optimize database queries
+- Implement proper error boundaries
+- Use bundle analysis
+- Monitor memory usage
+
+## Performance Commands
+```bash
+# Analyze bundle size
+ANALYZE=true bun run build
+
+# Run performance audit
+bun run lighthouse
+
+# Monitor Web Vitals
+bun run web-vitals
+
+# Check bundle size
+bun run bundle-size
+```
+description:
+globs:
+alwaysApply: false
+---

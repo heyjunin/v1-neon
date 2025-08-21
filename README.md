@@ -641,6 +641,76 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 - Enhanced with modern database architecture and development practices
 - Built with the latest technologies and best practices
 
+## 🔔 Notification System
+
+The application includes a comprehensive notification system with the following features:
+
+### Notification Features
+- **Real-time Notifications**: Dropdown in navbar with unread count badge
+- **Multiple Types**: Info, success, warning, error, invite, mention
+- **Rich Content**: Support for organization and post references
+- **Status Management**: Mark as read/unread, archive/unarchive
+- **Detailed View**: Modal with full notification details
+- **Bulk Actions**: Mark all as read functionality
+- **Filtering**: View all, unread, or archived notifications
+
+### Notification Components
+```tsx
+import { NotificationDropdown, NotificationItem, NotificationDetailModal } from '@/components/notifications';
+
+// Dropdown in navbar
+<NotificationDropdown />
+
+// Individual notification item
+<NotificationItem notification={notification} onMarkAsRead={handleMarkAsRead} />
+
+// Detail modal
+<NotificationDetailModal notification={notification} isOpen={isOpen} onClose={onClose} />
+```
+
+### Notification API Endpoints
+```typescript
+// Get notifications with filters
+const { data } = useNotifications({ limit: 20, includeRead: false });
+
+// Get unread count
+const { data } = useUnreadNotificationsCount();
+
+// Mark as read/unread
+const markAsRead = useMarkNotificationAsRead();
+const markAsUnread = useMarkNotificationAsUnread();
+
+// Archive/unarchive
+const archive = useArchiveNotification();
+const unarchive = useUnarchiveNotification();
+
+// Delete notification
+const deleteNotification = useDeleteNotification();
+```
+
+### Notification Routes
+- `/notifications` - Full notifications management page
+- Navbar dropdown - Quick access to recent notifications
+
+### Notification Database Schema
+```sql
+notifications (
+  id: uuid PRIMARY KEY,
+  userId: uuid REFERENCES users(id),
+  title: text NOT NULL,
+  message: text NOT NULL,
+  type: text NOT NULL,
+  isRead: boolean DEFAULT false,
+  isArchived: boolean DEFAULT false,
+  organizationId: uuid REFERENCES organizations(id),
+  postId: uuid REFERENCES posts(id),
+  metadata: jsonb,
+  createdAt: timestamp DEFAULT now(),
+  updatedAt: timestamp DEFAULT now(),
+  readAt: timestamp
+)
+```
+
 ## 👤 Profile Management
 
 The application includes a comprehensive profile management system with the following features:
@@ -697,9 +767,10 @@ const { mutate: deleteAccount } = useDeleteAccount();
 4. **Advanced Seeder System**: Laravel-inspired seeding with faker.js
 5. **Multi-tenancy**: Complete organizations module with team management
 6. **Storage System**: Cloudflare R2 integration with image transformations
-7. **Enhanced Scripts**: Automated setup and provisioning scripts
-8. **Better DX**: Improved development experience with Bun and modern tooling
-9. **Comprehensive Documentation**: Detailed docs for all features
+7. **Notification System**: Comprehensive notification system with real-time updates
+8. **Enhanced Scripts**: Automated setup and provisioning scripts
+9. **Better DX**: Improved development experience with Bun and modern tooling
+10. **Comprehensive Documentation**: Detailed docs for all features
 
 ### Technical Improvements
 - **Performance**: Optimized database queries and batch operations
@@ -707,6 +778,7 @@ const { mutate: deleteAccount } = useDeleteAccount();
 - **Scalability**: Serverless database with automatic scaling
 - **Security**: Enhanced authentication and permission systems
 - **Storage**: S3-compatible object storage with image processing
+- **Notifications**: Real-time notification system with rich content support
 - **API Design**: BFF pattern for optimized frontend-backend communication
 - **Maintainability**: Better code organization and separation of concerns
 

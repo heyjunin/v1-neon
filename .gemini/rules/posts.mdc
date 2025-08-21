@@ -1,0 +1,489 @@
+# Posts & Content Rules
+
+## Posts Components
+- Use the established posts components from `apps/app/src/components/posts/`
+- Follow the component structure: forms, lists, views, hooks
+- Implement proper TypeScript interfaces for post data
+
+## Component Structure
+```typescript
+// Post component template
+interface PostProps {
+  post: Post;
+  onUpdate?: (data: Partial<Post>) => void;
+  onDelete?: (id: string) => void;
+  onPublish?: (id: string) => void;
+}
+
+export function PostCard({ 
+  post, 
+  onUpdate, 
+  onDelete, 
+  onPublish 
+}: PostProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const handleUpdate = async (data: Partial<Post>) => {
+    setIsLoading(true);
+    try {
+      await onUpdate?.(data);
+      setShowEditModal(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="post-card">
+      <div className="post-header">
+        <h3>{post.title}</h3>
+        <div className="post-meta">
+          <span className="status">{post.status}</span>
+          <span className="date">{formatDate(post.createdAt)}</span>
+        </div>
+      </div>
+      
+      <div className="post-content">
+        <p>{post.excerpt}</p>
+        <div className="post-tags">
+          {post.tags?.map(tag => (
+            <span key={tag} className="tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="post-actions">
+        <button onClick={() => setShowEditModal(true)}>
+          Edit
+        </button>
+        {post.status === 'draft' && (
+          <button onClick={() => onPublish?.(post.id)}>
+            Publish
+          </button>
+        )}
+        <button onClick={() => onDelete?.(post.id)}>
+          Delete
+        </button>
+      </div>
+
+      {showEditModal && (
+        <EditPostModal
+          post={post}
+          onUpdate={handleUpdate}
+          onClose={() => setShowEditModal(false)}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+## Post Types
+```typescript
+// Define post types
+export type PostStatus = 'draft' | 'published' | 'archived';
+export type PostCategory = 'article' | 'tutorial' | 'news' | 'review';
+
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  slug: string;
+  status: PostStatus;
+  category: PostCategory;
+  tags?: string[];
+  authorId: string;
+  organizationId?: string;
+  publishedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  viewCount: number;
+  likeCount: number;
+  commentCount: number;
+  seoTitle?: string;
+  seoDescription?: string;
+  featuredImage?: string;
+}
+
+export interface PostComment {
+  id: string;
+  postId: string;
+  authorId: string;
+  content: string;
+  parentId?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  author: User;
+  replies?: PostComment[];
+}
+```
+
+## Post Forms
+```typescript
+// Use the established form patterns
+export function CreatePostForm() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [content, setContent] = useState('');
+
+  const createPostMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: (data) => {
+      // Handle success
+      router.push(`/posts/${data.slug}`);
+    },
+    onError: (error) => {
+      setError(error.message);
+    },
+  });
+
+  const handleSubmit = async (formData: FormData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const data = {
+        title: formData.get('title') as string,
+        content,
+        excerpt: formData.get('excerpt') as string,
+        category: formData.get('category') as PostCategory,
+        tags: (formData.get('tags') as string)?.split(',').map(t => t.trim()) || [],
+        status: formData.get('status') as PostStatus,
+        seoTitle: formData.get('seoTitle') as string,
+        seoDescription: formData.get('seoDescription') as string,
+        featuredImage: formData.get('featuredImage') as string,
+      };
+
+      await createPostMutation.mutateAsync(data);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label htmlFor="title">Title</label>
+        <input
+          id="title"
+          name="title"
+          type="text"
+          required
+          className="form-input"
+        />
+      </div>
+
+      <div>
+        <label htmlFor="content">Content</label>
+        <RichTextEditor
+          value={content}
+          onChange={setContent}
+          placeholder="Write your post content..."
+        />
+      </div>
+
+      <div>
+        <label htmlFor="excerpt">Excerpt</label>
+        <textarea
+          id="excerpt"
+          name="excerpt"
+          className="form-textarea"
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="category">Category</label>
+          <select id="category" name="category" className="form-select">
+            <option value="article">Article</option>
+            <option value="tutorial">Tutorial</option>
+            <option value="news">News</option>
+            <option value="review">Review</option>
+          </select>
+        </div>
+
+        <div>
+          <label htmlFor="status">Status</label>
+          <select id="status" name="status" className="form-select">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="tags">Tags (comma-separated)</label>
+        <input
+          id="tags"
+          name="tags"
+          type="text"
+          className="form-input"
+          placeholder="tag1, tag2, tag3"
+        />
+      </div>
+
+      {error && <div className="error">{error}</div>}
+
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Creating...' : 'Create Post'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Rich Text Editor
+```typescript
+// Implement rich text editor
+export function RichTextEditor({ 
+  value, 
+  onChange, 
+  placeholder 
+}: RichTextEditorProps) {
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Link,
+      Image,
+      Table,
+      CodeBlock,
+    ],
+    content: value,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  return (
+    <div className="rich-text-editor">
+      <div className="editor-toolbar">
+        <button
+          onClick={() => editor?.chain().focus().toggleBold().run()}
+          className={editor?.isActive('bold') ? 'is-active' : ''}
+        >
+          Bold
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleItalic().run()}
+          className={editor?.isActive('italic') ? 'is-active' : ''}
+        >
+          Italic
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={editor?.isActive('heading', { level: 2 }) ? 'is-active' : ''}
+        >
+          H2
+        </button>
+        <button
+          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+          className={editor?.isActive('codeBlock') ? 'is-active' : ''}
+        >
+          Code
+        </button>
+      </div>
+      
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
+```
+
+## Post Comments
+```typescript
+// Implement post comments
+export function PostComments({ postId }: { postId: string }) {
+  const { data: comments, isLoading, refetch } = useQuery({
+    queryKey: ['post-comments', postId],
+    queryFn: () => getPostComments(postId),
+  });
+
+  const addCommentMutation = useMutation({
+    mutationFn: addComment,
+    onSuccess: () => refetch(),
+  });
+
+  const [newComment, setNewComment] = useState('');
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    await addCommentMutation.mutateAsync({
+      postId,
+      content: newComment,
+    });
+
+    setNewComment('');
+  };
+
+  return (
+    <div className="post-comments">
+      <h3>Comments</h3>
+      
+      <form onSubmit={handleAddComment} className="comment-form">
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Write a comment..."
+          className="form-textarea"
+        />
+        <button type="submit" disabled={addCommentMutation.isLoading}>
+          {addCommentMutation.isLoading ? 'Posting...' : 'Post Comment'}
+        </button>
+      </form>
+
+      {isLoading ? (
+        <div>Loading comments...</div>
+      ) : (
+        <div className="comments-list">
+          {comments?.map(comment => (
+            <CommentItem key={comment.id} comment={comment} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## SEO Optimization
+```typescript
+// Implement SEO optimization
+export function PostSEO({ post }: { post: Post }) {
+  return (
+    <>
+      <title>{post.seoTitle || post.title}</title>
+      <meta name="description" content={post.seoDescription || post.excerpt} />
+      <meta property="og:title" content={post.seoTitle || post.title} />
+      <meta property="og:description" content={post.seoDescription || post.excerpt} />
+      <meta property="og:type" content="article" />
+      <meta property="og:url" content={`/posts/${post.slug}`} />
+      {post.featuredImage && (
+        <meta property="og:image" content={post.featuredImage} />
+      )}
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={post.seoTitle || post.title} />
+      <meta name="twitter:description" content={post.seoDescription || post.excerpt} />
+      {post.featuredImage && (
+        <meta name="twitter:image" content={post.featuredImage} />
+      )}
+      <link rel="canonical" href={`/posts/${post.slug}`} />
+    </>
+  );
+}
+```
+
+## tRPC Integration
+```typescript
+// Use tRPC for post operations
+export const postsRouter = router({
+  getPosts: protectedProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      category: z.string().optional(),
+      status: z.string().optional(),
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(10),
+    }))
+    .query(async ({ input, ctx }) => {
+      return await getPosts({
+        authorId: ctx.user.id,
+        ...input,
+      });
+    }),
+
+  createPost: protectedProcedure
+    .input(createPostSchema)
+    .mutation(async ({ input, ctx }) => {
+      return await createPost({
+        ...input,
+        authorId: ctx.user.id,
+      });
+    }),
+
+  updatePost: protectedProcedure
+    .input(updatePostSchema)
+    .mutation(async ({ input, ctx }) => {
+      // Check if user is author
+      const post = await getPost(input.id);
+      if (post.authorId !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only edit your own posts',
+        });
+      }
+
+      return await updatePost(input.id, input);
+    }),
+
+  publishPost: protectedProcedure
+    .input(z.object({ postId: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const post = await getPost(input.postId);
+      if (post.authorId !== ctx.user.id) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You can only publish your own posts',
+        });
+      }
+
+      return await publishPost(input.postId);
+    }),
+});
+```
+
+## File Structure
+```
+components/posts/
+├── index.ts                    # Export all post components
+├── posts-manager.tsx           # Main posts manager
+├── types.ts                    # Post type definitions
+├── forms/
+│   ├── create-post.tsx         # Create post form
+│   ├── edit-post.tsx           # Edit post form
+│   └── comment-form.tsx        # Comment form
+├── lists/
+│   ├── posts-list.tsx          # Posts list
+│   └── comments-list.tsx       # Comments list
+├── views/
+│   ├── post-detail.tsx         # Post detail view
+│   └── post-editor.tsx         # Post editor view
+├── components/
+│   ├── rich-text-editor.tsx    # Rich text editor
+│   ├── post-card.tsx           # Post card component
+│   └── comment-item.tsx        # Comment item component
+├── hooks/
+│   ├── use-posts.ts            # Posts hook
+│   ├── use-post.ts             # Single post hook
+│   └── use-comments.ts         # Comments hook
+└── utils/
+    ├── seo.ts                  # SEO utilities
+    └── formatting.ts           # Text formatting utilities
+```
+
+## Best Practices
+- Implement proper content validation
+- Use rich text editor for content creation
+- Implement SEO optimization
+- Handle content moderation
+- Use proper error handling
+- Implement content versioning
+- Use TypeScript for type safety
+- Follow the established patterns
+
+## Testing
+- Test post CRUD operations
+- Test content validation
+- Test SEO optimization
+- Test comment system
+- Test error scenarios
+- Test content moderation
+- Test rich text editor
+description:
+globs:
+alwaysApply: false
+---

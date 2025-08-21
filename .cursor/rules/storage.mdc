@@ -1,0 +1,314 @@
+# File Upload & Storage Rules
+
+## Storage Integration
+- Use the established storage package from `packages/storage/`
+- Follow the R2 storage pattern for file uploads
+- Implement proper file validation and security
+
+## Upload API Route
+```typescript
+// Follow the pattern in apps/app/src/app/api/upload/route.ts
+import { createR2Storage } from '@v1/storage/server';
+import { logger } from '@v1/logger';
+
+const storage = createR2Storage({
+  accountId: process.env.R2_ACCOUNT_ID!,
+  accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  bucketName: process.env.R2_BUCKET_NAME!,
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    const key = formData.get('key') as string;
+    const contentType = formData.get('contentType') as string;
+    const metadata = formData.get('metadata') as string;
+    
+    if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+    }
+
+    // Validate file
+    const validationResult = validateFile(file);
+    if (!validationResult.valid) {
+      return NextResponse.json({ error: validationResult.error }, { status: 400 });
+    }
+
+    // Generate key if not provided
+    const fileKey = key || `uploads/${Date.now()}-${file.name}`;
+
+    // Upload to storage
+    const result = await storage.upload(fileKey, buffer, {
+      contentType: contentType || file.type,
+      public: true,
+      metadata: {
+        originalName: file.name,
+        size: file.size.toString(),
+        uploadedAt: new Date().toISOString(),
+        ...parsedMetadata
+      }
+    });
+
+    logger.info('File uploaded successfully:', { key: fileKey, size: file.size });
+    return NextResponse.json(result);
+  } catch (error) {
+    logger.error('Upload error:', error);
+    return NextResponse.json(
+      { error: 'Upload failed' }, 
+      { status: 500 }
+    );
+  }
+}
+```
+
+## File Validation
+```typescript
+// Implement proper file validation
+interface FileValidationResult {
+  valid: boolean;
+  error?: string;
+}
+
+function validateFile(file: File): FileValidationResult {
+  // Check file size (e.g., max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    return { valid: false, error: 'File size exceeds 10MB limit' };
+  }
+
+  // Check file type
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    return { valid: false, error: 'Invalid file type. Only images are allowed.' };
+  }
+
+  return { valid: true };
+}
+```
+
+## Client-Side Upload Component
+```typescript
+// Use the established upload component pattern
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@v1/ui/button';
+import { Input } from '@v1/ui/input';
+
+interface UploadComponentProps {
+  onUploadSuccess: (url: string) => void;
+  onUploadError: (error: string) => void;
+  acceptedTypes?: string[];
+  maxSize?: number;
+}
+
+export function UploadComponent({ 
+  onUploadSuccess, 
+  onUploadError, 
+  acceptedTypes = ['image/*'],
+  maxSize = 10 * 1024 * 1024 
+}: UploadComponentProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  const handleFileUpload = async (file: File) => {
+    setIsUploading(true);
+    setProgress(0);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('key', `uploads/${Date.now()}-${file.name}`);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+
+      const result = await response.json();
+      onUploadSuccess(result.url);
+    } catch (error) {
+      onUploadError(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setIsUploading(false);
+      setProgress(0);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Input
+        type="file"
+        accept={acceptedTypes.join(',')}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleFileUpload(file);
+          }
+        }}
+        disabled={isUploading}
+      />
+      
+      {isUploading && (
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Image Optimization
+```typescript
+// Implement image optimization
+import { optimizeImage } from '@v1/storage/utils';
+
+export async function uploadOptimizedImage(file: File) {
+  // Optimize image before upload
+  const optimizedBuffer = await optimizeImage(file, {
+    quality: 80,
+    format: 'webp',
+    maxWidth: 1920,
+    maxHeight: 1080,
+  });
+
+  const formData = new FormData();
+  formData.append('file', new Blob([optimizedBuffer], { type: 'image/webp' }));
+  formData.append('key', `uploads/optimized/${Date.now()}.webp`);
+
+  // Upload optimized image
+  const response = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
+  });
+
+  return response.json();
+}
+```
+
+## File Management
+```typescript
+// Implement file management functions
+export async function listFiles(prefix?: string, maxKeys = 100) {
+  const params = new URLSearchParams();
+  if (prefix) params.append('prefix', prefix);
+  params.append('maxKeys', maxKeys.toString());
+
+  const response = await fetch(`/api/upload?${params}`);
+  return response.json();
+}
+
+export async function deleteFile(key: string) {
+  const response = await fetch(`/api/upload/${encodeURIComponent(key)}`, {
+    method: 'DELETE',
+  });
+  return response.json();
+}
+```
+
+## Storage Configuration
+```typescript
+// Use proper environment variables for storage
+const storageConfig = {
+  accountId: process.env.R2_ACCOUNT_ID!,
+  accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+  secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+  bucketName: process.env.R2_BUCKET_NAME!,
+  publicUrl: process.env.R2_PUBLIC_URL!,
+};
+
+// Validate configuration
+Object.entries(storageConfig).forEach(([key, value]) => {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+});
+```
+
+## Security Best Practices
+- Validate file types and sizes
+- Implement proper access controls
+- Use secure file naming
+- Sanitize file metadata
+- Implement rate limiting for uploads
+- Use HTTPS for all uploads
+- Implement proper error handling
+
+## File Structure
+```
+app/api/upload/
+├── route.ts                 # Upload API endpoint
+├── [key]/route.ts          # File management endpoints
+└── utils/
+    ├── validation.ts       # File validation utilities
+    └── optimization.ts     # Image optimization utilities
+
+components/
+├── upload/
+│   ├── upload-component.tsx # Main upload component
+│   ├── image-upload.tsx    # Image-specific upload
+│   └── file-preview.tsx    # File preview component
+└── storage/
+    ├── file-manager.tsx    # File management interface
+    └── file-list.tsx       # File listing component
+```
+
+## Error Handling
+```typescript
+// Implement comprehensive error handling
+export async function handleUpload(file: File) {
+  try {
+    // Validate file
+    const validation = validateFile(file);
+    if (!validation.valid) {
+      throw new Error(validation.error);
+    }
+
+    // Upload file
+    const result = await uploadFile(file);
+    
+    // Log success
+    logger.info('File uploaded successfully', { 
+      key: result.key, 
+      size: file.size,
+      type: file.type 
+    });
+
+    return result;
+  } catch (error) {
+    // Log error
+    logger.error('Upload failed', { 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      fileName: file.name,
+      fileSize: file.size 
+    });
+
+    // Re-throw for UI handling
+    throw error;
+  }
+}
+```
+
+## Testing
+- Test file validation
+- Test upload functionality
+- Test error scenarios
+- Test file size limits
+- Test file type restrictions
+- Test upload progress
+- Test file management operations
+description:
+globs:
+alwaysApply: false
+---

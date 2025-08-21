@@ -1,0 +1,122 @@
+# Authentication & Authorization Rules
+
+## Authentication Components
+- Use the established auth components from `apps/app/src/components/auth/`
+- Follow the component structure: form validation, error handling, loading states
+- Implement proper TypeScript interfaces for auth data
+
+## Component Structure
+```typescript
+// Auth component template
+interface AuthFormProps {
+  onSuccess?: (data: AuthResult) => void;
+  onError?: (error: string) => void;
+  redirectTo?: string;
+}
+
+export function AuthComponent({ onSuccess, onError, redirectTo }: AuthFormProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (data: FormData) => {
+    setIsLoading(true);
+    setError(null); 
+    
+    try {
+      // Auth logic here
+      onSuccess?.(result);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Authentication failed';
+      setError(errorMessage);
+      onError?.(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+      {error && <div className="text-red-500">{error}</div>}
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Submit'}
+      </button>
+    </form>
+  );
+}
+```
+
+## Authentication Methods
+- **Discord OAuth**: Use `discord-signin.tsx` component
+- **Google OAuth**: Use `google-signin.tsx` component  
+- **Email/Password**: Use `email-signin-form.tsx` and `email-signup-form.tsx`
+- **Magic Links**: Use `magic-link-form.tsx`
+- **OTP**: Use `otp-form.tsx` for two-factor authentication
+
+## Protected Routes
+- Use `protected-route.tsx` component for route protection
+- Implement proper loading states and error boundaries
+- Handle authentication redirects gracefully
+
+## Middleware Integration
+- Follow the pattern in `apps/app/src/middleware.ts`
+- Define public routes that don't require authentication
+- Use Supabase session management with `updateSession`
+- Implement proper redirect logic for unauthenticated users
+
+## tRPC Integration
+- Use `protectedProcedure` for authenticated endpoints
+- Use `publicProcedure` for public endpoints
+- Implement proper error handling for auth failures
+- Use the established context pattern
+
+## Session Management
+- Use Supabase Auth for session management
+- Implement proper session refresh logic
+- Handle session expiration gracefully
+- Use the `@v1/supabase/middleware` for session updates
+
+## Error Handling
+- Provide user-friendly error messages
+- Log authentication errors for debugging
+- Handle network errors gracefully
+- Implement proper retry logic for failed auth attempts
+
+## Security Best Practices
+- Validate all inputs with Zod schemas
+- Implement proper CSRF protection
+- Use secure session management
+- Follow OAuth 2.0 best practices
+- Implement proper logout functionality
+
+## File Structure
+```
+components/auth/
+├── index.ts                 # Export all auth components
+├── protected-route.tsx      # Route protection component
+├── discord-signin.tsx       # Discord OAuth
+├── google-signin.tsx        # Google OAuth
+├── email-signin-form.tsx    # Email/password signin
+├── email-signup-form.tsx    # Email/password signup
+├── magic-link-form.tsx      # Magic link authentication
+├── otp-form.tsx            # Two-factor authentication
+├── reset-password-form.tsx  # Password reset
+├── update-password-form.tsx # Password update
+└── logout-button.tsx        # Logout functionality
+```
+
+## Environment Variables
+- Use proper environment variable management
+- Configure OAuth providers (Discord, Google)
+- Set up Supabase Auth configuration
+- Use secure secret management
+
+## Testing
+- Test authentication flows end-to-end
+- Mock authentication in tests
+- Test error scenarios
+- Validate security measures
+description:
+globs:
+alwaysApply: false
+---
