@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-type ViewMode = "grid" | "list";
+export type ViewMode = "grid" | "list";
 
-const STORAGE_KEY = "posts-view-mode";
+export interface ViewModeState {
+  viewMode: ViewMode;
+  setViewMode: (mode: ViewMode) => void;
+  isLoaded: boolean;
+}
 
-export function useViewMode() {
+export function useViewMode(storageKey: string): ViewModeState {
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored && (stored === "grid" || stored === "list")) {
         setViewMode(stored as ViewMode);
       }
@@ -23,13 +27,13 @@ export function useViewMode() {
     } finally {
       setIsLoaded(true);
     }
-  }, []);
+  }, [storageKey]);
 
   // Save to localStorage when viewMode changes
   const updateViewMode = (newMode: ViewMode) => {
     setViewMode(newMode);
     try {
-      localStorage.setItem(STORAGE_KEY, newMode);
+      localStorage.setItem(storageKey, newMode);
     } catch (error) {
       console.warn("Could not save view mode to localStorage:", error);
     }

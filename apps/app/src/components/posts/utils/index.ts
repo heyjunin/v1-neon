@@ -3,5 +3,6 @@ export {
   maxLength,
   minLength,
   postValidation,
-  requiredField,
+  requiredField
 } from "./validations";
+

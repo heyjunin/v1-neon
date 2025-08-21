@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-interface ConfirmationState {
+export interface ConfirmationState {
   isOpen: boolean;
   itemId: string | null;
   itemTitle: string;
   actionType?: string;
 }
 
-interface UseConfirmationReturn {
+export interface UseConfirmationReturn {
   confirmation: ConfirmationState;
   openConfirmation: (id: string, title: string, actionType?: string) => void;
   closeConfirmation: () => void;

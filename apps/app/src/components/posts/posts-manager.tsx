@@ -1,40 +1,24 @@
 "use client";
 
-import { useState } from "react";
-import { useActionToast } from "./components/action-toast";
+import { useActionToast, useCrudManager } from "@v1/ui";
 import { PostForm } from "./forms";
 import { PostsList } from "./lists";
 import type { Post } from "./types";
 import { PostView } from "./views";
 
 export function PostsManager() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [viewingPost, setViewingPost] = useState<Post | null>(null);
+  const {
+    isFormOpen,
+    editingItem: editingPost,
+    viewingItem: viewingPost,
+    handleCreate,
+    handleEdit,
+    handleView,
+    handleCloseForm,
+    handleCloseView,
+  } = useCrudManager<Post>();
+  
   const { showSuccess } = useActionToast();
-
-  const handleCreate = () => {
-    setEditingPost(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (post: Post) => {
-    setEditingPost(post);
-    setIsFormOpen(true);
-  };
-
-  const handleView = (post: Post) => {
-    setViewingPost(post);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditingPost(null);
-  };
-
-  const handleCloseView = () => {
-    setViewingPost(null);
-  };
 
   const handleFormSuccess = () => {
     showSuccess(

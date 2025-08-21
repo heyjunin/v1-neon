@@ -1,6 +1,14 @@
 "use client";
 
 import { useDeletePost, usePosts } from "@/lib/trpc";
+import {
+  ConfirmationDialog,
+  SearchBar,
+  ViewToggle,
+  useActionToast,
+  useConfirmation,
+  useViewMode
+} from "@v1/ui";
 import { Button } from "@v1/ui/button";
 import {
   Card,
@@ -9,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@v1/ui/card";
-import { Input } from "@v1/ui/input";
 import {
   Table,
   TableBody,
@@ -24,20 +31,13 @@ import {
   Edit,
   ExternalLink,
   Eye,
-  Grid3X3,
-  List,
   Loader2,
   Plus,
-  Search,
   Trash2,
   User
 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-import { useActionToast } from "../components/action-toast";
-import { ConfirmationDialog } from "../components/dialogs";
-import { useConfirmation } from "../hooks/use-confirmation";
-import { useViewMode } from "../hooks/use-view-mode";
 import { Post } from "../types";
 
 interface PostsListProps {
@@ -54,7 +54,7 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
   const { showSuccess, showError } = useActionToast();
   const { confirmation, openConfirmation, closeConfirmation, confirmAction } =
     useConfirmation();
-  const { viewMode, setViewMode, isLoaded } = useViewMode();
+  const { viewMode, setViewMode, isLoaded } = useViewMode("posts-view-mode");
 
   // Ensure posts is always an array and handle loading/error states
   const postsArray = React.useMemo(() => {
@@ -171,39 +171,18 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
 
       {/* Search and View Toggle */}
       <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Buscar posts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchBar
+          placeholder="Buscar posts..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+          className="flex-1"
+        />
         
-        {/* View Mode Toggle */}
-        {isLoaded && (
-          <div className="flex items-center border rounded-md bg-background">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-r-none border-r"
-              title="Visualização em grade"
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-l-none"
-              title="Visualização em tabela"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        <ViewToggle
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          isLoaded={isLoaded}
+        />
       </div>
 
       {/* Results count */}

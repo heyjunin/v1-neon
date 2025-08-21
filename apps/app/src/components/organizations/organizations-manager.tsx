@@ -1,42 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useActionToast, useCrudManager } from "@v1/ui";
 import { OrganizationForm } from "./forms";
-import { useOrganizationToast } from "./hooks/use-toast";
 import { OrganizationsList } from "./lists";
 import type { Organization } from "./types";
 import { OrganizationView } from "./views";
 
 export function OrganizationsManager() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingOrganization, setEditingOrganization] =
-    useState<Organization | null>(null);
-  const [viewingOrganization, setViewingOrganization] =
-    useState<Organization | null>(null);
-  const { showSuccess } = useOrganizationToast();
-
-  const handleCreate = () => {
-    setEditingOrganization(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEdit = (organization: Organization) => {
-    setEditingOrganization(organization);
-    setIsFormOpen(true);
-  };
-
-  const handleView = (organization: Organization) => {
-    setViewingOrganization(organization);
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditingOrganization(null);
-  };
-
-  const handleCloseView = () => {
-    setViewingOrganization(null);
-  };
+  const {
+    isFormOpen,
+    editingItem: editingOrganization,
+    viewingItem: viewingOrganization,
+    handleCreate,
+    handleEdit,
+    handleView,
+    handleCloseForm,
+    handleCloseView,
+  } = useCrudManager<Organization>();
+  
+  const { showSuccess } = useActionToast();
 
   const handleFormSuccess = () => {
     showSuccess(

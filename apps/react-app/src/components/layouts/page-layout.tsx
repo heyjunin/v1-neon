@@ -65,7 +65,7 @@ export function PageLayout({
 export function DashboardLayout({ children, className, ...props }: PageLayoutProps) {
   return (
     <PageLayout
-      className={cn('bg-muted/30', className)}
+      className={cn('bg-black', className)}
       maxWidth="full"
       padding="lg"
       {...props}

@@ -1,6 +1,14 @@
 "use client";
 
 import { useDeleteOrganization, useOrganizations } from "@/lib/trpc";
+import {
+  ConfirmationDialog,
+  SearchBar,
+  ViewToggle,
+  useActionToast,
+  useConfirmation,
+  useViewMode
+} from "@v1/ui";
 import { Badge } from "@v1/ui/badge";
 import { Button } from "@v1/ui/button";
 import {
@@ -10,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@v1/ui/card";
-import { Input } from "@v1/ui/input";
 import {
   Table,
   TableBody,
@@ -24,19 +31,12 @@ import {
   Calendar,
   Edit,
   Eye,
-  Grid3X3,
-  List,
   Loader2,
   Plus,
-  Search,
   Trash2,
   User
 } from "lucide-react";
 import React, { useState } from "react";
-import { ConfirmationDialog } from "../components/dialogs";
-import { useConfirmation } from "../hooks/use-confirmation";
-import { useOrganizationToast } from "../hooks/use-toast";
-import { useViewMode } from "../hooks/use-view-mode";
 import type { Organization } from "../types";
 
 interface OrganizationsListProps {
@@ -52,10 +52,10 @@ export function OrganizationsList({
 }: OrganizationsListProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
-  const { viewMode, setViewMode, isLoaded } = useViewMode();
+  const { viewMode, setViewMode, isLoaded } = useViewMode("organizations-view-mode");
   const { data: organizations, isLoading, error, refetch } = useOrganizations();
   const deleteOrganizationMutation = useDeleteOrganization();
-  const { showSuccess, showError } = useOrganizationToast();
+  const { showSuccess, showError } = useActionToast();
   const { confirmation, openConfirmation, closeConfirmation, confirmAction } =
     useConfirmation();
 
@@ -170,39 +170,18 @@ export function OrganizationsList({
 
       {/* Search and View Toggle */}
       <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Buscar organizations..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+        <SearchBar
+          placeholder="Buscar organizations..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+          className="flex-1"
+        />
         
-        {/* View Mode Toggle */}
-        {isLoaded && (
-          <div className="flex items-center border rounded-md bg-background">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-r-none border-r"
-              title="Visualização em grade"
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-l-none"
-              title="Visualização em tabela"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
+        <ViewToggle
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          isLoaded={isLoaded}
+        />
       </div>
 
       {/* Results count */}
