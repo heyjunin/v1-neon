@@ -24,7 +24,7 @@ export function makeSeederCommand() {
     });
 }
 
-async function createSeeder(name: string, options: any) {
+export async function createSeeder(name: string, options: any) {
   const { table, template = 'basic', force = false } = options;
   
   // Validate and normalize the seeder name

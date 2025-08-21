@@ -1,0 +1,535 @@
+# Trigger.dev Production Guidelines
+
+## 🚀 Deployment Process
+
+### ✅ DO: Proper Deployment Configuration
+```typescript
+// [packages/jobs/trigger.config.ts](mdc:packages/jobs/trigger.config.ts)
+export const config: TriggerConfig = {
+  project: process.env.TRIGGER_PROJECT_ID!,
+  logLevel: process.env.NODE_ENV === "production" ? "warn" : "log",
+  retries: {
+    enabledInDev: false, // Disable in production
+    default: {
+      maxAttempts: process.env.NODE_ENV === "production" ? 5 : 3,
+      minTimeoutInMs: 2000,
+      maxTimeoutInMs: 60000,
+      factor: 2,
+      randomize: true,
+    },
+  },
+  // Production-specific settings
+  maxDuration: process.env.NODE_ENV === "production" ? "30m" : "5m",
+};
+```
+
+### ❌ DON'T: Development Config in Production
+```typescript
+// Avoid: Using development settings in production
+export const config: TriggerConfig = {
+  project: "my-project",
+  logLevel: "debug", // Too verbose for production
+  retries: {
+    enabledInDev: true, // Should be false in production
+    default: {
+      maxAttempts: 1, // Too few retries
+    },
+  },
+};
+```
+
+## 📊 Production Monitoring
+
+### ✅ DO: Comprehensive Monitoring
+```typescript
+import { task, logger } from "@trigger.dev/sdk/v3";
+
+export const monitoredTask = task({
+  id: "monitored-task",
+  run: async (payload: { userId: string }, { ctx }) => {
+    const startTime = Date.now();
+    const metrics = {
+      userId: payload.userId,
+      runId: ctx.run.id,
+      attempt: ctx.run.attempt,
+      startTime: new Date().toISOString(),
+    };
+    
+    logger.log("Task started", metrics);
+    
+    try {
+      // Your task logic
+      const result = await processUserData(payload.userId);
+      
+      const duration = Date.now() - startTime;
+      
+      // Log success metrics
+      logger.log("Task completed", {
+        ...metrics,
+        duration,
+        success: true,
+        result: result ? "success" : "no-data",
+      });
+      
+      // Send to monitoring service
+      await sendMetrics({
+        taskId: "monitored-task",
+        status: "success",
+        duration,
+        userId: payload.userId,
+        runId: ctx.run.id,
+      });
+      
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      // Log error metrics
+      logger.error("Task failed", {
+        ...metrics,
+        duration,
+        error: error.message,
+        errorCode: error.code,
+        stack: error.stack,
+      });
+      
+      // Send error to monitoring service
+      await sendMetrics({
+        taskId: "monitored-task",
+        status: "error",
+        duration,
+        error: error.message,
+        userId: payload.userId,
+        runId: ctx.run.id,
+      });
+      
+      throw error;
+    }
+  },
+});
+```
+
+### ❌ DON'T: No Monitoring
+```typescript
+// Avoid: No monitoring or metrics
+export const unmonitoredTask = task({
+  id: "unmonitored-task",
+  run: async (payload) => {
+    // No monitoring, no metrics, no error tracking
+    return await someOperation(payload);
+  },
+});
+```
+
+## 🔔 Alerting & Notifications
+
+### ✅ DO: Smart Alerting
+```typescript
+import { task, logger } from "@trigger.dev/sdk/v3";
+
+export const alertingTask = task({
+  id: "alerting-task",
+  run: async (payload: { userId: string }, { ctx }) => {
+    const startTime = Date.now();
+    
+    try {
+      const result = await processData(payload.userId);
+      
+      const duration = Date.now() - startTime;
+      
+      // Alert on slow performance
+      if (duration > 30000) { // 30 seconds
+        await sendAlert({
+          level: "warning",
+          message: "Task running slowly",
+          taskId: "alerting-task",
+          duration,
+          userId: payload.userId,
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      // Alert on critical errors
+      if (error.code === "CRITICAL_ERROR" || ctx.run.attempt >= 3) {
+        await sendAlert({
+          level: "critical",
+          message: "Task failed critically",
+          taskId: "alerting-task",
+          error: error.message,
+          attempt: ctx.run.attempt,
+          userId: payload.userId,
+        });
+      }
+      
+      throw error;
+    }
+  },
+});
+```
+
+### ❌ DON'T: Spam Alerting
+```typescript
+// Avoid: Alerting on every error
+export const spamAlertingTask = task({
+  id: "spam-alerting",
+  run: async (payload) => {
+    try {
+      return await processData(payload);
+    } catch (error) {
+      // Don't alert on every error - this creates alert fatigue
+      await sendAlert({
+        level: "error",
+        message: "Task failed",
+        error: error.message,
+      });
+      throw error;
+    }
+  },
+});
+```
+
+## 🔒 Security in Production
+
+### ✅ DO: Secure Production Tasks
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { z } from "zod";
+
+const securePayloadSchema = z.object({
+  userId: z.string().min(1),
+  action: z.enum(["update", "delete", "create"]),
+  data: z.record(z.any()).optional(),
+});
+
+export const secureTask = task({
+  id: "secure-task",
+  run: async (payload: unknown, { ctx }) => {
+    // Validate payload
+    const validatedPayload = securePayloadSchema.parse(payload);
+    
+    // Check permissions
+    const user = await api.users.getById.query({ id: validatedPayload.userId });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    
+    // Log security events
+    logger.log("Security event", {
+      action: validatedPayload.action,
+      userId: validatedPayload.userId,
+      runId: ctx.run.id,
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Rate limiting check
+    const rateLimitKey = `task:${validatedPayload.userId}:${validatedPayload.action}`;
+    const isRateLimited = await checkRateLimit(rateLimitKey);
+    
+    if (isRateLimited) {
+      throw new Error("Rate limit exceeded");
+    }
+    
+    // Execute action
+    const result = await executeSecureAction(validatedPayload);
+    
+    return { success: true, result };
+  },
+});
+```
+
+### ❌ DON'T: Insecure Tasks
+```typescript
+// Avoid: No validation or security checks
+export const insecureTask = task({
+  id: "insecure-task",
+  run: async (payload) => {
+    // No validation, no permission checks, no rate limiting
+    return await executeAction(payload);
+  },
+});
+```
+
+## 📈 Performance Optimization
+
+### ✅ DO: Optimized Production Tasks
+```typescript
+import { task, logger } from "@trigger.dev/sdk/v3";
+import { chunk } from "lodash";
+
+export const optimizedTask = task({
+  id: "optimized-task",
+  run: async (payload: { items: any[] }, { ctx }) => {
+    const startTime = Date.now();
+    
+    // Process in optimal batch sizes
+    const batchSize = 100;
+    const batches = chunk(payload.items, batchSize);
+    
+    let processed = 0;
+    const results = [];
+    
+    for (const batch of batches) {
+      const batchStart = Date.now();
+      
+      // Process batch
+      const batchResults = await Promise.all(
+        batch.map(item => processItem(item))
+      );
+      
+      results.push(...batchResults);
+      processed += batch.length;
+      
+      const batchDuration = Date.now() - batchStart;
+      
+      // Log progress
+      logger.log("Batch processed", {
+        batchNumber: batches.indexOf(batch) + 1,
+        totalBatches: batches.length,
+        processed,
+        total: payload.items.length,
+        batchDuration,
+        totalDuration: Date.now() - startTime,
+      });
+      
+      // Check for timeout
+      if (Date.now() - startTime > 25 * 60 * 1000) { // 25 minutes
+        throw new Error("Task timeout approaching");
+      }
+    }
+    
+    const totalDuration = Date.now() - startTime;
+    
+    logger.log("Task completed", {
+      totalDuration,
+      processed,
+      total: payload.items.length,
+      averagePerItem: totalDuration / payload.items.length,
+    });
+    
+    return { processed, results };
+  },
+});
+```
+
+### ❌ DON'T: Inefficient Processing
+```typescript
+// Avoid: Processing everything at once
+export const inefficientTask = task({
+  id: "inefficient-task",
+  run: async (payload) => {
+    // Don't process large datasets all at once
+    const results = await Promise.all(
+      payload.items.map(item => processItem(item))
+    );
+    
+    return results;
+  },
+});
+```
+
+## 🔄 Production Retry Strategies
+
+### ✅ DO: Smart Retry Logic
+```typescript
+import { task, wait } from "@trigger.dev/sdk/v3";
+
+export const smartRetryTask = task({
+  id: "smart-retry-task",
+  retry: {
+    maxAttempts: 5,
+    minTimeoutInMs: 2000,
+    maxTimeoutInMs: 60000,
+  },
+  run: async (payload: { userId: string }, { ctx }) => {
+    try {
+      return await processData(payload.userId);
+    } catch (error) {
+      // Don't retry validation errors
+      if (error.code === "VALIDATION_ERROR") {
+        logger.error("Validation error, not retrying", { error });
+        return { error: "Invalid data" };
+      }
+      
+      // Don't retry permission errors
+      if (error.code === "PERMISSION_DENIED") {
+        logger.error("Permission denied, not retrying", { error });
+        return { error: "Access denied" };
+      }
+      
+      // Wait before retry for rate limits
+      if (error.code === "RATE_LIMIT") {
+        await wait.for({ seconds: 60 });
+        throw error;
+      }
+      
+      // Wait before retry for temporary failures
+      if (error.code === "TEMPORARY_FAILURE") {
+        await wait.for({ seconds: 30 });
+        throw error;
+      }
+      
+      // Let other errors retry with exponential backoff
+      throw error;
+    }
+  },
+});
+```
+
+### ❌ DON'T: Blind Retries
+```typescript
+// Avoid: Retrying everything without logic
+export const blindRetryTask = task({
+  id: "blind-retry",
+  retry: {
+    maxAttempts: 10, // Too many attempts
+  },
+  run: async (payload) => {
+    // No error handling logic - retries everything
+    return await processData(payload);
+  },
+});
+```
+
+## 📊 Production Metrics
+
+### ✅ DO: Comprehensive Metrics
+```typescript
+import { task, logger } from "@trigger.dev/sdk/v3";
+
+export const metricsTask = task({
+  id: "metrics-task",
+  run: async (payload: { userId: string }, { ctx }) => {
+    const startTime = Date.now();
+    const metrics = {
+      taskId: "metrics-task",
+      userId: payload.userId,
+      runId: ctx.run.id,
+      attempt: ctx.run.attempt,
+      startTime: new Date().toISOString(),
+    };
+    
+    try {
+      // Record task start
+      await recordMetric({
+        ...metrics,
+        event: "task_started",
+      });
+      
+      // Your task logic
+      const result = await processData(payload.userId);
+      
+      const duration = Date.now() - startTime;
+      
+      // Record success metrics
+      await recordMetric({
+        ...metrics,
+        event: "task_completed",
+        duration,
+        success: true,
+        resultSize: JSON.stringify(result).length,
+      });
+      
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      // Record error metrics
+      await recordMetric({
+        ...metrics,
+        event: "task_failed",
+        duration,
+        success: false,
+        error: error.message,
+        errorCode: error.code,
+      });
+      
+      throw error;
+    }
+  },
+});
+```
+
+## 🔧 Production Utilities
+
+### Production Helpers
+```typescript
+// [packages/jobs/trigger/utils/production-helpers.ts](mdc:packages/jobs/trigger/utils/production-helpers.ts)
+import { logger } from "@trigger.dev/sdk/v3";
+
+export async function recordMetric(metric: {
+  taskId: string;
+  event: string;
+  duration?: number;
+  success?: boolean;
+  error?: string;
+  [key: string]: any;
+}) {
+  try {
+    // Send to your metrics service
+    await fetch(process.env.METRICS_ENDPOINT!, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...metric,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+      }),
+    });
+  } catch (error) {
+    logger.error("Failed to record metric", { error, metric });
+  }
+}
+
+export async function sendAlert(alert: {
+  level: "info" | "warning" | "error" | "critical";
+  message: string;
+  taskId: string;
+  [key: string]: any;
+}) {
+  try {
+    // Send to your alerting service
+    await fetch(process.env.ALERTING_ENDPOINT!, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...alert,
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+      }),
+    });
+  } catch (error) {
+    logger.error("Failed to send alert", { error, alert });
+  }
+}
+
+export async function checkRateLimit(key: string): Promise<boolean> {
+  // Implement your rate limiting logic
+  return false;
+}
+```
+
+## 📋 Production Checklist
+
+Before deploying to production:
+- [ ] Set appropriate log levels (warn/error only)
+- [ ] Configure production retry settings
+- [ ] Implement comprehensive monitoring
+- [ ] Set up alerting for critical failures
+- [ ] Add security validation
+- [ ] Optimize for performance
+- [ ] Test with production-like data
+- [ ] Set up metrics collection
+- [ ] Configure rate limiting
+- [ ] Review error handling
+- [ ] Set appropriate timeouts
+- [ ] Document production procedures
+- [ ] Set up backup and recovery
+- [ ] Monitor resource usage
+- [ ] Plan for scaling
+description:
+globs:
+alwaysApply: false
+---

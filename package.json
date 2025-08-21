@@ -45,6 +45,8 @@
     "dev:local": "npm run supabase:local && bun run dev",
     "dev:remote": "npm run supabase:remote && bun run dev",
     "make:seeder": "v1 make:seeder",
+    "make:model": "v1 make:model",
+    "make:migration": "v1 make:migration",
     "cli:build": "turbo build --filter=@v1/cli",
     "cli:dev": "turbo dev --filter=@v1/cli"
   },

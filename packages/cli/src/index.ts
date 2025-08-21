@@ -2,7 +2,7 @@
 
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { makeSeederCommand } from './commands/index.js';
+import { makeMigrationCommand, makeModelCommand, makeSeederCommand } from './commands/index.js';
 
 const program = new Command();
 
@@ -13,6 +13,8 @@ program
 
 // Add commands
 program.addCommand(makeSeederCommand());
+program.addCommand(makeModelCommand());
+program.addCommand(makeMigrationCommand());
 
 // Global error handler
 try {

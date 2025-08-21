@@ -46,6 +46,12 @@ function handleConditionalBlocks(template: string, data: TemplateData): string {
     }
   );
   
+  // Clean up any remaining handlebars-like syntax that wasn't handled
+  template = template.replace(/\{\{#each.*?\}\}/g, '');
+  template = template.replace(/\{\{\/each\}\}/g, '');
+  template = template.replace(/\{\{#if.*?\}\}/g, '');
+  template = template.replace(/\{\{\/if\}\}/g, '');
+  
   return template;
 }
 

@@ -1,0 +1,475 @@
+# Trigger.dev Integration Patterns
+
+## 🔗 Integration with Project Services
+
+### tRPC Integration
+
+#### ✅ DO: Proper tRPC Integration
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { api } from "@v1/api"; // Your tRPC API
+
+export const userDataSyncTask = task({
+  id: "user-data-sync",
+  run: async (payload: { userId: string }, { ctx }) => {
+    // Use tRPC for database operations
+    const user = await api.users.getById.query({ id: payload.userId });
+    
+    if (!user) {
+      throw new Error(`User not found: ${payload.userId}`);
+    }
+    
+    // Process user data
+    const processedData = await processUserData(user);
+    
+    // Update via tRPC
+    await api.users.update.mutate({
+      id: payload.userId,
+      data: processedData,
+    });
+    
+    return { success: true, userId: payload.userId };
+  },
+});
+```
+
+#### ❌ DON'T: Direct Database Access
+```typescript
+// Avoid: Bypassing tRPC for database operations
+export const badTask = task({
+  id: "bad-db-task",
+  run: async (payload) => {
+    // Don't access database directly - use tRPC
+    const user = await db.users.findUnique({ where: { id: payload.userId } });
+    // ... rest of logic
+  },
+});
+```
+
+### Email Integration
+
+#### ✅ DO: Email Service Integration
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { sendEmail } from "@v1/email"; // Your email service
+
+export const welcomeEmailTask = task({
+  id: "send-welcome-email",
+  run: async (payload: { userId: string; email: string }, { ctx }) => {
+    const user = await api.users.getById.query({ id: payload.userId });
+    
+    await sendEmail({
+      to: payload.email,
+      subject: "Welcome to our platform!",
+      template: "welcome",
+      data: {
+        name: user.name,
+        userId: payload.userId,
+      },
+    });
+    
+    // Update user status
+    await api.users.update.mutate({
+      id: payload.userId,
+      data: { welcomeEmailSent: true },
+    });
+    
+    return { emailSent: true, userId: payload.userId };
+  },
+});
+```
+
+#### ❌ DON'T: Hardcoded Email Logic
+```typescript
+// Avoid: Embedding email logic in tasks
+export const badEmailTask = task({
+  id: "bad-email",
+  run: async (payload) => {
+    // Don't hardcode email templates or SMTP config
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      // ... hardcoded config
+    });
+    
+    await transporter.sendMail({
+      // ... hardcoded template
+    });
+  },
+});
+```
+
+### Notification Integration
+
+#### ✅ DO: Notification Service Integration
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { notifications } from "@v1/notifications"; // Your notification service
+
+export const notificationTask = task({
+  id: "send-notification",
+  run: async (payload: { userId: string; type: string; data: any }, { ctx }) => {
+    const user = await api.users.getById.query({ id: payload.userId });
+    
+    await notifications.send({
+      userId: payload.userId,
+      type: payload.type,
+      data: payload.data,
+      channels: ["push", "email", "sms"],
+    });
+    
+    // Log notification sent
+    await api.notifications.create.mutate({
+      userId: payload.userId,
+      type: payload.type,
+      status: "sent",
+    });
+    
+    return { notificationSent: true };
+  },
+});
+```
+
+### Database Operations
+
+#### ✅ DO: Batch Database Operations
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { chunk } from "lodash";
+
+export const batchUserUpdateTask = task({
+  id: "batch-user-update",
+  run: async (payload: { userIds: string[]; updateData: any }, { ctx }) => {
+    const batchSize = 50;
+    const batches = chunk(payload.userIds, batchSize);
+    
+    let processed = 0;
+    
+    for (const batch of batches) {
+      // Use tRPC for batch operations
+      await api.users.batchUpdate.mutate({
+        userIds: batch,
+        data: payload.updateData,
+      });
+      
+      processed += batch.length;
+      logger.log("Batch processed", { processed, total: payload.userIds.length });
+    }
+    
+    return { processed, total: payload.userIds.length };
+  },
+});
+```
+
+#### ❌ DON'T: Large Transaction Operations
+```typescript
+// Avoid: Large transactions that could timeout
+export const badBatchTask = task({
+  id: "bad-batch",
+  run: async (payload) => {
+    // Don't process everything in one transaction
+    await api.users.batchUpdate.mutate({
+      userIds: payload.userIds, // Could be thousands
+      data: payload.data,
+    });
+  },
+});
+```
+
+### External API Integration
+
+#### ✅ DO: Robust API Integration
+```typescript
+import { task, wait } from "@trigger.dev/sdk/v3";
+
+export const externalApiTask = task({
+  id: "external-api-sync",
+  retry: {
+    maxAttempts: 5,
+    minTimeoutInMs: 2000,
+    maxTimeoutInMs: 30000,
+  },
+  run: async (payload: { userId: string }, { ctx }) => {
+    try {
+      const response = await fetch("https://api.external.com/data", {
+        headers: {
+          "Authorization": `Bearer ${process.env.EXTERNAL_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: payload.userId }),
+      });
+      
+      if (!response.ok) {
+        if (response.status === 429) {
+          // Rate limited - wait and retry
+          await wait.for({ seconds: 60 });
+          throw new Error("Rate limited");
+        }
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      // Store result via tRPC
+      await api.externalData.create.mutate({
+        userId: payload.userId,
+        data: data,
+      });
+      
+      return { success: true, data };
+    } catch (error) {
+      logger.error("External API call failed", { 
+        userId: payload.userId, 
+        error: error.message 
+      });
+      throw error;
+    }
+  },
+});
+```
+
+#### ❌ DON'T: Unhandled API Errors
+```typescript
+// Avoid: No error handling for external APIs
+export const badApiTask = task({
+  id: "bad-api",
+  run: async (payload) => {
+    // No error handling, no retries, no logging
+    const response = await fetch("https://api.external.com/data");
+    const data = await response.json();
+    return data;
+  },
+});
+```
+
+### Scheduled Tasks
+
+#### ✅ DO: Scheduled Data Processing
+```typescript
+import { task, schedule } from "@trigger.dev/sdk/v3";
+
+export const dailyReportTask = task({
+  id: "daily-report-generation",
+  schedule: schedule.cron("0 9 * * *"), // Daily at 9 AM
+  run: async (payload, { ctx }) => {
+    // Get data for yesterday
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const reportData = await api.reports.generateDaily.query({
+      date: yesterday.toISOString().split('T')[0],
+    });
+    
+    // Send report via email
+    await sendEmail({
+      to: process.env.ADMIN_EMAIL!,
+      subject: "Daily Report",
+      template: "daily-report",
+      data: reportData,
+    });
+    
+    // Store report
+    await api.reports.create.mutate({
+      date: yesterday.toISOString().split('T')[0],
+      data: reportData,
+    });
+    
+    return { reportGenerated: true, date: yesterday.toISOString().split('T')[0] };
+  },
+});
+```
+
+### Webhook Integration
+
+#### ✅ DO: Webhook Processing
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+import { z } from "zod";
+
+const webhookSchema = z.object({
+  event: z.string(),
+  userId: z.string(),
+  data: z.record(z.any()),
+});
+
+export const webhookTask = task({
+  id: "process-webhook",
+  run: async (payload: unknown, { ctx }) => {
+    // Validate webhook payload
+    const validatedPayload = webhookSchema.parse(payload);
+    
+    logger.log("Processing webhook", { 
+      event: validatedPayload.event,
+      userId: validatedPayload.userId 
+    });
+    
+    // Route to appropriate handler
+    switch (validatedPayload.event) {
+      case "user.created":
+        await handleUserCreated(validatedPayload);
+        break;
+      case "payment.succeeded":
+        await handlePaymentSucceeded(validatedPayload);
+        break;
+      default:
+        logger.warn("Unknown webhook event", { event: validatedPayload.event });
+    }
+    
+    return { processed: true, event: validatedPayload.event };
+  },
+});
+
+async function handleUserCreated(payload: z.infer<typeof webhookSchema>) {
+  // Send welcome email
+  await trigger({
+    id: "send-welcome-email",
+    payload: { userId: payload.userId },
+  });
+}
+
+async function handlePaymentSucceeded(payload: z.infer<typeof webhookSchema>) {
+  // Update user subscription
+  await api.users.updateSubscription.mutate({
+    userId: payload.userId,
+    subscriptionData: payload.data,
+  });
+}
+```
+
+### Error Handling Patterns
+
+#### ✅ DO: Comprehensive Error Handling
+```typescript
+import { task } from "@trigger.dev/sdk/v3";
+
+export const robustIntegrationTask = task({
+  id: "robust-integration",
+  run: async (payload: { userId: string }, { ctx }) => {
+    try {
+      // Step 1: Get user data
+      const user = await api.users.getById.query({ id: payload.userId });
+      if (!user) {
+        throw new Error(`User not found: ${payload.userId}`);
+      }
+      
+      // Step 2: Process with external service
+      const externalResult = await callExternalService(user);
+      
+      // Step 3: Update database
+      await api.users.update.mutate({
+        id: payload.userId,
+        data: { externalData: externalResult },
+      });
+      
+      // Step 4: Send notification
+      await notifications.send({
+        userId: payload.userId,
+        type: "data-processed",
+        data: { result: externalResult },
+      });
+      
+      return { success: true, result: externalResult };
+      
+    } catch (error) {
+      // Log detailed error information
+      logger.error("Integration task failed", {
+        userId: payload.userId,
+        error: error.message,
+        stack: error.stack,
+        attempt: ctx.run.attempt,
+      });
+      
+      // Update user status on failure
+      try {
+        await api.users.update.mutate({
+          id: payload.userId,
+          data: { lastError: error.message, errorAt: new Date() },
+        });
+      } catch (updateError) {
+        logger.error("Failed to update user error status", { updateError });
+      }
+      
+      throw error; // Let Trigger.dev handle retries
+    }
+  },
+});
+```
+
+## 🔧 Integration Utilities
+
+### Shared Types
+```typescript
+// [packages/jobs/trigger/types/index.ts](mdc:packages/jobs/trigger/types/index.ts)
+export interface BaseTaskPayload {
+  userId?: string;
+  organizationId?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface EmailTaskPayload extends BaseTaskPayload {
+  email: string;
+  template: string;
+  data: Record<string, any>;
+}
+
+export interface NotificationTaskPayload extends BaseTaskPayload {
+  type: string;
+  channels: string[];
+  data: Record<string, any>;
+}
+
+export interface ApiTaskPayload extends BaseTaskPayload {
+  endpoint: string;
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  data?: any;
+}
+```
+
+### Shared Utilities
+```typescript
+// [packages/jobs/trigger/utils/index.ts](mdc:packages/jobs/trigger/utils/index.ts)
+import { logger } from "@trigger.dev/sdk/v3";
+
+export async function withErrorHandling<T>(
+  operation: () => Promise<T>,
+  context: { userId?: string; operation: string }
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    logger.error(`Operation failed: ${context.operation}`, {
+      userId: context.userId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+export function validatePayload<T>(
+  payload: unknown,
+  schema: z.ZodSchema<T>
+): T {
+  try {
+    return schema.parse(payload);
+  } catch (error) {
+    throw new Error(`Invalid payload: ${error.message}`);
+  }
+}
+```
+
+## 📋 Integration Checklist
+
+Before creating an integration task:
+- [ ] Use tRPC for all database operations
+- [ ] Implement proper error handling and logging
+- [ ] Use environment variables for external API keys
+- [ ] Validate all incoming payloads
+- [ ] Implement appropriate retry strategies
+- [ ] Use batch operations for large datasets
+- [ ] Separate business logic from task infrastructure
+- [ ] Test integration with external services
+- [ ] Monitor task performance and errors
+description:
+globs:
+alwaysApply: false
+---

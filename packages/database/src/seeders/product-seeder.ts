@@ -1,10 +1,10 @@
 import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import { products } from '../schema/products';
+import { product } from '../schema/product';
 import { BaseSeeder } from './base-seeder';
 import { fakerUtils } from './utils/faker';
 
-export class ProductsSeederSeeder extends BaseSeeder {
-  name = 'products-seeder';
+export class ProductSeederSeeder extends BaseSeeder {
+  name = 'product-seeder';
 
   async run(db: NeonHttpDatabase): Promise<void> {
     // Initialize faker with a seed for consistent results
@@ -22,13 +22,13 @@ export class ProductsSeederSeeder extends BaseSeeder {
 
     await this.executeInTransaction(db, async () => {
       // Check if data already exists
-      const existing = await db.select().from(products).limit(1);
+      const existing = await db.select().from(product).limit(1);
       
       if (existing.length > 0) {
-        throw new Error('ProductsSeeder already exist in the database. Use --force to override.');
+        throw new Error('ProductSeeder already exist in the database. Use --force to override.');
       }
 
-      await this.batchInsert(db, products, sampleData);
+      await this.batchInsert(db, product, sampleData);
     });
   }
 }

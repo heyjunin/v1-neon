@@ -1,0 +1,436 @@
+# Trigger.dev Development Workflow
+
+## 🚀 Local Development Setup
+
+### Development Commands
+```bash
+# Start local development server
+cd packages/jobs
+bunx trigger.dev@beta dev
+
+# Alternative: Use the npm script
+bun run jobs
+```
+
+### Environment Configuration
+```typescript
+// [packages/jobs/trigger.config.ts](mdc:packages/jobs/trigger.config.ts)
+export const config: TriggerConfig = {
+  project: process.env.TRIGGER_PROJECT_ID!,
+  logLevel: process.env.NODE_ENV === "development" ? "debug" : "log",
+  retries: {
+    enabledInDev: true, // Enable retries in development
+    default: {
+      maxAttempts: 3,
+      minTimeoutInMs: 1000,
+      maxTimeoutInMs: 10000,
+    },
+  },
+};
+```
+
+## 🧪 Testing Tasks Locally
+
+### ✅ DO: Testable Task Structure
+```typescript
+// [packages/jobs/trigger/tasks/email/welcome-email.ts](mdc:packages/jobs/trigger/tasks/email/welcome-email.ts)
+import { task } from "@trigger.dev/sdk/v3";
+import { sendWelcomeEmail } from "./business-logic";
+
+export const welcomeEmailTask = task({
+  id: "send-welcome-email",
+  run: async (payload: { userId: string; email: string }, { ctx }) => {
+    // Delegate to pure function for testing
+    return await sendWelcomeEmail(payload, ctx);
+  },
+});
+
+// Separate business logic for testing
+export async function sendWelcomeEmail(
+  payload: { userId: string; email: string },
+  ctx: any
+) {
+  // Your business logic here
+  const user = await api.users.getById.query({ id: payload.userId });
+  
+  await sendEmail({
+    to: payload.email,
+    template: "welcome",
+    data: { name: user.name },
+  });
+  
+  return { success: true, userId: payload.userId };
+}
+```
+
+### ❌ DON'T: Untestable Tasks
+```typescript
+// Avoid: Business logic mixed with task infrastructure
+export const untestableTask = task({
+  id: "untestable",
+  run: async (payload) => {
+    // Hard to test - mixed concerns
+    const user = await api.users.getById.query({ id: payload.userId });
+    await sendEmail({ /* ... */ });
+    await api.users.update.mutate({ /* ... */ });
+    return { success: true };
+  },
+});
+```
+
+## 🔍 Debugging Techniques
+
+### ✅ DO: Comprehensive Logging
+```typescript
+import { task, logger } from "@trigger.dev/sdk/v3";
+
+export const debuggableTask = task({
+  id: "debuggable-task",
+  run: async (payload: { userId: string }, { ctx }) => {
+    // Log input
+    logger.log("Task started", { 
+      payload, 
+      runId: ctx.run.id,
+      attempt: ctx.run.attempt 
+    });
+    
+    try {
+      // Log each step
+      logger.log("Fetching user data", { userId: payload.userId });
+      const user = await api.users.getById.query({ id: payload.userId });
+      
+      logger.log("User data retrieved", { 
+        userId: payload.userId,
+        hasUser: !!user,
+        userFields: user ? Object.keys(user) : []
+      });
+      
+      // Process data
+      logger.log("Processing user data", { userId: payload.userId });
+      const result = await processUserData(user);
+      
+      logger.log("Task completed successfully", { 
+        userId: payload.userId,
+        result 
+      });
+      
+      return result;
+    } catch (error) {
+      // Log detailed error information
+      logger.error("Task failed", {
+        userId: payload.userId,
+        error: error.message,
+        stack: error.stack,
+        attempt: ctx.run.attempt,
+        runId: ctx.run.id,
+      });
+      throw error;
+    }
+  },
+});
+```
+
+### ❌ DON'T: Silent Debugging
+```typescript
+// Avoid: No logging for debugging
+export const silentTask = task({
+  id: "silent-task",
+  run: async (payload) => {
+    // No logging - impossible to debug
+    return await someComplexOperation(payload);
+  },
+});
+```
+
+## 🧪 Unit Testing
+
+### ✅ DO: Test Business Logic
+```typescript
+// [packages/jobs/trigger/tasks/email/__tests__/welcome-email.test.ts](mdc:packages/jobs/trigger/tasks/email/__tests__/welcome-email.test.ts)
+import { sendWelcomeEmail } from "../business-logic";
+import { api } from "@v1/api";
+import { sendEmail } from "@v1/email";
+
+// Mock dependencies
+jest.mock("@v1/api");
+jest.mock("@v1/email");
+
+describe("sendWelcomeEmail", () => {
+  it("should send welcome email successfully", async () => {
+    const mockUser = { id: "user-123", name: "John Doe" };
+    const mockPayload = { userId: "user-123", email: "john@example.com" };
+    
+    // Mock API calls
+    (api.users.getById.query as jest.Mock).mockResolvedValue(mockUser);
+    (sendEmail as jest.Mock).mockResolvedValue({ id: "email-123" });
+    
+    const result = await sendWelcomeEmail(mockPayload, {} as any);
+    
+    expect(api.users.getById.query).toHaveBeenCalledWith({ id: "user-123" });
+    expect(sendEmail).toHaveBeenCalledWith({
+      to: "john@example.com",
+      template: "welcome",
+      data: { name: "John Doe" },
+    });
+    expect(result).toEqual({ success: true, userId: "user-123" });
+  });
+  
+  it("should handle user not found", async () => {
+    const mockPayload = { userId: "user-123", email: "john@example.com" };
+    
+    (api.users.getById.query as jest.Mock).mockResolvedValue(null);
+    
+    await expect(sendWelcomeEmail(mockPayload, {} as any))
+      .rejects.toThrow("User not found");
+  });
+});
+```
+
+### ❌ DON'T: Test Task Wrapper
+```typescript
+// Avoid: Testing the task wrapper instead of business logic
+describe("welcomeEmailTask", () => {
+  it("should run task", async () => {
+    // Don't test the task wrapper - test the business logic instead
+    const result = await welcomeEmailTask.run({ userId: "123" }, {} as any);
+    expect(result).toBeDefined();
+  });
+});
+```
+
+## 🔄 Development Workflow
+
+### ✅ DO: Iterative Development
+```typescript
+// 1. Start with simple task
+export const simpleTask = task({
+  id: "simple-task",
+  run: async (payload: { message: string }) => {
+    logger.log("Simple task", { message: payload.message });
+    return { received: payload.message };
+  },
+});
+
+// 2. Add complexity gradually
+export const complexTask = task({
+  id: "complex-task",
+  run: async (payload: { userId: string }, { ctx }) => {
+    logger.log("Starting complex task", { userId: payload.userId });
+    
+    // Step 1: Validate input
+    if (!payload.userId) {
+      throw new Error("userId is required");
+    }
+    
+    // Step 2: Fetch data
+    const user = await api.users.getById.query({ id: payload.userId });
+    logger.log("User fetched", { hasUser: !!user });
+    
+    // Step 3: Process data
+    const result = await processData(user);
+    logger.log("Data processed", { result });
+    
+    // Step 4: Save result
+    await api.users.update.mutate({ id: payload.userId, data: result });
+    
+    return { success: true, result };
+  },
+});
+```
+
+### ❌ DON'T: Big Bang Development
+```typescript
+// Avoid: Writing complex tasks without testing
+export const complexUntestedTask = task({
+  id: "complex-untested",
+  run: async (payload) => {
+    // Don't write complex logic without testing each part
+    const user = await api.users.getById.query({ id: payload.userId });
+    const processed = await processUserData(user);
+    const emailSent = await sendEmail(processed);
+    const notificationSent = await sendNotification(processed);
+    const databaseUpdated = await updateDatabase(processed);
+    
+    return { user, processed, emailSent, notificationSent, databaseUpdated };
+  },
+});
+```
+
+## 🐛 Common Development Issues
+
+### Issue: Task Not Running
+```typescript
+// ✅ DO: Check configuration and exports
+// [packages/jobs/trigger/index.ts](mdc:packages/jobs/trigger/index.ts)
+export { welcomeEmailTask } from "./tasks/email/welcome-email";
+export { notificationTask } from "./tasks/notifications/notification";
+
+// Make sure tasks are exported from index.ts
+```
+
+### Issue: Environment Variables Not Working
+```typescript
+// ✅ DO: Validate environment variables
+export const envValidationTask = task({
+  id: "env-validation",
+  run: async (payload, { ctx }) => {
+    const requiredEnvVars = [
+      "TRIGGER_PROJECT_ID",
+      "DATABASE_URL",
+      "EMAIL_API_KEY",
+    ];
+    
+    const missing = requiredEnvVars.filter(env => !process.env[env]);
+    
+    if (missing.length > 0) {
+      throw new Error(`Missing environment variables: ${missing.join(", ")}`);
+    }
+    
+    logger.log("Environment validation passed");
+    return { success: true };
+  },
+});
+```
+
+### Issue: Task Hanging
+```typescript
+// ✅ DO: Add timeouts and progress logging
+export const timeoutTask = task({
+  id: "timeout-task",
+  run: async (payload, { ctx }) => {
+    const startTime = Date.now();
+    
+    logger.log("Starting long-running task");
+    
+    // Add progress logging
+    for (let i = 0; i < 10; i++) {
+      logger.log("Processing step", { step: i + 1, total: 10 });
+      await processStep(i);
+      
+      // Check if task is taking too long
+      if (Date.now() - startTime > 5 * 60 * 1000) { // 5 minutes
+        throw new Error("Task timeout");
+      }
+    }
+    
+    logger.log("Task completed");
+    return { success: true };
+  },
+});
+```
+
+## 📊 Development Monitoring
+
+### ✅ DO: Development Metrics
+```typescript
+export const metricsTask = task({
+  id: "development-metrics",
+  run: async (payload, { ctx }) => {
+    const startTime = Date.now();
+    
+    try {
+      // Your task logic
+      const result = await processData(payload);
+      
+      const duration = Date.now() - startTime;
+      
+      logger.log("Task metrics", {
+        duration,
+        success: true,
+        runId: ctx.run.id,
+        attempt: ctx.run.attempt,
+      });
+      
+      return { result, duration };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      
+      logger.error("Task failed", {
+        duration,
+        error: error.message,
+        runId: ctx.run.id,
+        attempt: ctx.run.attempt,
+      });
+      
+      throw error;
+    }
+  },
+});
+```
+
+## 🔧 Development Utilities
+
+### Development Helpers
+```typescript
+// [packages/jobs/trigger/utils/dev-helpers.ts](mdc:packages/jobs/trigger/utils/dev-helpers.ts)
+import { logger } from "@trigger.dev/sdk/v3";
+
+export function createDevTask<T>(
+  id: string,
+  handler: (payload: T, ctx: any) => Promise<any>
+) {
+  return task({
+    id,
+    run: async (payload: T, ctx) => {
+      const startTime = Date.now();
+      
+      logger.log(`[DEV] Starting ${id}`, { payload });
+      
+      try {
+        const result = await handler(payload, ctx);
+        
+        const duration = Date.now() - startTime;
+        logger.log(`[DEV] ${id} completed`, { duration, result });
+        
+        return result;
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        logger.error(`[DEV] ${id} failed`, { duration, error: error.message });
+        throw error;
+      }
+    },
+  });
+}
+
+export function mockApiResponse<T>(data: T, delay = 100): Promise<T> {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(data), delay);
+  });
+}
+```
+
+### Development Task Templates
+```typescript
+// [packages/jobs/trigger/templates/dev-task.ts](mdc:packages/jobs/trigger/templates/dev-task.ts)
+import { task, logger } from "@trigger.dev/sdk/v3";
+
+export const createDevTaskTemplate = (id: string) => task({
+  id,
+  run: async (payload: any, { ctx }) => {
+    logger.log(`[DEV] ${id} started`, { payload, runId: ctx.run.id });
+    
+    // TODO: Implement your task logic here
+    
+    logger.log(`[DEV] ${id} completed`);
+    return { success: true };
+  },
+});
+```
+
+## 📋 Development Checklist
+
+Before deploying a task to production:
+- [ ] Test locally with `bunx trigger.dev@beta dev`
+- [ ] Add comprehensive logging
+- [ ] Handle all error cases
+- [ ] Validate environment variables
+- [ ] Test with realistic data
+- [ ] Monitor task performance
+- [ ] Add appropriate retry configuration
+- [ ] Test error scenarios
+- [ ] Document task purpose and usage
+- [ ] Review security implications
+description:
+globs:
+alwaysApply: false
+---

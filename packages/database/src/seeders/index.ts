@@ -33,3 +33,12 @@ export { ProductsSeederSeeder };
 
 import { CategoriesSeederSeeder } from './categories-seeder.js';
 export { CategoriesSeederSeeder };
+
+import { NodeSeederSeeder } from './node-seeder.js';
+export { NodeSeederSeeder };
+
+import { TagsSeederSeeder } from './tags-seeder.js';
+export { TagsSeederSeeder };
+
+import { ProductSeederSeeder } from './product-seeder.js';
+export { ProductSeederSeeder };

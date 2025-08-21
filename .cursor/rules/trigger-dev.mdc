@@ -1,0 +1,463 @@
+# Trigger.dev Development Guidelines
+
+## 📁 Project Structure
+
+### Package Organization
+- **Location**: [packages/jobs/](mdc:packages/jobs/) - Dedicated package for all Trigger.dev tasks
+- **Configuration**: [trigger.config.ts](mdc:packages/jobs/trigger.config.ts) - Main configuration file
+- **Tasks Directory**: [trigger/](mdc:packages/jobs/trigger/) - All task files go here
+- **Scripts**: Use `bunx trigger.dev@beta dev` for local development
+
+### File Naming Conventions
+```
+trigger/
+├── index.ts          # Main exports
+├── tasks/            # Organized by feature/domain
+│   ├── email/
+│   ├── notifications/
+│   ├── data-processing/
+│   └── integrations/
+└── utils/            # Shared utilities
+```
+
+## 🏗️ Task Structure & Best Practices
+
+### ✅ DO: Proper Task Definition
+```typescript
+import { logger, task, wait } from "@trigger.dev/sdk/v3";
+
+export const processUserData = task({
+  id: "process-user-data", // Descriptive, kebab-case
+  retry: {
+    maxAttempts: 3,
+    minTimeoutInMs: 1000,
+    maxTimeoutInMs: 10000,
+  },
+  run: async (payload: UserDataPayload, { ctx }) => {
+    logger.log("Starting user data processing", { userId: payload.userId });
+    
+    // Your task logic here
+    const result = await processData(payload);
+    
+    logger.log("User data processed successfully", { userId: payload.userId });
+    return result;
+  },
+});
+```
+
+### ❌ DON'T: Poor Task Structure
+```typescript
+// Avoid: Generic names, no logging, no error handling
+export const task1 = task({
+  id: "task1",
+  run: async (payload) => {
+    // No logging, no error handling, no type safety
+    return await someFunction(payload);
+  },
+});
+```
+
+## 🔧 Configuration Best Practices
+
+### ✅ DO: Proper Configuration
+```typescript
+// [trigger.config.ts](mdc:packages/jobs/trigger.config.ts)
+export const config: TriggerConfig = {
+  project: process.env.TRIGGER_PROJECT_ID!, // Use environment variables
+  logLevel: "log",
+  retries: {
+    enabledInDev: true,
+    default: {
+      maxAttempts: 3,
+      minTimeoutInMs: 1000,
+      maxTimeoutInMs: 10000,
+      factor: 2,
+      randomize: true,
+    },
+  },
+};
+```
+
+### ❌ DON'T: Hardcoded Values
+```typescript
+// Avoid: Hardcoded project IDs and no retry configuration
+export const config: TriggerConfig = {
+  project: "my-project-123", // Hardcoded
+  // Missing retry configuration
+};
+```
+
+## 📝 Logging & Monitoring
+
+### ✅ DO: Comprehensive Logging
+```typescript
+export const emailTask = task({
+  id: "send-welcome-email",
+  run: async (payload: EmailPayload, { ctx }) => {
+    logger.log("Starting email task", { 
+      userId: payload.userId, 
+      emailType: payload.type,
+      runId: ctx.run.id 
+    });
+
+    try {
+      const result = await sendEmail(payload);
+      
+      logger.log("Email sent successfully", { 
+        userId: payload.userId,
+        emailId: result.id 
+      });
+      
+      return result;
+    } catch (error) {
+      logger.error("Failed to send email", { 
+        userId: payload.userId, 
+        error: error.message 
+      });
+      throw error; // Let Trigger.dev handle retries
+    }
+  },
+});
+```
+
+### ❌ DON'T: Silent Failures
+```typescript
+// Avoid: No logging, silent failures
+export const silentTask = task({
+  id: "silent-task",
+  run: async (payload) => {
+    // No logging, no error context
+    return await riskyOperation(payload);
+  },
+});
+```
+
+## 🔄 Error Handling & Retries
+
+### ✅ DO: Proper Error Handling
+```typescript
+export const robustTask = task({
+  id: "robust-data-processing",
+  retry: {
+    maxAttempts: 5,
+    minTimeoutInMs: 2000,
+    maxTimeoutInMs: 30000,
+  },
+  run: async (payload, { ctx }) => {
+    logger.log("Attempt", { attempt: ctx.run.attempt });
+    
+    try {
+      // Your logic here
+      return await processData(payload);
+    } catch (error) {
+      if (error.code === 'RATE_LIMIT') {
+        // Wait before retry for rate limits
+        await wait.for({ seconds: 60 });
+        throw error;
+      }
+      
+      if (error.code === 'VALIDATION_ERROR') {
+        // Don't retry validation errors
+        logger.error("Validation error, not retrying", { error });
+        return { error: "Invalid data" };
+      }
+      
+      // Let other errors retry
+      throw error;
+    }
+  },
+});
+```
+
+### ❌ DON'T: Ignore Errors
+```typescript
+// Avoid: Catching and ignoring all errors
+export const badTask = task({
+  id: "bad-task",
+  run: async (payload) => {
+    try {
+      return await riskyOperation(payload);
+    } catch (error) {
+      // Don't do this - hides real issues
+      console.log("Something went wrong");
+      return null;
+    }
+  },
+});
+```
+
+## ⏱️ Waiting & Scheduling
+
+### ✅ DO: Proper Wait Usage
+```typescript
+import { wait } from "@trigger.dev/sdk/v3";
+
+export const scheduledTask = task({
+  id: "daily-report",
+  run: async (payload, { ctx }) => {
+    // Wait for specific time
+    await wait.until({ date: new Date("2024-01-01T09:00:00Z") });
+    
+    // Wait for duration
+    await wait.for({ seconds: 30 });
+    
+    // Wait for token (human approval)
+    const approval = await wait.forToken({
+      id: "user-approval",
+      timeout: { hours: 24 },
+    });
+    
+    if (approval.completed) {
+      return await generateReport();
+    }
+    
+    return { status: "cancelled" };
+  },
+});
+```
+
+### ❌ DON'T: Blocking Waits
+```typescript
+// Avoid: Using setTimeout instead of wait
+export const badWaitTask = task({
+  id: "bad-wait",
+  run: async (payload) => {
+    // Don't use setTimeout - it doesn't persist across retries
+    setTimeout(() => {
+      // This won't work properly
+    }, 5000);
+    
+    return "done";
+  },
+});
+```
+
+## 🔗 Triggering Tasks
+
+### ✅ DO: Proper Task Triggering
+```typescript
+// From your API routes or other parts of the app
+import { trigger } from "@trigger.dev/sdk/v3";
+
+// Trigger with typed payload
+await trigger({
+  id: "process-user-data",
+  payload: {
+    userId: "user-123",
+    data: { /* ... */ }
+  },
+  options: {
+    priority: "high",
+    tags: ["user-data", "processing"],
+  },
+});
+```
+
+### ❌ DON'T: Untyped Payloads
+```typescript
+// Avoid: Untyped payloads
+await trigger({
+  id: "process-user-data",
+  payload: "some string", // No type safety
+});
+```
+
+## 📊 Performance & Optimization
+
+### ✅ DO: Efficient Task Design
+```typescript
+export const efficientTask = task({
+  id: "batch-processing",
+  run: async (payload: BatchPayload, { ctx }) => {
+    // Process in batches
+    const batchSize = 100;
+    const batches = chunk(payload.items, batchSize);
+    
+    for (const batch of batches) {
+      await processBatch(batch);
+      
+      // Log progress
+      logger.log("Batch processed", { 
+        batchNumber: batches.indexOf(batch) + 1,
+        totalBatches: batches.length 
+      });
+    }
+    
+    return { processed: payload.items.length };
+  },
+});
+```
+
+### ❌ DON'T: Memory-Intensive Operations
+```typescript
+// Avoid: Loading everything into memory
+export const memoryHeavyTask = task({
+  id: "memory-heavy",
+  run: async (payload) => {
+    // Don't load large datasets into memory
+    const allData = await loadAllData(); // Could be GB of data
+    
+    // Process everything at once
+    return processAllData(allData);
+  },
+});
+```
+
+## 🔐 Security & Authentication
+
+### ✅ DO: Secure Task Execution
+```typescript
+export const secureTask = task({
+  id: "secure-api-call",
+  run: async (payload: SecurePayload, { ctx }) => {
+    // Validate payload
+    if (!payload.apiKey || !payload.userId) {
+      throw new Error("Missing required fields");
+    }
+    
+    // Use environment variables for sensitive data
+    const apiKey = process.env.EXTERNAL_API_KEY;
+    
+    // Log without sensitive data
+    logger.log("Making secure API call", { 
+      userId: payload.userId,
+      hasApiKey: !!apiKey 
+    });
+    
+    return await makeSecureCall(apiKey, payload);
+  },
+});
+```
+
+### ❌ DON'T: Expose Sensitive Data
+```typescript
+// Avoid: Logging sensitive information
+export const insecureTask = task({
+  id: "insecure-task",
+  run: async (payload) => {
+    // Don't log sensitive data
+    logger.log("Processing", { 
+      apiKey: payload.apiKey, // Exposes sensitive data
+      password: payload.password // Never log passwords
+    });
+    
+    return await process(payload);
+  },
+});
+```
+
+## 🧪 Testing & Development
+
+### ✅ DO: Testable Task Design
+```typescript
+// Separate business logic from task wrapper
+export const businessLogic = async (payload: TaskPayload) => {
+  // Pure function, easy to test
+  return await processData(payload);
+};
+
+export const testableTask = task({
+  id: "testable-task",
+  run: async (payload: TaskPayload, { ctx }) => {
+    logger.log("Starting task", { payload });
+    
+    const result = await businessLogic(payload);
+    
+    logger.log("Task completed", { result });
+    return result;
+  },
+});
+```
+
+### ❌ DON'T: Untestable Tasks
+```typescript
+// Avoid: Mixing business logic with task infrastructure
+export const untestableTask = task({
+  id: "untestable",
+  run: async (payload) => {
+    // Hard to test - mixed concerns
+    const data = await fetch(payload.url);
+    const processed = await process(data);
+    await saveToDatabase(processed);
+    await sendEmail(processed);
+    return processed;
+  },
+});
+```
+
+## 📋 Task Organization
+
+### ✅ DO: Organize by Domain
+```typescript
+// [trigger/tasks/email/index.ts](mdc:packages/jobs/trigger/tasks/email/index.ts)
+export { welcomeEmailTask } from "./welcome-email";
+export { notificationEmailTask } from "./notification-email";
+export { digestEmailTask } from "./digest-email";
+
+// [trigger/tasks/notifications/index.ts](mdc:packages/jobs/trigger/tasks/notifications/index.ts)
+export { pushNotificationTask } from "./push-notification";
+export { smsNotificationTask } from "./sms-notification";
+```
+
+### ❌ DON'T: Monolithic Files
+```typescript
+// Avoid: All tasks in one file
+// trigger/all-tasks.ts - Don't do this
+export const task1 = task({ /* ... */ });
+export const task2 = task({ /* ... */ });
+export const task3 = task({ /* ... */ });
+// ... 50 more tasks
+```
+
+## 🚀 Deployment & Environment
+
+### ✅ DO: Environment-Specific Configuration
+```typescript
+// [trigger.config.ts](mdc:packages/jobs/trigger.config.ts)
+export const config: TriggerConfig = {
+  project: process.env.TRIGGER_PROJECT_ID!,
+  logLevel: process.env.NODE_ENV === "production" ? "warn" : "log",
+  retries: {
+    enabledInDev: process.env.NODE_ENV !== "production",
+    default: {
+      maxAttempts: process.env.NODE_ENV === "production" ? 5 : 3,
+      // ... other config
+    },
+  },
+};
+```
+
+### ❌ DON'T: Environment-Independent Config
+```typescript
+// Avoid: Same config for all environments
+export const config: TriggerConfig = {
+  project: "my-project",
+  logLevel: "log", // Same for dev and prod
+  // No environment-specific settings
+};
+```
+
+## 📚 Key Resources
+
+- **Documentation**: [Trigger.dev Docs](https://trigger.dev/docs)
+- **SDK Reference**: `@trigger.dev/sdk/v3`
+- **CLI Commands**: `bunx trigger.dev@beta dev`
+- **Configuration**: [trigger.config.ts](mdc:packages/jobs/trigger.config.ts)
+- **Example Task**: [example.ts](mdc:packages/jobs/trigger/example.ts)
+
+## 🎯 Quick Checklist
+
+Before creating a new task, ensure:
+- [ ] Descriptive task ID in kebab-case
+- [ ] Typed payload interface
+- [ ] Comprehensive logging
+- [ ] Proper error handling
+- [ ] Appropriate retry configuration
+- [ ] No sensitive data in logs
+- [ ] Business logic separated from task wrapper
+- [ ] Environment variables for configuration
+- [ ] Proper file organization
+description:
+globs:
+alwaysApply: false
+---

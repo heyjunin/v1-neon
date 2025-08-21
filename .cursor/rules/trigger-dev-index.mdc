@@ -1,0 +1,174 @@
+# Trigger.dev Rules Index
+
+## 📚 Complete Trigger.dev Development Guide
+
+Este índice organiza todas as regras e padrões para desenvolvimento com Trigger.dev no projeto. Use estas regras como referência completa para criar tasks robustas, escaláveis e mantíveis.
+
+## 🗂️ Regras Disponíveis
+
+### 1. [trigger-dev.mdc](mdc:.cursor/rules/trigger-dev.mdc)
+**Guia principal de desenvolvimento do Trigger.dev**
+
+- ✅ Estrutura de projeto e organização de arquivos
+- ✅ Padrões de definição de tasks (DO vs DON'T)
+- ✅ Configuração e boas práticas
+- ✅ Logging e monitoramento
+- ✅ Tratamento de erros e retries
+- ✅ Uso de wait e scheduling
+- ✅ Triggering de tasks
+- ✅ Performance e otimização
+- ✅ Segurança e autenticação
+- ✅ Testing e desenvolvimento
+- ✅ Organização de tasks por domínio
+- ✅ Deployment e ambiente
+
+### 2. [trigger-dev-integrations.mdc](mdc:.cursor/rules/trigger-dev-integrations.mdc)
+**Padrões de integração com serviços do projeto**
+
+- ✅ Integração com tRPC
+- ✅ Integração com email service
+- ✅ Integração com notification service
+- ✅ Operações de banco de dados
+- ✅ Integração com APIs externas
+- ✅ Tasks agendadas
+- ✅ Processamento de webhooks
+- ✅ Padrões de tratamento de erros
+- ✅ Utilitários de integração
+- ✅ Tipos compartilhados
+
+### 3. [trigger-dev-development.mdc](mdc:.cursor/rules/trigger-dev-development.mdc)
+**Workflow de desenvolvimento e debugging**
+
+- ✅ Setup de desenvolvimento local
+- ✅ Testing de tasks localmente
+- ✅ Técnicas de debugging
+- ✅ Unit testing
+- ✅ Workflow de desenvolvimento iterativo
+- ✅ Problemas comuns de desenvolvimento
+- ✅ Monitoramento de desenvolvimento
+- ✅ Utilitários de desenvolvimento
+- ✅ Templates de tasks
+
+### 4. [trigger-dev-production.mdc](mdc:.cursor/rules/trigger-dev-production.mdc)
+**Deployment e produção**
+
+- ✅ Processo de deployment
+- ✅ Monitoramento de produção
+- ✅ Alerting e notificações
+- ✅ Segurança em produção
+- ✅ Otimização de performance
+- ✅ Estratégias de retry em produção
+- ✅ Métricas de produção
+- ✅ Utilitários de produção
+
+## 🏗️ Estrutura do Projeto
+
+### Package Jobs
+```
+packages/jobs/
+├── package.json              # Dependências e scripts
+├── trigger.config.ts         # Configuração principal
+└── trigger/
+    ├── index.ts              # Exports principais
+    ├── example.ts            # Task de exemplo
+    ├── tasks/                # Tasks organizadas por domínio
+    │   ├── email/
+    │   ├── notifications/
+    │   ├── data-processing/
+    │   └── integrations/
+    ├── types/                # Tipos compartilhados
+    ├── utils/                # Utilitários
+    └── templates/            # Templates de tasks
+```
+
+### Comandos de Desenvolvimento
+```bash
+# Desenvolvimento local
+cd packages/jobs
+bunx trigger.dev@beta dev
+
+# Ou usando o script npm
+bun run jobs
+```
+
+## 🎯 Fluxo de Desenvolvimento
+
+### 1. **Planejamento**
+- Defina o propósito da task
+- Identifique as integrações necessárias
+- Planeje o tratamento de erros
+- Determine os requisitos de performance
+
+### 2. **Desenvolvimento**
+- Use as regras de [trigger-dev-development.mdc](mdc:.cursor/rules/trigger-dev-development.mdc)
+- Implemente logging abrangente
+- Teste localmente com dados realistas
+- Separe lógica de negócio da infraestrutura
+
+### 3. **Integração**
+- Use as regras de [trigger-dev-integrations.mdc](mdc:.cursor/rules/trigger-dev-integrations.mdc)
+- Integre com tRPC para operações de banco
+- Use serviços existentes (email, notifications)
+- Implemente validação de payload
+
+### 4. **Produção**
+- Use as regras de [trigger-dev-production.mdc](mdc:.cursor/rules/trigger-dev-production.mdc)
+- Configure monitoramento e alerting
+- Otimize para performance
+- Implemente segurança adequada
+
+## 📋 Checklist Rápido
+
+### Antes de Criar uma Task
+- [ ] Consulte [trigger-dev.mdc](mdc:.cursor/rules/trigger-dev.mdc) para estrutura básica
+- [ ] Use [trigger-dev-integrations.mdc](mdc:.cursor/rules/trigger-dev-integrations.mdc) para integrações
+- [ ] Implemente logging conforme [trigger-dev-development.mdc](mdc:.cursor/rules/trigger-dev-development.mdc)
+- [ ] Prepare para produção com [trigger-dev-production.mdc](mdc:.cursor/rules/trigger-dev-production.mdc)
+
+### Durante o Desenvolvimento
+- [ ] Teste localmente com `bunx trigger.dev@beta dev`
+- [ ] Use tipos TypeScript para payloads
+- [ ] Implemente tratamento de erros robusto
+- [ ] Adicione logs detalhados
+- [ ] Separe lógica de negócio da infraestrutura
+
+### Antes do Deployment
+- [ ] Configure monitoramento e alerting
+- [ ] Otimize para performance
+- [ ] Implemente segurança adequada
+- [ ] Teste com dados de produção
+- [ ] Documente a task
+
+## 🔗 Recursos Adicionais
+
+### Documentação
+- [Trigger.dev Docs](https://trigger.dev/docs) - Documentação oficial
+- [SDK Reference](https://trigger.dev/docs/sdk) - Referência da API
+- [CLI Commands](https://trigger.dev/docs/cli) - Comandos do CLI
+
+### Arquivos do Projeto
+- [trigger.config.ts](mdc:packages/jobs/trigger.config.ts) - Configuração principal
+- [example.ts](mdc:packages/jobs/trigger/example.ts) - Task de exemplo
+- [package.json](mdc:packages/jobs/package.json) - Dependências e scripts
+
+### Regras Relacionadas
+- [trpc-server.mdc](mdc:.cursor/rules/trpc-server.mdc) - Integração com tRPC
+- [email.mdc](mdc:.cursor/rules/email.mdc) - Serviços de email
+- [notifications.mdc](mdc:.cursor/rules/notifications.mdc) - Sistema de notificações
+- [database.mdc](mdc:.cursor/rules/database.mdc) - Operações de banco de dados
+
+## 🚀 Próximos Passos
+
+1. **Leia todas as regras** para entender o ecossistema completo
+2. **Use os templates** fornecidos como ponto de partida
+3. **Siga os padrões** estabelecidos para consistência
+4. **Contribua** melhorando as regras com base na experiência
+5. **Mantenha** as regras atualizadas conforme o projeto evolui
+
+---
+
+**Lembre-se**: Estas regras são um guia vivo. Atualize-as conforme o projeto evolui e novas melhores práticas são descobertas.
+description:
+globs:
+alwaysApply: false
+---
