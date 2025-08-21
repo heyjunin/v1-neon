@@ -1,6 +1,8 @@
 // Exportações do servidor - NÃO importar no cliente
 import { router } from "./context";
 import { authRouter } from "./routers/auth";
+import { blogsRouter } from "./routers/blogs";
+import { lmsRouter } from "./routers/lms";
 import { notificationsRouter } from "./routers/notifications";
 import { organizationsRouter } from "./routers/organizations";
 import { postsRouter } from "./routers/posts";
@@ -10,6 +12,8 @@ export const appRouter = router({
   organizations: organizationsRouter,
   auth: authRouter,
   notifications: notificationsRouter,
+  blogs: blogsRouter,
+  lms: lmsRouter,
 });
 
 export type AppRouter = typeof appRouter;

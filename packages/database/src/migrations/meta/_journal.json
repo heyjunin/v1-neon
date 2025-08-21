@@ -15,6 +15,13 @@
       "when": 1755744570240,
       "tag": "0001_true_magdalene",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1755765975590,
+      "tag": "0002_sweet_zeigeist",
+      "breakpoints": true
     }
   ]
 }

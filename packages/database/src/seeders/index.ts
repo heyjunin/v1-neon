@@ -9,6 +9,8 @@ export * from "./organizations-seeder";
 export * from "./posts-seeder";
 export * from "./rbac-seeder";
 export * from "./users-seeder";
+export * from "./blogs-seeder";
+export * from "./lms-seeder";
 export * from "./utils/faker";
 export { ExampleAdvancedSeeder, NotificationsSeeder, OrganizationsSeeder, PostsSeeder, RBACSeeder, UsersSeeder };
 
@@ -20,6 +22,8 @@ export { ExampleAdvancedSeeder, NotificationsSeeder, OrganizationsSeeder, PostsS
   import { PostsSeeder } from "./posts-seeder";
   import { RBACSeeder } from "./rbac-seeder";
   import { UsersSeeder } from "./users-seeder";
+  import { seedBlogs } from "./blogs-seeder";
+  import { seedLMS } from "./lms-seeder";
   
 export const seeders = [
   new DatabaseSeeder(),
@@ -30,6 +34,12 @@ export const seeders = [
   new RBACSeeder(),
   new ExampleAdvancedSeeder(),
 ];
+
+// Função para executar seeders de blogs e lms
+export async function seedBlogsAndLMS() {
+  await seedBlogs();
+  await seedLMS();
+}
 
 
 
