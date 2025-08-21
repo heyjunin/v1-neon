@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useActionToast } from "./components/action-toast";
 import { PostForm } from "./forms";
-import { usePostToast } from "./hooks/use-toast";
 import { PostsList } from "./lists";
 import type { Post } from "./types";
 import { PostView } from "./views";
@@ -11,7 +11,7 @@ export function PostsManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [viewingPost, setViewingPost] = useState<Post | null>(null);
-  const { showSuccess } = usePostToast();
+  const { showSuccess } = useActionToast();
 
   const handleCreate = () => {
     setEditingPost(null);

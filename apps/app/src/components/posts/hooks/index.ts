@@ -1,2 +1,3 @@
 export { useConfirmation } from "./use-confirmation";
-export { useNotification } from "./use-notification";
+export { useViewMode } from "./use-view-mode";
+

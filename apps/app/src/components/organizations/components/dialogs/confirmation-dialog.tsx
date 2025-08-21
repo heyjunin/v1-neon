@@ -2,12 +2,12 @@
 
 import { Button } from "@v1/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@v1/ui/dialog";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 

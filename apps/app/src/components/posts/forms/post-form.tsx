@@ -11,6 +11,7 @@ import {
 } from "@v1/ui/dialog";
 import { Loader2, Save, X } from "lucide-react";
 import { FormField } from "../components/form-field";
+import { LoadingOverlay } from "../components/loading-card";
 import type { Post, PostFormData } from "../types";
 import { postValidation, useForm } from "../utils/index";
 
@@ -72,18 +73,19 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Editar Post" : "Criar Novo Post"}
-          </DialogTitle>
-          <DialogDescription>
-            {isEditing
-              ? "Edite as informações do seu post abaixo."
-              : "Preencha as informações para criar um novo post."}
-          </DialogDescription>
-        </DialogHeader>
+        <LoadingOverlay isLoading={isFormDisabled}>
+          <DialogHeader>
+            <DialogTitle>
+              {isEditing ? "Editar Post" : "Criar Novo Post"}
+            </DialogTitle>
+            <DialogDescription>
+              {isEditing
+                ? "Edite as informações do seu post abaixo."
+                : "Preencha as informações para criar um novo post."}
+            </DialogDescription>
+          </DialogHeader>
 
-        <form onSubmit={handleFormSubmit} className="space-y-4">
+          <form onSubmit={handleFormSubmit} className="space-y-4">
           <FormField
             id="title"
             label="Título"
@@ -132,6 +134,7 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
             </Button>
           </div>
         </form>
+        </LoadingOverlay>
       </DialogContent>
     </Dialog>
   );
