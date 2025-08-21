@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { OrganizationForm } from './forms';
-import { useOrganizationToast } from './hooks/use-toast';
-import { OrganizationsList } from './lists';
-import type { Organization } from './types';
-import { OrganizationView } from './views';
+import { useState } from "react";
+import { OrganizationForm } from "./forms";
+import { useOrganizationToast } from "./hooks/use-toast";
+import { OrganizationsList } from "./lists";
+import type { Organization } from "./types";
+import { OrganizationView } from "./views";
 
 export function OrganizationsManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingOrganization, setEditingOrganization] = useState<Organization | null>(null);
-  const [viewingOrganization, setViewingOrganization] = useState<Organization | null>(null);
+  const [editingOrganization, setEditingOrganization] =
+    useState<Organization | null>(null);
+  const [viewingOrganization, setViewingOrganization] =
+    useState<Organization | null>(null);
   const { showSuccess } = useOrganizationToast();
 
   const handleCreate = () => {
@@ -37,7 +39,11 @@ export function OrganizationsManager() {
   };
 
   const handleFormSuccess = () => {
-    showSuccess(editingOrganization ? 'Organization atualizada com sucesso!' : 'Organization criada com sucesso!');
+    showSuccess(
+      editingOrganization
+        ? "Organization atualizada com sucesso!"
+        : "Organization criada com sucesso!",
+    );
   };
 
   return (

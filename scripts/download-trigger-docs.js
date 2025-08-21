@@ -1,5 +1,5 @@
-const fs = require('fs/promises');
-const path = require('path');
+const fs = require("fs/promises");
+const path = require("path");
 
 const urls = [
   "https://trigger.dev/docs/apikeys.md",
@@ -197,10 +197,10 @@ const urls = [
   "https://trigger.dev/docs/wait-for.md",
   "https://trigger.dev/docs/wait-for-token.md",
   "https://trigger.dev/docs/wait-until.md",
-  "https://trigger.dev/docs/writing-tasks-introduction.md"
+  "https://trigger.dev/docs/writing-tasks-introduction.md",
 ];
 
-const baseOutputDir = path.join(process.cwd(), '.ai', 'docs', 'trigger-dev');
+const baseOutputDir = path.join(process.cwd(), ".ai", "docs", "trigger-dev");
 
 async function downloadDocs() {
   try {
@@ -210,8 +210,8 @@ async function downloadDocs() {
       try {
         const parsedUrl = new URL(url);
         // Get path part after /docs/ and ensure it's not empty
-        const relativePath = parsedUrl.pathname.startsWith('/docs/') 
-          ? parsedUrl.pathname.substring(5) 
+        const relativePath = parsedUrl.pathname.startsWith("/docs/")
+          ? parsedUrl.pathname.substring(5)
           : parsedUrl.pathname.substring(1);
 
         if (!relativePath) {
@@ -227,23 +227,23 @@ async function downloadDocs() {
 
         const response = await fetch(url);
         if (!response.ok) {
-          console.error(` -> Failed to download ${url}. Status: ${response.status}`);
+          console.error(
+            ` -> Failed to download ${url}. Status: ${response.status}`,
+          );
           continue;
         }
 
         const content = await response.text();
         await fs.writeFile(finalPath, content);
         console.log(` -> Successfully saved to ${finalPath}`);
-
       } catch (error) {
         console.error(` -> Error processing ${url}:`, error.message);
       }
     }
 
     console.log(`\nDownload complete. All files saved in ${baseOutputDir}`);
-
   } catch (error) {
-    console.error('A critical error occurred:', error);
+    console.error("A critical error occurred:", error);
     process.exit(1);
   }
 }

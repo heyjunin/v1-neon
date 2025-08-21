@@ -51,9 +51,7 @@
       "indexes": {
         "idx_posts_user_id": {
           "name": "idx_posts_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -62,12 +60,8 @@
           "name": "posts_user_id_users_id_fk",
           "tableFrom": "posts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -121,9 +115,7 @@
       "indexes": {
         "email_idx": {
           "name": "email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": false
         }
       },
@@ -133,9 +125,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     }

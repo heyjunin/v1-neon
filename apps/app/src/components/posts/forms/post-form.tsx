@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import { useCreatePost, useUpdatePost } from '@/lib/trpc';
-import { Button } from '@v1/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@v1/ui/dialog';
-import { Loader2, Save, X } from 'lucide-react';
-import { FormField } from '../components/form-field';
-import type { Post, PostFormData } from '../types';
-import { postValidation, useForm } from '../utils/index';
+import { useCreatePost, useUpdatePost } from "@/lib/trpc";
+import { Button } from "@v1/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@v1/ui/dialog";
+import { Loader2, Save, X } from "lucide-react";
+import { FormField } from "../components/form-field";
+import type { Post, PostFormData } from "../types";
+import { postValidation, useForm } from "../utils/index";
 
 interface PostFormProps {
   post?: Post | null;
@@ -18,13 +24,14 @@ interface PostFormProps {
 export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
   const createPostMutation = useCreatePost();
   const updatePostMutation = useUpdatePost();
-  
+
   const isEditing = !!post;
-  const isLoading = createPostMutation.isPending || updatePostMutation.isPending;
+  const isLoading =
+    createPostMutation.isPending || updatePostMutation.isPending;
 
   const initialValues: PostFormData = {
-    title: post?.title || '',
-    content: post?.content || '',
+    title: post?.title || "",
+    content: post?.content || "",
   };
 
   const handleSubmit = async (values: PostFormData) => {
@@ -67,13 +74,12 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Editar Post' : 'Criar Novo Post'}
+            {isEditing ? "Editar Post" : "Criar Novo Post"}
           </DialogTitle>
           <DialogDescription>
-            {isEditing 
-              ? 'Edite as informações do seu post abaixo.'
-              : 'Preencha as informações para criar um novo post.'
-            }
+            {isEditing
+              ? "Edite as informações do seu post abaixo."
+              : "Preencha as informações para criar um novo post."}
           </DialogDescription>
         </DialogHeader>
 
@@ -82,7 +88,7 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
             id="title"
             label="Título"
             value={values.title}
-            onChange={(value) => setValue('title', value)}
+            onChange={(value) => setValue("title", value)}
             error={errors.title}
             disabled={isFormDisabled}
             required
@@ -96,7 +102,7 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
             id="content"
             label="Conteúdo"
             value={values.content}
-            onChange={(value) => setValue('content', value)}
+            onChange={(value) => setValue("content", value)}
             error={errors.content}
             disabled={isFormDisabled}
             required
@@ -122,7 +128,7 @@ export function PostForm({ post, isOpen, onClose, onSuccess }: PostFormProps) {
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              {isEditing ? 'Salvar' : 'Criar'}
+              {isEditing ? "Salvar" : "Criar"}
             </Button>
           </div>
         </form>

@@ -13,7 +13,8 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PWAInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
@@ -42,7 +43,10 @@ export function PWAInstallPrompt() {
     window.addEventListener("appinstalled", handleAppInstalled);
 
     return () => {
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
@@ -93,40 +97,40 @@ export function PWAInstallPrompt() {
             </svg>
           </div>
         </div>
-        
+
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-foreground">
-            Instalar V1
-          </h3>
+          <h3 className="text-sm font-medium text-foreground">Instalar V1</h3>
           <p className="text-xs text-muted-foreground mt-1">
             Instale V1 no seu dispositivo para uma experiência melhor
           </p>
-          
+
           <div className="flex gap-2 mt-3">
-            <Button
-              size="sm"
-              onClick={handleInstallClick}
-              className="flex-1"
-            >
+            <Button size="sm" onClick={handleInstallClick} className="flex-1">
               Instalar
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleDismiss}
-            >
+            <Button size="sm" variant="outline" onClick={handleDismiss}>
               Agora não
             </Button>
           </div>
         </div>
-        
+
         <button
           type="button"
           onClick={handleDismiss}
           className="flex-shrink-0 text-muted-foreground hover:text-foreground"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       </div>

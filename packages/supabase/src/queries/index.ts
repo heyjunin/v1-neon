@@ -1,7 +1,15 @@
 import { logger } from "@v1/logger";
 import { createClient } from "@v1/supabase/server";
+import type { User } from "@supabase/supabase-js";
 
-export async function getUser() {
+export interface GetUserResult {
+  data: {
+    user: User | null;
+  } | null;
+  error: any;
+}
+
+export async function getUser(): Promise<GetUserResult> {
   const supabase = createClient();
 
   try {
@@ -14,5 +22,3 @@ export async function getUser() {
     throw error;
   }
 }
-
-

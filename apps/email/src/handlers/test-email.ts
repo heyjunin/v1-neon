@@ -1,12 +1,19 @@
+import {
+  EmailService,
+  createEmailConfig,
+  validateEmailConfig,
+  type TestEmailRequest,
+} from "@v1/email";
 import type { Context } from "hono";
-import { EmailService } from "../services/email-service";
-import type { TestEmailRequest } from "../types/email";
 
-const emailService = new EmailService();
+const emailConfig = createEmailConfig();
+validateEmailConfig(emailConfig);
+
+const emailService = new EmailService(emailConfig);
 
 export const testEmailHandler = async (c: Context) => {
   try {
-    const body = await c.req.json() as TestEmailRequest;
+    const body = (await c.req.json()) as TestEmailRequest;
     const { email, type = "welcome" } = body;
 
     if (!email) {
@@ -22,9 +29,6 @@ export const testEmailHandler = async (c: Context) => {
     });
   } catch (error) {
     console.error("Error sending test email:", error);
-    return c.json(
-      { error: "Failed to send test email" },
-      500
-    );
+    return c.json({ error: "Failed to send test email" }, 500);
   }
 };

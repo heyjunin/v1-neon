@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import type { FormState, UseFormOptions, UseFormReturn } from '../types';
+import { useEffect, useState } from "react";
+import type { FormState, UseFormOptions, UseFormReturn } from "../types";
 
 export function useForm<T extends Record<string, any>>({
   initialValues,
@@ -15,7 +15,7 @@ export function useForm<T extends Record<string, any>>({
   const [isLoading, setIsLoading] = useState(false);
 
   const setValue = <K extends keyof T>(key: K, value: T[K]) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       values: { ...prev.values, [key]: value },
       isDirty: true,
@@ -23,7 +23,7 @@ export function useForm<T extends Record<string, any>>({
   };
 
   const setValues = (newValues: Partial<T>) => {
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       values: { ...prev.values, ...newValues },
       isDirty: true,
@@ -42,13 +42,13 @@ export function useForm<T extends Record<string, any>>({
     if (!validation) return true;
 
     const errors = validation(state.values);
-    setState(prev => ({ ...prev, errors }));
+    setState((prev) => ({ ...prev, errors }));
     return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validate()) {
       return;
     }
@@ -58,7 +58,7 @@ export function useForm<T extends Record<string, any>>({
       await onSubmit(state.values);
       onSuccess?.();
     } catch (error) {
-      console.error('Form submission error:', error);
+      console.error("Form submission error:", error);
     } finally {
       setIsLoading(false);
     }

@@ -1,61 +1,73 @@
-'use client';
+"use client";
 
-import { useDeleteAccount } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
+import { useDeleteAccount } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
 import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@v1/ui/alert-dialog';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@v1/ui/alert-dialog";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface DeleteAccountFormProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
 
-export function DeleteAccountForm({ onSuccess, onError }: DeleteAccountFormProps) {
-  const [confirmationText, setConfirmationText] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+export function DeleteAccountForm({
+  onSuccess,
+  onError,
+}: DeleteAccountFormProps) {
+  const [confirmationText, setConfirmationText] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  
+
   const router = useRouter();
   const deleteAccount = useDeleteAccount();
 
   const handleDeleteAccount = async () => {
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await deleteAccount.mutateAsync();
-      setSuccess('Account deleted successfully. You will be redirected to the login page.');
+      setSuccess(
+        "Account deleted successfully. You will be redirected to the login page.",
+      );
       onSuccess?.();
-      
+
       // Redirect to login after a short delay
       setTimeout(() => {
-        router.push('/login');
+        router.push("/login");
       }, 3000);
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to delete account';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to delete account";
       setError(errorMessage);
       onError?.(errorMessage);
     }
   };
 
-  const isConfirmationValid = confirmationText === 'DELETE';
+  const isConfirmationValid = confirmationText === "DELETE";
 
   return (
     <Card className="border-red-200">
@@ -84,14 +96,16 @@ export function DeleteAccountForm({ onSuccess, onError }: DeleteAccountFormProps
         <Alert variant="destructive">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+            This action cannot be undone. This will permanently delete your
+            account and remove all your data from our servers.
           </AlertDescription>
         </Alert>
 
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="confirmation">
-              Type <span className="font-mono font-bold">DELETE</span> to confirm
+              Type <span className="font-mono font-bold">DELETE</span> to
+              confirm
             </Label>
             <Input
               id="confirmation"
@@ -110,7 +124,9 @@ export function DeleteAccountForm({ onSuccess, onError }: DeleteAccountFormProps
                 disabled={!isConfirmationValid || deleteAccount.isPending}
                 className="w-full"
               >
-                {deleteAccount.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {deleteAccount.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete Account
               </Button>
@@ -119,7 +135,8 @@ export function DeleteAccountForm({ onSuccess, onError }: DeleteAccountFormProps
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+                  This action cannot be undone. This will permanently delete
+                  your account and remove all your data from our servers.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -140,7 +157,9 @@ export function DeleteAccountForm({ onSuccess, onError }: DeleteAccountFormProps
           <ul className="list-disc list-inside space-y-1 ml-4">
             <li>Downloading any data you want to keep</li>
             <li>Canceling any active subscriptions</li>
-            <li>Informing your team members if you're part of any organizations</li>
+            <li>
+              Informing your team members if you're part of any organizations
+            </li>
             <li>This action is irreversible</li>
           </ul>
         </div>

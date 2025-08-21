@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { trpc } from './client';
+import { trpc } from "./client";
 
 // Posts hooks
 export const usePosts = (options?: {
@@ -8,8 +8,8 @@ export const usePosts = (options?: {
   page?: number;
   limit?: number;
   userId?: string;
-  sortBy?: 'createdAt' | 'updatedAt' | 'title';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "createdAt" | "updatedAt" | "title";
+  sortOrder?: "asc" | "desc";
 }) => {
   return trpc.posts.getPosts.useQuery(options || {}, {
     refetchOnWindowFocus: false,
@@ -17,17 +17,23 @@ export const usePosts = (options?: {
 };
 
 export const usePost = (id: string) => {
-  return trpc.posts.getPostById.useQuery({ id }, {
-    enabled: !!id,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.posts.getPostById.useQuery(
+    { id },
+    {
+      enabled: !!id,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const usePostsByUser = (userId: string) => {
-  return trpc.posts.getPostsByUserId.useQuery({ userId }, {
-    enabled: !!userId,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.posts.getPostsByUserId.useQuery(
+    { userId },
+    {
+      enabled: !!userId,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useCreatePost = () => {
@@ -50,8 +56,8 @@ export const useOrganizations = (options?: {
   ownerId?: string;
   memberId?: string;
   isActive?: boolean;
-  sortBy?: 'createdAt' | 'updatedAt' | 'name';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "createdAt" | "updatedAt" | "name";
+  sortOrder?: "asc" | "desc";
 }) => {
   return trpc.organizations.getOrganizations.useQuery(options || {}, {
     refetchOnWindowFocus: false,
@@ -59,31 +65,43 @@ export const useOrganizations = (options?: {
 };
 
 export const useOrganization = (id: string) => {
-  return trpc.organizations.getOrganizationById.useQuery({ id }, {
-    enabled: !!id,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationById.useQuery(
+    { id },
+    {
+      enabled: !!id,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useOrganizationBySlug = (slug: string) => {
-  return trpc.organizations.getOrganizationBySlug.useQuery({ slug }, {
-    enabled: !!slug,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationBySlug.useQuery(
+    { slug },
+    {
+      enabled: !!slug,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useOrganizationsByOwner = (ownerId: string) => {
-  return trpc.organizations.getOrganizationsByOwnerId.useQuery({ ownerId }, {
-    enabled: !!ownerId,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationsByOwnerId.useQuery(
+    { ownerId },
+    {
+      enabled: !!ownerId,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useOrganizationsByMember = (memberId: string) => {
-  return trpc.organizations.getOrganizationsByMemberId.useQuery({ memberId }, {
-    enabled: !!memberId,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationsByMemberId.useQuery(
+    { memberId },
+    {
+      enabled: !!memberId,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useUserOrganizations = () => {
@@ -93,31 +111,43 @@ export const useUserOrganizations = () => {
 };
 
 export const useOrganizationMembers = (organizationId: string) => {
-  return trpc.organizations.getOrganizationMembers.useQuery({ id: organizationId }, {
-    enabled: !!organizationId,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationMembers.useQuery(
+    { id: organizationId },
+    {
+      enabled: !!organizationId,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useOrganizationInvites = (organizationId: string) => {
-  return trpc.organizations.getOrganizationInvites.useQuery({ id: organizationId }, {
-    enabled: !!organizationId,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getOrganizationInvites.useQuery(
+    { id: organizationId },
+    {
+      enabled: !!organizationId,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const usePendingInvitesByEmail = (email: string) => {
-  return trpc.organizations.getPendingInvitesByEmail.useQuery({ email }, {
-    enabled: !!email,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getPendingInvitesByEmail.useQuery(
+    { email },
+    {
+      enabled: !!email,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 export const useInviteByToken = (token: string) => {
-  return trpc.organizations.getInviteByToken.useQuery({ token }, {
-    enabled: !!token,
-    refetchOnWindowFocus: false,
-  });
+  return trpc.organizations.getInviteByToken.useQuery(
+    { token },
+    {
+      enabled: !!token,
+      refetchOnWindowFocus: false,
+    },
+  );
 };
 
 // Organization mutations

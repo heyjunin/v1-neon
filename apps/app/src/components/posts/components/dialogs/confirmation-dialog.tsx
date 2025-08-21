@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Button } from '@v1/ui/button';
+import { Button } from "@v1/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from '@v1/ui/dialog';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@v1/ui/dialog";
+import { AlertTriangle, Trash2 } from "lucide-react";
 
 interface ConfirmationDialogProps {
   isOpen: boolean;
@@ -17,7 +17,7 @@ interface ConfirmationDialogProps {
   onConfirm: () => void;
   title: string;
   description: string;
-  actionType?: 'delete' | 'archive' | 'publish' | 'custom';
+  actionType?: "delete" | "archive" | "publish" | "custom";
   confirmText?: string;
   cancelText?: string;
 }
@@ -28,35 +28,35 @@ export function ConfirmationDialog({
   onConfirm,
   title,
   description,
-  actionType = 'delete',
+  actionType = "delete",
   confirmText,
-  cancelText = 'Cancelar',
+  cancelText = "Cancelar",
 }: ConfirmationDialogProps) {
   const getActionConfig = () => {
     switch (actionType) {
-      case 'delete':
+      case "delete":
         return {
           icon: Trash2,
-          variant: 'destructive' as const,
-          text: confirmText || 'Excluir',
+          variant: "destructive" as const,
+          text: confirmText || "Excluir",
         };
-      case 'archive':
+      case "archive":
         return {
           icon: AlertTriangle,
-          variant: 'outline' as const,
-          text: confirmText || 'Arquivar',
+          variant: "outline" as const,
+          text: confirmText || "Arquivar",
         };
-      case 'publish':
+      case "publish":
         return {
           icon: AlertTriangle,
-          variant: 'default' as const,
-          text: confirmText || 'Publicar',
+          variant: "default" as const,
+          text: confirmText || "Publicar",
         };
       default:
         return {
           icon: AlertTriangle,
-          variant: 'default' as const,
-          text: confirmText || 'Confirmar',
+          variant: "default" as const,
+          text: confirmText || "Confirmar",
         };
     }
   };
@@ -69,12 +69,16 @@ export function ConfirmationDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-              actionType === 'delete' ? 'bg-destructive/10' : 'bg-blue-100'
-            }`}>
-              <Icon className={`h-5 w-5 ${
-                actionType === 'delete' ? 'text-destructive' : 'text-blue-600'
-              }`} />
+            <div
+              className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                actionType === "delete" ? "bg-destructive/10" : "bg-blue-100"
+              }`}
+            >
+              <Icon
+                className={`h-5 w-5 ${
+                  actionType === "delete" ? "text-destructive" : "text-blue-600"
+                }`}
+              />
             </div>
             <div>
               <DialogTitle>{title}</DialogTitle>
@@ -84,18 +88,12 @@ export function ConfirmationDialog({
             </div>
           </div>
         </DialogHeader>
-        
+
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="outline"
-            onClick={onClose}
-          >
+          <Button variant="outline" onClick={onClose}>
             {cancelText}
           </Button>
-          <Button
-            variant={config.variant}
-            onClick={onConfirm}
-          >
+          <Button variant={config.variant} onClick={onConfirm}>
             {config.text}
           </Button>
         </DialogFooter>

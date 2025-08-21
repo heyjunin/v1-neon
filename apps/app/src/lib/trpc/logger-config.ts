@@ -1,8 +1,8 @@
-import { loggerLink } from '@trpc/client';
+import { loggerLink } from "@trpc/client";
 
 /**
  * Configuração do loggerLink para tRPC
- * 
+ *
  * Funcionalidades:
  * - Logs completos em desenvolvimento
  * - Apenas erros em produção
@@ -13,15 +13,18 @@ export const createLoggerLink = () => {
   return loggerLink({
     enabled: (opts) => {
       // Em desenvolvimento: logs completos
-      if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
+      if (
+        process.env.NODE_ENV === "development" &&
+        typeof window !== "undefined"
+      ) {
         return true;
       }
-      
+
       // Em produção: apenas erros
-      if (opts.direction === 'down' && opts.result instanceof Error) {
+      if (opts.direction === "down" && opts.result instanceof Error) {
         return true;
       }
-      
+
       return false;
     },
     console: {
@@ -32,7 +35,7 @@ export const createLoggerLink = () => {
         console.error(`[tRPC Client Error] ${message}`);
       },
     },
-    colorMode: typeof window === 'undefined' ? 'ansi' : 'css',
+    colorMode: typeof window === "undefined" ? "ansi" : "css",
   });
 };
 
@@ -41,7 +44,7 @@ export const createLoggerLink = () => {
  */
 export const createDevLoggerLink = () => {
   return loggerLink({
-    enabled: () => process.env.NODE_ENV === 'development',
+    enabled: () => process.env.NODE_ENV === "development",
     console: {
       log: (message: string) => {
         console.log(`[tRPC Dev] ${message}`);
@@ -50,7 +53,7 @@ export const createDevLoggerLink = () => {
         console.error(`[tRPC Dev Error] ${message}`);
       },
     },
-    colorMode: typeof window === 'undefined' ? 'ansi' : 'css',
+    colorMode: typeof window === "undefined" ? "ansi" : "css",
   });
 };
 
@@ -59,7 +62,8 @@ export const createDevLoggerLink = () => {
  */
 export const createProdLoggerLink = () => {
   return loggerLink({
-    enabled: (opts) => opts.direction === 'down' && opts.result instanceof Error,
+    enabled: (opts) =>
+      opts.direction === "down" && opts.result instanceof Error,
     console: {
       log: (message: string) => {
         console.log(`[tRPC Prod] ${message}`);
@@ -68,6 +72,6 @@ export const createProdLoggerLink = () => {
         console.error(`[tRPC Prod Error] ${message}`);
       },
     },
-    colorMode: typeof window === 'undefined' ? 'ansi' : 'css',
+    colorMode: typeof window === "undefined" ? "ansi" : "css",
   });
 };

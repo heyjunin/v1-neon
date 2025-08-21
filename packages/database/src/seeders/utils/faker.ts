@@ -1,4 +1,4 @@
-import { faker } from '@faker-js/faker';
+import { faker } from "@faker-js/faker";
 
 export interface FakerConfig {
   seed?: number;
@@ -22,11 +22,11 @@ export class FakerUtils {
     if (this.isInitialized) return;
 
     const { seed } = config;
-    
+
     if (seed) {
       faker.seed(seed);
     }
-    
+
     this.isInitialized = true;
   }
 
@@ -44,7 +44,7 @@ export class FakerUtils {
       location: faker.location.city(),
       website: faker.internet.url(),
       phone: faker.phone.number(),
-      birthDate: faker.date.birthdate({ min: 18, max: 65, mode: 'age' })
+      birthDate: faker.date.birthdate({ min: 18, max: 65, mode: "age" }),
     };
   }
 
@@ -54,13 +54,28 @@ export class FakerUtils {
       title: faker.lorem.sentence({ min: 3, max: 8 }),
       content: faker.lorem.paragraphs({ min: 1, max: 5 }),
       excerpt: faker.lorem.sentence({ min: 10, max: 20 }),
-      tags: faker.helpers.arrayElements([
-        'tecnologia', 'programação', 'design', 'marketing', 'negócios',
-        'startup', 'inovação', 'produtividade', 'carreira', 'educação'
-      ], { min: 1, max: 4 }),
+      tags: faker.helpers.arrayElements(
+        [
+          "tecnologia",
+          "programação",
+          "design",
+          "marketing",
+          "negócios",
+          "startup",
+          "inovação",
+          "produtividade",
+          "carreira",
+          "educação",
+        ],
+        { min: 1, max: 4 },
+      ),
       category: faker.helpers.arrayElement([
-        'artigo', 'tutorial', 'opinião', 'notícia', 'review'
-      ])
+        "artigo",
+        "tutorial",
+        "opinião",
+        "notícia",
+        "review",
+      ]),
     };
   }
 
@@ -72,7 +87,7 @@ export class FakerUtils {
       bs: faker.company.buzzPhrase(),
       industry: faker.company.buzzNoun(),
       foundedYear: faker.number.int({ min: 1990, max: 2024 }),
-      employeeCount: faker.number.int({ min: 1, max: 1000 })
+      employeeCount: faker.number.int({ min: 1, max: 1000 }),
     };
   }
 
@@ -86,8 +101,8 @@ export class FakerUtils {
       zipCode: faker.location.zipCode(),
       coordinates: {
         latitude: faker.location.latitude(),
-        longitude: faker.location.longitude()
-      }
+        longitude: faker.location.longitude(),
+      },
     };
   }
 
@@ -98,7 +113,7 @@ export class FakerUtils {
       soon: (days = 7) => faker.date.soon({ days }),
       past: (years = 1) => faker.date.past({ years }),
       future: (years = 1) => faker.date.future({ years }),
-      between: (from: Date, to: Date) => faker.date.between({ from, to })
+      between: (from: Date, to: Date) => faker.date.between({ from, to }),
     };
   }
 
@@ -114,12 +129,13 @@ export class FakerUtils {
       number: (min = 1, max = 100) => faker.number.int({ min, max }),
       float: (min = 0, max = 1) => faker.number.float({ min, max }),
       element: <T>(array: T[]) => faker.helpers.arrayElement(array),
-      elements: <T>(array: T[], count?: number) => faker.helpers.arrayElements(array, count),
+      elements: <T>(array: T[], count?: number) =>
+        faker.helpers.arrayElements(array, count),
       uuid: () => faker.string.uuid(),
       hex: () => faker.string.hexadecimal(),
       alpha: (length = 10) => faker.string.alpha({ length }),
       numeric: (length = 10) => faker.string.numeric({ length }),
-      alphanumeric: (length = 10) => faker.string.alphanumeric({ length })
+      alphanumeric: (length = 10) => faker.string.alphanumeric({ length }),
     };
   }
 
@@ -128,7 +144,8 @@ export class FakerUtils {
     return {
       avatar: () => faker.image.avatar(),
       url: (width = 640, height = 480) => faker.image.url({ width, height }),
-      urlPlaceholder: (width = 640, height = 480) => faker.image.url({ width, height })
+      urlPlaceholder: (width = 640, height = 480) =>
+        faker.image.url({ width, height }),
     };
   }
 
@@ -138,11 +155,13 @@ export class FakerUtils {
       word: () => faker.lorem.word(),
       words: (count = 3) => faker.lorem.words({ min: count, max: count }),
       sentence: (min = 5, max = 15) => faker.lorem.sentence({ min, max }),
-      sentences: (count = 3) => faker.lorem.sentences({ min: count, max: count }),
+      sentences: (count = 3) =>
+        faker.lorem.sentences({ min: count, max: count }),
       paragraph: (min = 3, max = 7) => faker.lorem.paragraph({ min, max }),
-      paragraphs: (count = 3) => faker.lorem.paragraphs({ min: count, max: count }),
+      paragraphs: (count = 3) =>
+        faker.lorem.paragraphs({ min: count, max: count }),
       text: () => faker.lorem.text(),
-      lines: (count = 3) => faker.lorem.lines({ min: count, max: count })
+      lines: (count = 3) => faker.lorem.lines({ min: count, max: count }),
     };
   }
 }

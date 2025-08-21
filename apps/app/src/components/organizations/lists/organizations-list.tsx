@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useOrganizations } from '@/lib/trpc';
-import { Badge } from '@v1/ui/badge';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Building2, Edit, Eye, Plus, Search, User } from 'lucide-react';
-import React, { useState } from 'react';
-import type { Organization } from '../types';
+import { useOrganizations } from "@/lib/trpc";
+import { Badge } from "@v1/ui/badge";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Building2, Edit, Eye, Plus, Search, User } from "lucide-react";
+import React, { useState } from "react";
+import type { Organization } from "../types";
 
 interface OrganizationsListProps {
   onEdit: (organization: Organization) => void;
@@ -15,39 +21,51 @@ interface OrganizationsListProps {
   onView?: (organization: Organization) => void;
 }
 
-export function OrganizationsList({ onEdit, onCreate, onView }: OrganizationsListProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+export function OrganizationsList({
+  onEdit,
+  onCreate,
+  onView,
+}: OrganizationsListProps) {
+  const [searchTerm, setSearchTerm] = useState("");
   const { data: organizations, isLoading, error } = useOrganizations();
 
   // Ensure organizations is always an array and handle loading/error states
   const organizationsArray = React.useMemo(() => {
     if (!organizations) return [];
-    
+
     // If organizations is an object with data property (paginated response)
-    if (typeof organizations === 'object' && 'data' in organizations && Array.isArray(organizations.data)) {
+    if (
+      typeof organizations === "object" &&
+      "data" in organizations &&
+      Array.isArray(organizations.data)
+    ) {
       return organizations.data;
     }
-    
+
     // If organizations is already an array
     if (Array.isArray(organizations)) {
       return organizations;
     }
-    
+
     // Fallback to empty array
     return [];
   }, [organizations]);
-  
-  const filteredOrganizations = organizationsArray.filter((organization: Organization) => {
-    if (!organization || typeof organization !== 'object') return false;
-    
-    const name = organization.name || '';
-    const description = organization.description || '';
-    const slug = organization.slug || '';
-    
-    return name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           slug.toLowerCase().includes(searchTerm.toLowerCase());
-  });
+
+  const filteredOrganizations = organizationsArray.filter(
+    (organization: Organization) => {
+      if (!organization || typeof organization !== "object") return false;
+
+      const name = organization.name || "";
+      const description = organization.description || "";
+      const slug = organization.slug || "";
+
+      return (
+        name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        slug.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    },
+  );
 
   const handleViewClick = (organization: Organization) => {
     if (onView) {
@@ -68,7 +86,8 @@ export function OrganizationsList({ onEdit, onCreate, onView }: OrganizationsLis
         </div>
         <div className="text-center py-12">
           <div className="text-red-500 mb-4">
-            Erro ao carregar organizations: {error.message || 'Erro desconhecido'}
+            Erro ao carregar organizations:{" "}
+            {error.message || "Erro desconhecido"}
           </div>
           <Button onClick={() => window.location.reload()}>
             Tentar novamente
@@ -114,7 +133,9 @@ export function OrganizationsList({ onEdit, onCreate, onView }: OrganizationsLis
             Nenhuma organization encontrada
           </h3>
           <p className="text-gray-500 mb-4">
-            {searchTerm ? 'Tente ajustar sua busca.' : 'Crie sua primeira organization para começar.'}
+            {searchTerm
+              ? "Tente ajustar sua busca."
+              : "Crie sua primeira organization para começar."}
           </p>
           {!searchTerm && (
             <Button onClick={onCreate}>
@@ -129,15 +150,22 @@ export function OrganizationsList({ onEdit, onCreate, onView }: OrganizationsLis
       {!isLoading && filteredOrganizations.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredOrganizations.map((organization: Organization) => (
-            <Card key={organization.id} className="hover:shadow-md transition-shadow">
+            <Card
+              key={organization.id}
+              className="hover:shadow-md transition-shadow"
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-2">
                     <Building2 className="h-5 w-5 text-gray-500" />
-                    <CardTitle className="text-lg">{organization.name}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {organization.name}
+                    </CardTitle>
                   </div>
-                  <Badge variant={organization.isActive ? "default" : "secondary"}>
-                    {organization.isActive ? 'Ativa' : 'Inativa'}
+                  <Badge
+                    variant={organization.isActive ? "default" : "secondary"}
+                  >
+                    {organization.isActive ? "Ativa" : "Inativa"}
                   </Badge>
                 </div>
                 <CardDescription className="text-sm text-gray-600">
@@ -150,13 +178,17 @@ export function OrganizationsList({ onEdit, onCreate, onView }: OrganizationsLis
                     {organization.description}
                   </p>
                 )}
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-1 text-sm text-gray-500">
                     <User className="h-4 w-4" />
-                    <span>Owner: {organization.owner?.fullName || organization.owner?.email}</span>
+                    <span>
+                      Owner:{" "}
+                      {organization.owner?.fullName ||
+                        organization.owner?.email}
+                    </span>
                   </div>
-                  
+
                   <div className="flex items-center space-x-2">
                     {onView && (
                       <Button

@@ -1,7 +1,7 @@
-import { logger } from '@v1/logger';
-import mime from 'mime-types';
-import sharp from 'sharp';
-import type { ImageTransformOptions } from './types';
+import { logger } from "@v1/logger";
+import mime from "mime-types";
+import sharp from "sharp";
+import type { ImageTransformOptions } from "./types";
 
 /**
  * Get MIME type from filename or buffer
@@ -10,14 +10,27 @@ export function getMimeType(input: string | Buffer): string {
   if (Buffer.isBuffer(input)) {
     // Try to detect from buffer content
     const header = input.slice(0, 4);
-    if (header[0] === 0xFF && header[1] === 0xD8) return 'image/jpeg';
-    if (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47) return 'image/png';
-    if (header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46) return 'image/gif';
-    if (header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46) return 'image/webp';
-    return 'application/octet-stream';
+    if (header[0] === 0xff && header[1] === 0xd8) return "image/jpeg";
+    if (
+      header[0] === 0x89 &&
+      header[1] === 0x50 &&
+      header[2] === 0x4e &&
+      header[3] === 0x47
+    )
+      return "image/png";
+    if (header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46)
+      return "image/gif";
+    if (
+      header[0] === 0x52 &&
+      header[1] === 0x49 &&
+      header[2] === 0x46 &&
+      header[3] === 0x46
+    )
+      return "image/webp";
+    return "application/octet-stream";
   }
-  
-  return mime.lookup(input) || 'application/octet-stream';
+
+  return mime.lookup(input) || "application/octet-stream";
 }
 
 /**
@@ -25,7 +38,7 @@ export function getMimeType(input: string | Buffer): string {
  */
 export async function transformImage(
   buffer: Buffer,
-  options: ImageTransformOptions = {}
+  options: ImageTransformOptions = {},
 ): Promise<Buffer> {
   try {
     let sharpInstance = sharp(buffer);
@@ -33,9 +46,9 @@ export async function transformImage(
     // Apply transformations
     if (options.width || options.height) {
       sharpInstance = sharpInstance.resize(options.width, options.height, {
-        fit: options.fit || 'cover',
-        position: options.position || 'center',
-        background: options.background || '#ffffff',
+        fit: options.fit || "cover",
+        position: options.position || "center",
+        background: options.background || "#ffffff",
       });
     }
 
@@ -62,25 +75,31 @@ export async function transformImage(
     // Set output format and quality
     if (options.format) {
       switch (options.format) {
-        case 'jpeg':
-          sharpInstance = sharpInstance.jpeg({ quality: options.quality || 80 });
+        case "jpeg":
+          sharpInstance = sharpInstance.jpeg({
+            quality: options.quality || 80,
+          });
           break;
-        case 'png':
+        case "png":
           sharpInstance = sharpInstance.png({ quality: options.quality || 80 });
           break;
-        case 'webp':
-          sharpInstance = sharpInstance.webp({ quality: options.quality || 80 });
+        case "webp":
+          sharpInstance = sharpInstance.webp({
+            quality: options.quality || 80,
+          });
           break;
-        case 'avif':
-          sharpInstance = sharpInstance.avif({ quality: options.quality || 80 });
+        case "avif":
+          sharpInstance = sharpInstance.avif({
+            quality: options.quality || 80,
+          });
           break;
       }
     }
 
     return await sharpInstance.toBuffer();
   } catch (error) {
-    logger.error('Image transformation error:', error);
-    throw new Error('Failed to transform image');
+    logger.error("Image transformation error:", error);
+    throw new Error("Failed to transform image");
   }
 }
 
@@ -89,7 +108,7 @@ export async function transformImage(
  */
 export async function generateImageVariants(
   buffer: Buffer,
-  variants: Array<{ name: string; options: ImageTransformOptions }>
+  variants: Array<{ name: string; options: ImageTransformOptions }>,
 ): Promise<Record<string, Buffer>> {
   const results: Record<string, Buffer> = {};
 
@@ -117,10 +136,10 @@ export function validateFileSize(size: number, maxSize: number): boolean {
  */
 export function validateFileType(
   mimeType: string,
-  allowedTypes: string[]
+  allowedTypes: string[],
 ): boolean {
-  return allowedTypes.some(type => {
-    if (type.endsWith('/*')) {
+  return allowedTypes.some((type) => {
+    if (type.endsWith("/*")) {
       return mimeType.startsWith(type.slice(0, -1));
     }
     return mimeType === type;
@@ -132,13 +151,13 @@ export function validateFileType(
  */
 export function generateUniqueFilename(
   originalName: string,
-  prefix?: string
+  prefix?: string,
 ): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2, 15);
-  const extension = originalName.split('.').pop() || '';
-  const name = originalName.replace(/\.[^/.]+$/, '');
-  
+  const extension = originalName.split(".").pop() || "";
+  const name = originalName.replace(/\.[^/.]+$/, "");
+
   const filename = `${name}-${timestamp}-${random}.${extension}`;
   return prefix ? `${prefix}/${filename}` : filename;
 }
@@ -156,20 +175,20 @@ export function parseFileSize(sizeString: string): number {
 
   const match = sizeString.match(/^(\d+(?:\.\d+)?)\s*(B|KB|MB|GB)$/i);
   if (!match) {
-    throw new Error('Invalid file size format');
+    throw new Error("Invalid file size format");
   }
 
   const [, size, unit] = match;
   if (!size || !unit) {
-    throw new Error('Invalid file size format');
+    throw new Error("Invalid file size format");
   }
-  
+
   const upperUnit = unit.toUpperCase();
   const unitValue = units[upperUnit];
   if (!unitValue) {
-    throw new Error('Invalid file size unit');
+    throw new Error("Invalid file size unit");
   }
-  
+
   return parseFloat(size) * unitValue;
 }
 
@@ -177,10 +196,10 @@ export function parseFileSize(sizeString: string): number {
  * Format bytes to human readable string
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
 
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
@@ -191,32 +210,33 @@ export function formatFileSize(bytes: number): string {
  */
 export function getExtensionFromMimeType(mimeType: string): string {
   const extension = mime.extension(mimeType);
-  return extension ? `.${extension}` : '';
+  return extension ? `.${extension}` : "";
 }
 
 /**
  * Check if file is an image
  */
 export function isImage(mimeType: string): boolean {
-  return mimeType.startsWith('image/');
+  return mimeType.startsWith("image/");
 }
 
 /**
  * Check if file is a video
  */
 export function isVideo(mimeType: string): boolean {
-  return mimeType.startsWith('video/');
+  return mimeType.startsWith("video/");
 }
 
 /**
  * Check if file is a document
  */
 export function isDocument(mimeType: string): boolean {
-  return mimeType.startsWith('application/') && (
-    mimeType.includes('pdf') ||
-    mimeType.includes('word') ||
-    mimeType.includes('excel') ||
-    mimeType.includes('powerpoint') ||
-    mimeType.includes('text')
+  return (
+    mimeType.startsWith("application/") &&
+    (mimeType.includes("pdf") ||
+      mimeType.includes("word") ||
+      mimeType.includes("excel") ||
+      mimeType.includes("powerpoint") ||
+      mimeType.includes("text"))
   );
 }

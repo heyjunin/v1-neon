@@ -98,12 +98,8 @@
           "name": "notifications_user_id_users_id_fk",
           "tableFrom": "notifications",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -111,12 +107,8 @@
           "name": "notifications_organization_id_organizations_id_fk",
           "tableFrom": "notifications",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -124,12 +116,8 @@
           "name": "notifications_post_id_posts_id_fk",
           "tableFrom": "notifications",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -222,23 +210,17 @@
       "indexes": {
         "idx_org_invites_token": {
           "name": "idx_org_invites_token",
-          "columns": [
-            "token"
-          ],
+          "columns": ["token"],
           "isUnique": false
         },
         "idx_org_invites_email": {
           "name": "idx_org_invites_email",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": false
         },
         "idx_org_invites_organization_id": {
           "name": "idx_org_invites_organization_id",
-          "columns": [
-            "organization_id"
-          ],
+          "columns": ["organization_id"],
           "isUnique": false
         }
       },
@@ -247,12 +229,8 @@
           "name": "organization_invites_organization_id_organizations_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -260,12 +238,8 @@
           "name": "organization_invites_invited_by_users_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -273,12 +247,8 @@
           "name": "organization_invites_accepted_by_users_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "accepted_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["accepted_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -288,9 +258,7 @@
         "organization_invites_token_unique": {
           "name": "organization_invites_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       }
     },
@@ -367,24 +335,17 @@
       "indexes": {
         "idx_org_members_org_user": {
           "name": "idx_org_members_org_user",
-          "columns": [
-            "organization_id",
-            "user_id"
-          ],
+          "columns": ["organization_id", "user_id"],
           "isUnique": false
         },
         "idx_org_members_user_id": {
           "name": "idx_org_members_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         },
         "idx_org_members_organization_id": {
           "name": "idx_org_members_organization_id",
-          "columns": [
-            "organization_id"
-          ],
+          "columns": ["organization_id"],
           "isUnique": false
         }
       },
@@ -393,12 +354,8 @@
           "name": "organization_members_organization_id_organizations_id_fk",
           "tableFrom": "organization_members",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -406,12 +363,8 @@
           "name": "organization_members_user_id_users_id_fk",
           "tableFrom": "organization_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -419,12 +372,8 @@
           "name": "organization_members_invited_by_users_id_fk",
           "tableFrom": "organization_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -498,16 +447,12 @@
       "indexes": {
         "idx_organizations_slug": {
           "name": "idx_organizations_slug",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": false
         },
         "idx_organizations_owner_id": {
           "name": "idx_organizations_owner_id",
-          "columns": [
-            "owner_id"
-          ],
+          "columns": ["owner_id"],
           "isUnique": false
         }
       },
@@ -516,12 +461,8 @@
           "name": "organizations_owner_id_users_id_fk",
           "tableFrom": "organizations",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -531,9 +472,7 @@
         "organizations_slug_unique": {
           "name": "organizations_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       }
     },
@@ -584,9 +523,7 @@
       "indexes": {
         "idx_posts_user_id": {
           "name": "idx_posts_user_id",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -595,12 +532,8 @@
           "name": "posts_user_id_users_id_fk",
           "tableFrom": "posts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -654,9 +587,7 @@
       "indexes": {
         "email_idx": {
           "name": "email_idx",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": false
         }
       },
@@ -666,9 +597,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     }

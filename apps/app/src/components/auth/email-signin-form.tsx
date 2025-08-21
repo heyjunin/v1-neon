@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useSignIn } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useSignIn } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface EmailSignInFormProps {
   onSuccess?: () => void;
@@ -16,17 +22,17 @@ interface EmailSignInFormProps {
 }
 
 export function EmailSignInForm({ onSuccess, onError }: EmailSignInFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   const router = useRouter();
   const signIn = useSignIn();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
       await signIn.mutateAsync({
@@ -35,9 +41,9 @@ export function EmailSignInForm({ onSuccess, onError }: EmailSignInFormProps) {
       });
 
       onSuccess?.();
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Sign in failed';
+      const errorMessage = err.data?.message || err.message || "Sign in failed";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -81,7 +87,7 @@ export function EmailSignInForm({ onSuccess, onError }: EmailSignInFormProps) {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -104,12 +110,10 @@ export function EmailSignInForm({ onSuccess, onError }: EmailSignInFormProps) {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={signIn.isPending}
-          >
-            {signIn.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={signIn.isPending}>
+            {signIn.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Sign In
           </Button>
         </form>

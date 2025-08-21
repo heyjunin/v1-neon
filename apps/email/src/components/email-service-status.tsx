@@ -5,12 +5,14 @@ import { useState } from "react";
 
 export function EmailServiceStatus() {
   const [isChecking, setIsChecking] = useState(false);
-  const [status, setStatus] = useState<"online" | "offline" | "checking">("checking");
+  const [status, setStatus] = useState<"online" | "offline" | "checking">(
+    "checking",
+  );
 
   async function checkServiceStatus() {
     setIsChecking(true);
     setStatus("checking");
-    
+
     try {
       const response = await fetch("/api/health");
       if (response.ok) {
@@ -36,20 +38,20 @@ export function EmailServiceStatus() {
                 status === "online"
                   ? "bg-green-500"
                   : status === "offline"
-                  ? "bg-red-500"
-                  : "bg-yellow-500 animate-pulse"
+                    ? "bg-red-500"
+                    : "bg-yellow-500 animate-pulse"
               }`}
             />
             <span className="text-sm text-muted-foreground">
               {status === "online"
                 ? "Online"
                 : status === "offline"
-                ? "Offline"
-                : "Verificando..."}
+                  ? "Offline"
+                  : "Verificando..."}
             </span>
           </div>
         </div>
-        
+
         <Button
           onClick={checkServiceStatus}
           disabled={isChecking}

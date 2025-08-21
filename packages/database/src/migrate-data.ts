@@ -1,27 +1,27 @@
-import { createClient } from '@v1/supabase/server';
-import { db } from './drizzle';
-import { users, posts } from './schema';
-import { logger } from '@v1/logger';
+import { createClient } from "@v1/supabase/server";
+import { db } from "./drizzle";
+import { users, posts } from "./schema";
+import { logger } from "@v1/logger";
 
 async function migrateData() {
   try {
-    logger.info('Starting data migration from Supabase to Neon...');
+    logger.info("Starting data migration from Supabase to Neon...");
 
     // Conectar ao Supabase
     const supabase = createClient();
 
     // Migrar usuários
-    logger.info('Migrating users...');
+    logger.info("Migrating users...");
     const { data: supabaseUsers, error: usersError } = await supabase
-      .from('users')
-      .select('*');
+      .from("users")
+      .select("*");
 
     if (usersError) {
       throw new Error(`Error fetching users: ${usersError.message}`);
     }
 
     if (supabaseUsers && supabaseUsers.length > 0) {
-      const mappedUsers = supabaseUsers.map(user => ({
+      const mappedUsers = supabaseUsers.map((user) => ({
         id: user.id,
         email: user.email,
         fullName: user.full_name,
@@ -29,23 +29,23 @@ async function migrateData() {
         createdAt: user.created_at ? new Date(user.created_at) : undefined,
         updatedAt: user.updated_at ? new Date(user.updated_at) : undefined,
       }));
-      
+
       await db.insert(users).values(mappedUsers).onConflictDoNothing();
       logger.info(`Migrated ${supabaseUsers.length} users`);
     }
 
     // Migrar posts
-    logger.info('Migrating posts...');
+    logger.info("Migrating posts...");
     const { data: supabasePosts, error: postsError } = await supabase
-      .from('posts')
-      .select('*');
+      .from("posts")
+      .select("*");
 
     if (postsError) {
       throw new Error(`Error fetching posts: ${postsError.message}`);
     }
 
     if (supabasePosts && supabasePosts.length > 0) {
-      const mappedPosts = supabasePosts.map(post => ({
+      const mappedPosts = supabasePosts.map((post) => ({
         id: post.id,
         userId: post.user_id,
         title: post.title,
@@ -53,14 +53,14 @@ async function migrateData() {
         createdAt: post.created_at ? new Date(post.created_at) : undefined,
         updatedAt: post.updated_at ? new Date(post.updated_at) : undefined,
       }));
-      
+
       await db.insert(posts).values(mappedPosts).onConflictDoNothing();
       logger.info(`Migrated ${supabasePosts.length} posts`);
     }
 
-    logger.info('Data migration completed successfully!');
+    logger.info("Data migration completed successfully!");
   } catch (error) {
-    logger.error('Migration failed:', error);
+    logger.error("Migration failed:", error);
     throw error;
   }
 }
@@ -69,11 +69,11 @@ async function migrateData() {
 if (require.main === module) {
   migrateData()
     .then(() => {
-      logger.info('Migration script completed');
+      logger.info("Migration script completed");
       process.exit(0);
     })
     .catch((error) => {
-      logger.error('Migration script failed:', error);
+      logger.error("Migration script failed:", error);
       process.exit(1);
     });
 }

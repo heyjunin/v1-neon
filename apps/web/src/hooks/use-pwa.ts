@@ -15,12 +15,15 @@ export function usePWA() {
   const [isOnline, setIsOnline] = useState(true);
   const [isStandalone, setIsStandalone] = useState(false);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     // Verificar se está em modo standalone (instalado)
     const checkStandalone = () => {
-      const standalone = window.matchMedia("(display-mode: standalone)").matches;
+      const standalone = window.matchMedia(
+        "(display-mode: standalone)",
+      ).matches;
       setIsStandalone(standalone);
     };
 
@@ -55,7 +58,10 @@ export function usePWA() {
     return () => {
       window.removeEventListener("online", updateOnlineStatus);
       window.removeEventListener("offline", updateOnlineStatus);
-      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt,
+      );
       window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
@@ -65,13 +71,13 @@ export function usePWA() {
 
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === "accepted") {
       setDeferredPrompt(null);
       setIsInstallable(false);
       return true;
     }
-    
+
     return false;
   };
 

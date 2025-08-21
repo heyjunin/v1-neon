@@ -1,24 +1,58 @@
-import { and, count, desc, eq } from 'drizzle-orm';
-import { db } from '../drizzle';
-import { notifications, organizations, posts } from '../schema';
+import { and, count, desc, eq } from "drizzle-orm";
+import { db } from "../drizzle";
+import {
+  notifications,
+  organizations,
+  posts,
+  type Notification,
+} from "../schema";
+
+export interface NotificationWithRelations {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  isArchived: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  readAt: Date | null;
+  metadata: any;
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  post: {
+    id: string;
+    title: string;
+  } | null;
+}
+
+export interface NotificationOptions {
+  limit?: number;
+  offset?: number;
+  includeRead?: boolean;
+  includeArchived?: boolean;
+}
 
 export async function getNotificationsByUserId(
   userId: string,
-  options: {
-    limit?: number;
-    offset?: number;
-    includeRead?: boolean;
-    includeArchived?: boolean;
-  } = {}
-) {
-  const { limit = 20, offset = 0, includeRead = true, includeArchived = false } = options;
+  options: NotificationOptions = {},
+): Promise<NotificationWithRelations[]> {
+  const {
+    limit = 20,
+    offset = 0,
+    includeRead = true,
+    includeArchived = false,
+  } = options;
 
   const conditions = [eq(notifications.userId, userId)];
-  
+
   if (!includeRead) {
     conditions.push(eq(notifications.isRead, false));
   }
-  
+
   if (!includeArchived) {
     conditions.push(eq(notifications.isArchived, false));
   }
@@ -54,7 +88,9 @@ export async function getNotificationsByUserId(
     .offset(offset);
 }
 
-export async function getUnreadNotificationsCount(userId: string) {
+export async function getUnreadNotificationsCount(
+  userId: string,
+): Promise<number> {
   const result = await db
     .select({ count: count() })
     .from(notifications)
@@ -62,14 +98,16 @@ export async function getUnreadNotificationsCount(userId: string) {
       and(
         eq(notifications.userId, userId),
         eq(notifications.isRead, false),
-        eq(notifications.isArchived, false)
-      )
+        eq(notifications.isArchived, false),
+      ),
     );
-  
+
   return result[0]?.count || 0;
 }
 
-export async function getNotificationById(notificationId: string) {
+export async function getNotificationById(
+  notificationId: string,
+): Promise<NotificationWithRelations | null> {
   const result = await db
     .select({
       id: notifications.id,
@@ -101,7 +139,10 @@ export async function getNotificationById(notificationId: string) {
   return result[0] || null;
 }
 
-export async function markNotificationAsRead(notificationId: string, userId: string) {
+export async function markNotificationAsRead(
+  notificationId: string,
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .update(notifications)
     .set({
@@ -112,13 +153,16 @@ export async function markNotificationAsRead(notificationId: string, userId: str
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, userId)
-      )
+        eq(notifications.userId, userId),
+      ),
     )
     .returning();
 }
 
-export async function markNotificationAsUnread(notificationId: string, userId: string) {
+export async function markNotificationAsUnread(
+  notificationId: string,
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .update(notifications)
     .set({
@@ -129,13 +173,15 @@ export async function markNotificationAsUnread(notificationId: string, userId: s
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, userId)
-      )
+        eq(notifications.userId, userId),
+      ),
     )
     .returning();
 }
 
-export async function markAllNotificationsAsRead(userId: string) {
+export async function markAllNotificationsAsRead(
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .update(notifications)
     .set({
@@ -147,13 +193,16 @@ export async function markAllNotificationsAsRead(userId: string) {
       and(
         eq(notifications.userId, userId),
         eq(notifications.isRead, false),
-        eq(notifications.isArchived, false)
-      )
+        eq(notifications.isArchived, false),
+      ),
     )
     .returning();
 }
 
-export async function archiveNotification(notificationId: string, userId: string) {
+export async function archiveNotification(
+  notificationId: string,
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .update(notifications)
     .set({
@@ -163,13 +212,16 @@ export async function archiveNotification(notificationId: string, userId: string
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, userId)
-      )
+        eq(notifications.userId, userId),
+      ),
     )
     .returning();
 }
 
-export async function unarchiveNotification(notificationId: string, userId: string) {
+export async function unarchiveNotification(
+  notificationId: string,
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .update(notifications)
     .set({
@@ -179,25 +231,28 @@ export async function unarchiveNotification(notificationId: string, userId: stri
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, userId)
-      )
+        eq(notifications.userId, userId),
+      ),
     )
     .returning();
 }
 
-export async function deleteNotification(notificationId: string, userId: string) {
+export async function deleteNotification(
+  notificationId: string,
+  userId: string,
+): Promise<Notification[]> {
   return await db
     .delete(notifications)
     .where(
       and(
         eq(notifications.id, notificationId),
-        eq(notifications.userId, userId)
-      )
+        eq(notifications.userId, userId),
+      ),
     )
     .returning();
 }
 
-export async function createNotification(data: {
+export interface CreateNotificationData {
   userId: string;
   title: string;
   message: string;
@@ -205,7 +260,11 @@ export async function createNotification(data: {
   organizationId?: string;
   postId?: string;
   metadata?: any;
-}) {
+}
+
+export async function createNotification(
+  data: CreateNotificationData,
+): Promise<Notification[]> {
   return await db
     .insert(notifications)
     .values({

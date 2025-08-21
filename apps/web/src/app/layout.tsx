@@ -20,39 +20,43 @@ export const metadata: Metadata = {
   title: "Create v1",
   description:
     "A free, open-source starter kit for your next project, built with insights from Midday.",
-  manifest: '/manifest.json',
+  manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
-    title: 'V1',
+    statusBarStyle: "default",
+    title: "V1",
   },
   icons: {
     icon: [
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' }
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
+      {
+        url: "/icons/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
     ],
-    shortcut: '/favicon.ico'
+    shortcut: "/favicon.ico",
   },
   other: {
-    'mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-capable': 'yes',
-    'apple-mobile-web-app-status-bar-style': 'default',
-    'apple-mobile-web-app-title': 'V1',
-    'application-name': 'V1',
-    'msapplication-TileColor': '#000000',
-    'msapplication-config': '/browserconfig.xml',
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "default",
+    "apple-mobile-web-app-title": "V1",
+    "application-name": "V1",
+    "msapplication-TileColor": "#000000",
+    "msapplication-config": "/browserconfig.xml",
   },
 };
 
 export const viewport: Viewport = {
-  width: 'device-width',
+  width: "device-width",
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#000000',
+  themeColor: "#000000",
 };
 
 export default function RootLayout({

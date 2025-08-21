@@ -19,8 +19,8 @@ export interface OrganizationMember {
   id: string;
   organizationId: string;
   userId: string;
-  role: 'owner' | 'admin' | 'member';
-  status: 'active' | 'invited' | 'suspended';
+  role: "owner" | "admin" | "member";
+  status: "active" | "invited" | "suspended";
   invitedBy: string | null;
   invitedAt: string | null;
   joinedAt: string | null;
@@ -37,11 +37,11 @@ export interface OrganizationInvite {
   id: string;
   organizationId: string;
   email: string;
-  role: 'owner' | 'admin' | 'member';
+  role: "owner" | "admin" | "member";
   invitedBy: string;
   token: string;
   expiresAt: string;
-  status: 'pending' | 'accepted' | 'expired' | 'cancelled';
+  status: "pending" | "accepted" | "expired" | "cancelled";
   acceptedAt: string | null;
   acceptedBy: string | null;
   createdAt: string;
@@ -62,15 +62,15 @@ export interface OrganizationFormData {
 
 export interface MemberFormData {
   userId: string;
-  role: 'owner' | 'admin' | 'member';
+  role: "owner" | "admin" | "member";
 }
 
 export interface InviteFormData {
   email: string;
-  role: 'owner' | 'admin' | 'member';
+  role: "owner" | "admin" | "member";
 }
 
-export type NotificationType = 'success' | 'error';
+export type NotificationType = "success" | "error";
 
 export interface NotificationState {
   type: NotificationType;
@@ -124,7 +124,7 @@ export interface UseFormReturn<T> {
 }
 
 // Organization roles and permissions
-export type OrganizationRole = 'owner' | 'admin' | 'member';
+export type OrganizationRole = "owner" | "admin" | "member";
 
 export interface OrganizationPermissions {
   canView: boolean;
@@ -135,7 +135,10 @@ export interface OrganizationPermissions {
   canTransferOwnership: boolean;
 }
 
-export const ROLE_PERMISSIONS: Record<OrganizationRole, OrganizationPermissions> = {
+export const ROLE_PERMISSIONS: Record<
+  OrganizationRole,
+  OrganizationPermissions
+> = {
   owner: {
     canView: true,
     canEdit: true,
@@ -162,6 +165,8 @@ export const ROLE_PERMISSIONS: Record<OrganizationRole, OrganizationPermissions>
   },
 };
 
-export function getOrganizationPermissions(role: OrganizationRole): OrganizationPermissions {
+export function getOrganizationPermissions(
+  role: OrganizationRole,
+): OrganizationPermissions {
   return ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.member;
 }

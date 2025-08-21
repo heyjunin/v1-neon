@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useSignUp } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Eye, EyeOff, Loader2, Lock, Mail, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useSignUp } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface EmailSignUpFormProps {
   onSuccess?: () => void;
@@ -16,30 +22,30 @@ interface EmailSignUpFormProps {
 }
 
 export function EmailSignUpForm({ onSuccess, onError }: EmailSignUpFormProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const router = useRouter();
   const signUp = useSignUp();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError("Password must be at least 8 characters long");
       return;
     }
 
@@ -50,10 +56,10 @@ export function EmailSignUpForm({ onSuccess, onError }: EmailSignUpFormProps) {
         fullName,
       });
 
-      setSuccess('Check your email for the confirmation link');
+      setSuccess("Check your email for the confirmation link");
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Sign up failed';
+      const errorMessage = err.data?.message || err.message || "Sign up failed";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -119,7 +125,7 @@ export function EmailSignUpForm({ onSuccess, onError }: EmailSignUpFormProps) {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="password"
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -148,7 +154,7 @@ export function EmailSignUpForm({ onSuccess, onError }: EmailSignUpFormProps) {
               <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 id="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
+                type={showConfirmPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -171,12 +177,10 @@ export function EmailSignUpForm({ onSuccess, onError }: EmailSignUpFormProps) {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={signUp.isPending}
-          >
-            {signUp.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={signUp.isPending}>
+            {signUp.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Create Account
           </Button>
         </form>

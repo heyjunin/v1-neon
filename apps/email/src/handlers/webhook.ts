@@ -1,9 +1,16 @@
+import {
+  EmailService,
+  WebhookService,
+  createEmailConfig,
+  validateEmailConfig,
+} from "@v1/email";
 import type { Context } from "hono";
-import { EmailService } from "../services/email-service";
-import { WebhookService } from "../services/webhook-service";
 
-const emailService = new EmailService();
-const webhookService = new WebhookService();
+const emailConfig = createEmailConfig();
+validateEmailConfig(emailConfig);
+
+const emailService = new EmailService(emailConfig);
+const webhookService = new WebhookService(emailConfig);
 
 export const webhookHandler = async (c: Context) => {
   if (c.req.method !== "POST") {
@@ -26,9 +33,6 @@ export const webhookHandler = async (c: Context) => {
     });
   } catch (error) {
     console.error("Error processing webhook:", error);
-    return c.json(
-      { error: "Internal server error" },
-      500
-    );
+    return c.json({ error: "Internal server error" }, 500);
   }
 };

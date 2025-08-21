@@ -1,33 +1,43 @@
-'use client';
+"use client";
 
-import { useMarkAllNotificationsAsRead, useMarkNotificationAsRead, useNotifications, useUnreadNotificationsCount } from '@/lib/trpc';
-import type { Notification } from '@v1/database/schema';
-import { Badge } from '@v1/ui/badge';
-import { Button } from '@v1/ui/button';
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@v1/ui/dropdown-menu';
-import { ScrollArea } from '@v1/ui/scroll-area';
-import { Bell, CheckCheck, ExternalLink, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { NotificationItem } from './notification-item';
+  useMarkAllNotificationsAsRead,
+  useMarkNotificationAsRead,
+  useNotifications,
+  useUnreadNotificationsCount,
+} from "@/lib/trpc";
+import type { Notification } from "@v1/database/schema";
+import { Badge } from "@v1/ui/badge";
+import { Button } from "@v1/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@v1/ui/dropdown-menu";
+import { ScrollArea } from "@v1/ui/scroll-area";
+import { Bell, CheckCheck, ExternalLink, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { NotificationItem } from "./notification-item";
 
 export function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  
-  const { data: notificationsData, isLoading, refetch } = useNotifications({
+
+  const {
+    data: notificationsData,
+    isLoading,
+    refetch,
+  } = useNotifications({
     limit: 10,
     includeRead: false,
     includeArchived: false,
   });
-  
-  const { data: unreadCountData, refetch: refetchCount } = useUnreadNotificationsCount();
+
+  const { data: unreadCountData, refetch: refetchCount } =
+    useUnreadNotificationsCount();
   const markAsRead = useMarkNotificationAsRead();
   const markAllAsRead = useMarkAllNotificationsAsRead();
 
@@ -40,7 +50,7 @@ export function NotificationDropdown() {
       refetch();
       refetchCount();
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -50,24 +60,24 @@ export function NotificationDropdown() {
       refetch();
       refetchCount();
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      console.error("Failed to mark all notifications as read:", error);
     }
   };
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return '✅';
-      case 'warning':
-        return '⚠️';
-      case 'error':
-        return '❌';
-      case 'invite':
-        return '📨';
-      case 'mention':
-        return '👤';
+      case "success":
+        return "✅";
+      case "warning":
+        return "⚠️";
+      case "error":
+        return "❌";
+      case "invite":
+        return "📨";
+      case "mention":
+        return "👤";
       default:
-        return 'ℹ️';
+        return "ℹ️";
     }
   };
 
@@ -77,16 +87,16 @@ export function NotificationDropdown() {
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {unreadCount > 99 ? "99+" : unreadCount}
             </Badge>
           )}
         </Button>
       </DropdownMenuTrigger>
-      
+
       <DropdownMenuContent align="end" className="w-80">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notifications</span>
@@ -107,9 +117,9 @@ export function NotificationDropdown() {
             </Button>
           )}
         </DropdownMenuLabel>
-        
+
         <DropdownMenuSeparator />
-        
+
         <ScrollArea className="h-64">
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
@@ -120,7 +130,9 @@ export function NotificationDropdown() {
             <div className="flex flex-col items-center justify-center p-4 text-center">
               <Bell className="h-8 w-8 text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No notifications</p>
-              <p className="text-xs text-muted-foreground">You're all caught up!</p>
+              <p className="text-xs text-muted-foreground">
+                You're all caught up!
+              </p>
             </div>
           ) : (
             <div className="space-y-1 p-1">
@@ -135,12 +147,15 @@ export function NotificationDropdown() {
             </div>
           )}
         </ScrollArea>
-        
+
         {notifications.length > 0 && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/notifications" className="flex items-center justify-center">
+              <Link
+                href="/notifications"
+                className="flex items-center justify-center"
+              >
                 <ExternalLink className="h-4 w-4 mr-2" />
                 View all notifications
               </Link>

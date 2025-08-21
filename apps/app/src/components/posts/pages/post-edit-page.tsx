@@ -1,15 +1,21 @@
-'use client';
+"use client";
 
-import { usePost, useUpdatePost } from '@/lib/trpc';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Textarea } from '@v1/ui/textarea';
-import { ArrowLeft, Save } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { usePostToast } from '../hooks/use-toast';
-import { PostFormData } from '../types';
+import { usePost, useUpdatePost } from "@/lib/trpc";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Textarea } from "@v1/ui/textarea";
+import { ArrowLeft, Save } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePostToast } from "../hooks/use-toast";
+import { PostFormData } from "../types";
 
 interface PostEditPageProps {
   postId: string;
@@ -20,10 +26,10 @@ export function PostEditPage({ postId }: PostEditPageProps) {
   const { data: post, isLoading, error } = usePost(postId);
   const updatePostMutation = useUpdatePost();
   const { showSuccess, showError } = usePostToast();
-  
+
   const [formData, setFormData] = useState<PostFormData>({
-    title: '',
-    content: '',
+    title: "",
+    content: "",
   });
 
   useEffect(() => {
@@ -37,7 +43,7 @@ export function PostEditPage({ postId }: PostEditPageProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!post) return;
 
     try {
@@ -46,16 +52,16 @@ export function PostEditPage({ postId }: PostEditPageProps) {
         title: formData.title,
         content: formData.content,
       });
-      
-      showSuccess('Post atualizado com sucesso!');
+
+      showSuccess("Post atualizado com sucesso!");
       router.push(`/posts/${post.id}`);
     } catch (error) {
-      showError('Erro ao atualizar post. Tente novamente.');
+      showError("Erro ao atualizar post. Tente novamente.");
     }
   };
 
   const handleInputChange = (field: keyof PostFormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -94,9 +100,11 @@ export function PostEditPage({ postId }: PostEditPageProps) {
         </div>
         <div className="text-center py-12">
           <div className="text-red-500 mb-4">
-            {error ? `Erro ao carregar post: ${error.message}` : 'Post não encontrado'}
+            {error
+              ? `Erro ao carregar post: ${error.message}`
+              : "Post não encontrado"}
           </div>
-          <Button onClick={() => router.push('/posts')}>
+          <Button onClick={() => router.push("/posts")}>
             Voltar para Posts
           </Button>
         </div>
@@ -137,7 +145,7 @@ export function PostEditPage({ postId }: PostEditPageProps) {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
+                onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="Digite o título do post"
                 required
               />
@@ -150,7 +158,7 @@ export function PostEditPage({ postId }: PostEditPageProps) {
               <Textarea
                 id="content"
                 value={formData.content}
-                onChange={(e) => handleInputChange('content', e.target.value)}
+                onChange={(e) => handleInputChange("content", e.target.value)}
                 placeholder="Digite o conteúdo do post"
                 rows={10}
                 required
@@ -158,12 +166,11 @@ export function PostEditPage({ postId }: PostEditPageProps) {
             </div>
 
             <div className="flex items-center gap-2 pt-4">
-              <Button
-                type="submit"
-                disabled={updatePostMutation.isPending}
-              >
+              <Button type="submit" disabled={updatePostMutation.isPending}>
                 <Save className="h-4 w-4 mr-2" />
-                {updatePostMutation.isPending ? 'Salvando...' : 'Salvar Alterações'}
+                {updatePostMutation.isPending
+                  ? "Salvando..."
+                  : "Salvar Alterações"}
               </Button>
               <Button
                 type="button"

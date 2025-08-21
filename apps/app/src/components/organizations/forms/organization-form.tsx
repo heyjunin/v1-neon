@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useCreateOrganization, useUpdateOrganization } from '@/lib/trpc';
-import { Button } from '@v1/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@v1/ui/dialog';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Textarea } from '@v1/ui/textarea';
-import { Loader2, Save, X } from 'lucide-react';
-import { useState } from 'react';
-import type { Organization, OrganizationFormData } from '../types';
+import { useCreateOrganization, useUpdateOrganization } from "@/lib/trpc";
+import { Button } from "@v1/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@v1/ui/dialog";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { Textarea } from "@v1/ui/textarea";
+import { Loader2, Save, X } from "lucide-react";
+import { useState } from "react";
+import type { Organization, OrganizationFormData } from "../types";
 
 interface OrganizationFormProps {
   organization?: Organization | null;
@@ -17,18 +23,25 @@ interface OrganizationFormProps {
   onSuccess?: () => void;
 }
 
-export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: OrganizationFormProps) {
+export function OrganizationForm({
+  organization,
+  isOpen,
+  onClose,
+  onSuccess,
+}: OrganizationFormProps) {
   const createOrganizationMutation = useCreateOrganization();
   const updateOrganizationMutation = useUpdateOrganization();
-  
+
   const isEditing = !!organization;
-  const isLoading = createOrganizationMutation.isPending || updateOrganizationMutation.isPending;
+  const isLoading =
+    createOrganizationMutation.isPending ||
+    updateOrganizationMutation.isPending;
 
   const [formData, setFormData] = useState<OrganizationFormData>({
-    name: organization?.name || '',
-    slug: organization?.slug || '',
-    description: organization?.description || '',
-    logoUrl: organization?.logoUrl || '',
+    name: organization?.name || "",
+    slug: organization?.slug || "",
+    description: organization?.description || "",
+    logoUrl: organization?.logoUrl || "",
   });
 
   const [errors, setErrors] = useState<Partial<OrganizationFormData>>({});
@@ -37,17 +50,18 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
     const newErrors: Partial<OrganizationFormData> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório';
+      newErrors.name = "Nome é obrigatório";
     }
 
     if (!formData.slug.trim()) {
-      newErrors.slug = 'Slug é obrigatório';
+      newErrors.slug = "Slug é obrigatório";
     } else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-      newErrors.slug = 'Slug deve conter apenas letras minúsculas, números e hífens';
+      newErrors.slug =
+        "Slug deve conter apenas letras minúsculas, números e hífens";
     }
 
     if (formData.logoUrl && !isValidUrl(formData.logoUrl)) {
-      newErrors.logoUrl = 'URL inválida';
+      newErrors.logoUrl = "URL inválida";
     }
 
     setErrors(newErrors);
@@ -65,7 +79,7 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -79,10 +93,10 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
       } else {
         await createOrganizationMutation.mutateAsync(formData);
       }
-      
+
       onSuccess?.();
     } catch (error) {
-      console.error('Error saving organization:', error);
+      console.error("Error saving organization:", error);
     }
   };
 
@@ -97,13 +111,12 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? 'Editar Organization' : 'Criar Nova Organization'}
+            {isEditing ? "Editar Organization" : "Criar Nova Organization"}
           </DialogTitle>
           <DialogDescription>
-            {isEditing 
-              ? 'Edite as informações da sua organization abaixo.'
-              : 'Preencha as informações para criar uma nova organization.'
-            }
+            {isEditing
+              ? "Edite as informações da sua organization abaixo."
+              : "Preencha as informações para criar uma nova organization."}
           </DialogDescription>
         </DialogHeader>
 
@@ -113,7 +126,9 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               placeholder="Digite o nome da organization..."
               disabled={isLoading}
               maxLength={100}
@@ -128,7 +143,9 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
             <Input
               id="slug"
               value={formData.slug}
-              onChange={(e) => setFormData({ ...formData, slug: e.target.value.toLowerCase() })}
+              onChange={(e) =>
+                setFormData({ ...formData, slug: e.target.value.toLowerCase() })
+              }
               placeholder="digite-o-slug-da-organization"
               disabled={isLoading}
               maxLength={50}
@@ -146,7 +163,9 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
               placeholder="Digite uma descrição para a organization..."
               disabled={isLoading}
               rows={3}
@@ -159,7 +178,9 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
               id="logoUrl"
               type="url"
               value={formData.logoUrl}
-              onChange={(e) => setFormData({ ...formData, logoUrl: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, logoUrl: e.target.value })
+              }
               placeholder="https://exemplo.com/logo.png"
               disabled={isLoading}
             />
@@ -184,7 +205,7 @@ export function OrganizationForm({ organization, isOpen, onClose, onSuccess }: O
               ) : (
                 <Save className="h-4 w-4 mr-2" />
               )}
-              {isEditing ? 'Atualizar' : 'Criar'}
+              {isEditing ? "Atualizar" : "Criar"}
             </Button>
           </div>
         </form>

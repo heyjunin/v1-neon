@@ -1,29 +1,29 @@
-import { useToast } from '@v1/ui';
+import { useToast } from "@v1/ui";
 
 export function usePostToast() {
   const { toast } = useToast();
 
   const showSuccess = (message: string) => {
     toast({
-      title: 'Sucesso',
+      title: "Sucesso",
       description: message,
-      variant: 'default',
+      variant: "default",
     });
   };
 
   const showError = (message: string) => {
     toast({
-      title: 'Erro',
+      title: "Erro",
       description: message,
-      variant: 'destructive',
+      variant: "destructive",
     });
   };
 
   const showLoading = (message: string) => {
     toast({
-      title: 'Processando',
+      title: "Processando",
       description: message,
-      variant: 'default',
+      variant: "default",
     });
   };
 

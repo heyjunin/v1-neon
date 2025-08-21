@@ -1,6 +1,6 @@
-import { logger } from '@v1/logger';
-import { createR2Storage } from '@v1/storage/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { logger } from "@v1/logger";
+import { createR2Storage } from "@v1/storage/server";
+import { NextRequest, NextResponse } from "next/server";
 
 const storage = createR2Storage({
   accountId: process.env.R2_ACCOUNT_ID!,
@@ -12,13 +12,13 @@ const storage = createR2Storage({
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const key = formData.get('key') as string;
-    const contentType = formData.get('contentType') as string;
-    const metadata = formData.get('metadata') as string;
-    
+    const file = formData.get("file") as File;
+    const key = formData.get("key") as string;
+    const contentType = formData.get("contentType") as string;
+    const metadata = formData.get("metadata") as string;
+
     if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
     // Parse metadata if provided
@@ -38,18 +38,24 @@ export async function POST(request: NextRequest) {
         originalName: file.name,
         size: file.size.toString(),
         uploadedAt: new Date().toISOString(),
-        ...parsedMetadata
-      }
+        ...parsedMetadata,
+      },
     });
 
-    logger.info('File uploaded successfully:', { key: fileKey, size: file.size });
+    logger.info("File uploaded successfully:", {
+      key: fileKey,
+      size: file.size,
+    });
 
     return NextResponse.json(result);
   } catch (error) {
-    logger.error('Upload error:', error);
+    logger.error("Upload error:", error);
     return NextResponse.json(
-      { error: 'Upload failed', details: error instanceof Error ? error.message : 'Unknown error' }, 
-      { status: 500 }
+      {
+        error: "Upload failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }
@@ -57,17 +63,17 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const prefix = searchParams.get('prefix') || '';
-    const maxKeys = parseInt(searchParams.get('maxKeys') || '100');
+    const prefix = searchParams.get("prefix") || "";
+    const maxKeys = parseInt(searchParams.get("maxKeys") || "100");
 
     const result = await storage.list({ prefix, maxKeys });
 
     return NextResponse.json(result);
   } catch (error) {
-    logger.error('List files error:', error);
+    logger.error("List files error:", error);
     return NextResponse.json(
-      { error: 'Failed to list files' }, 
-      { status: 500 }
+      { error: "Failed to list files" },
+      { status: 500 },
     );
   }
 }

@@ -1,4 +1,4 @@
-import { PostEditPage } from '@/components/posts/pages/post-edit-page';
+import { PostEditPage } from "@/components/posts/pages/post-edit-page";
 
 interface PostEditPageProps {
   params: {

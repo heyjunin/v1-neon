@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Badge } from '@v1/ui/badge';
-import { Button } from '@v1/ui/button';
+import { Badge } from "@v1/ui/badge";
+import { Button } from "@v1/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle
-} from '@v1/ui/dialog';
-import { Separator } from '@v1/ui/separator';
-import { format, formatDistanceToNow } from 'date-fns';
-import { Check, ExternalLink } from 'lucide-react';
-import Link from 'next/link';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@v1/ui/dialog";
+import { Separator } from "@v1/ui/separator";
+import { format, formatDistanceToNow } from "date-fns";
+import { Check, ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface NotificationDetailModalProps {
   notification: {
@@ -44,35 +44,35 @@ export function NotificationDetailModal({
 }: NotificationDetailModalProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return '✅';
-      case 'warning':
-        return '⚠️';
-      case 'error':
-        return '❌';
-      case 'invite':
-        return '📨';
-      case 'mention':
-        return '👤';
+      case "success":
+        return "✅";
+      case "warning":
+        return "⚠️";
+      case "error":
+        return "❌";
+      case "invite":
+        return "📨";
+      case "mention":
+        return "👤";
       default:
-        return 'ℹ️';
+        return "ℹ️";
     }
   };
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case 'success':
-        return 'Success';
-      case 'warning':
-        return 'Warning';
-      case 'error':
-        return 'Error';
-      case 'invite':
-        return 'Invitation';
-      case 'mention':
-        return 'Mention';
+      case "success":
+        return "Success";
+      case "warning":
+        return "Warning";
+      case "error":
+        return "Error";
+      case "invite":
+        return "Invitation";
+      case "mention":
+        return "Mention";
       default:
-        return 'Information';
+        return "Information";
     }
   };
 
@@ -90,7 +90,9 @@ export function NotificationDetailModal({
               {getNotificationIcon(notification.type)}
             </div>
             <div className="flex-1">
-              <DialogTitle className="text-left">{notification.title}</DialogTitle>
+              <DialogTitle className="text-left">
+                {notification.title}
+              </DialogTitle>
               <div className="flex items-center gap-2 mt-1">
                 <Badge variant="secondary" className="text-xs">
                   {getTypeLabel(notification.type)}
@@ -117,11 +119,15 @@ export function NotificationDetailModal({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Received:</span>
-              <span>{formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}</span>
+              <span>
+                {formatDistanceToNow(new Date(notification.createdAt), {
+                  addSuffix: true,
+                })}
+              </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Date:</span>
-              <span>{format(new Date(notification.createdAt), 'PPP p')}</span>
+              <span>{format(new Date(notification.createdAt), "PPP p")}</span>
             </div>
           </div>
 
@@ -134,10 +140,14 @@ export function NotificationDetailModal({
                   <div className="flex items-center justify-between p-2 bg-muted rounded-md">
                     <div>
                       <p className="text-sm font-medium">Organization</p>
-                      <p className="text-xs text-muted-foreground">{notification.organization.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notification.organization.name}
+                      </p>
                     </div>
                     <Button asChild variant="outline" size="sm">
-                      <Link href={`/organizations/${notification.organization.slug}`}>
+                      <Link
+                        href={`/organizations/${notification.organization.slug}`}
+                      >
                         <ExternalLink className="h-3 w-3 mr-1" />
                         View
                       </Link>
@@ -148,7 +158,9 @@ export function NotificationDetailModal({
                   <div className="flex items-center justify-between p-2 bg-muted rounded-md">
                     <div>
                       <p className="text-sm font-medium">Post</p>
-                      <p className="text-xs text-muted-foreground">{notification.post.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {notification.post.title}
+                      </p>
                     </div>
                     <Button asChild variant="outline" size="sm">
                       <Link href={`/posts/${notification.post.id}`}>

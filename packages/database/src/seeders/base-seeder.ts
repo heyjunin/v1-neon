@@ -1,5 +1,5 @@
-import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import type { Seeder } from './types';
+import { type NeonHttpDatabase } from "drizzle-orm/neon-http";
+import type { Seeder } from "./types";
 
 export abstract class BaseSeeder implements Seeder {
   abstract name: string;
@@ -7,7 +7,7 @@ export abstract class BaseSeeder implements Seeder {
 
   protected async executeInTransaction<T>(
     db: NeonHttpDatabase,
-    operation: () => Promise<T>
+    operation: () => Promise<T>,
   ): Promise<T> {
     // Neon HTTP driver doesn't support transactions, so we'll just execute directly
     return await operation();
@@ -17,7 +17,7 @@ export abstract class BaseSeeder implements Seeder {
     db: NeonHttpDatabase,
     table: any,
     data: T[],
-    batchSize: number = 100
+    batchSize: number = 100,
   ): Promise<void> {
     for (let i = 0; i < data.length; i += batchSize) {
       const batch = data.slice(i, i + batchSize);

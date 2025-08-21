@@ -1,18 +1,18 @@
 export interface SeederOptions {
   table?: string;
-  template?: 'basic' | 'faker' | 'advanced';
+  template?: "basic" | "faker" | "advanced";
   force?: boolean;
 }
 
 export interface MigrationOptions {
   table?: string;
-  template?: 'basic' | 'create' | 'alter' | 'drop';
+  template?: "basic" | "create" | "alter" | "drop";
   force?: boolean;
 }
 
 export interface ModelOptions {
   table?: string;
-  template?: 'basic' | 'with-relations' | 'full';
+  template?: "basic" | "with-relations" | "full";
   force?: boolean;
 }
 

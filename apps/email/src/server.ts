@@ -13,10 +13,7 @@ app.route("/", routes);
 // Middleware de erro
 app.onError((err, c) => {
   console.error("Server error:", err);
-  return c.json(
-    { error: "Internal server error" },
-    500
-  );
+  return c.json({ error: "Internal server error" }, 500);
 });
 
 // Middleware 404

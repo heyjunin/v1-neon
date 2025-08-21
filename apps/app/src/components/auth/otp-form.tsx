@@ -1,14 +1,20 @@
-'use client';
+"use client";
 
-import { useSendOtp, useVerifyOtp } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { ArrowLeft, KeyRound, Loader2, Mail } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useSendOtp, useVerifyOtp } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { ArrowLeft, KeyRound, Loader2, Mail } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface OtpFormProps {
   onSuccess?: () => void;
@@ -16,31 +22,32 @@ interface OtpFormProps {
 }
 
 export function OtpForm({ onSuccess, onError }: OtpFormProps) {
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [resendCountdown, setResendCountdown] = useState(0);
-  
+
   const router = useRouter();
   const sendOtp = useSendOtp();
   const verifyOtp = useVerifyOtp();
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await sendOtp.mutateAsync({ email });
-      setSuccess('OTP sent! Check your email for the 6-digit code.');
+      setSuccess("OTP sent! Check your email for the 6-digit code.");
       setIsOtpSent(true);
       startResendCountdown();
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to send OTP';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to send OTP";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -48,41 +55,43 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (otp.length !== 6) {
-      setError('Please enter a 6-digit code');
+      setError("Please enter a 6-digit code");
       return;
     }
 
     try {
       await verifyOtp.mutateAsync({ email, token: otp });
-      setSuccess('OTP verified successfully!');
+      setSuccess("OTP verified successfully!");
       onSuccess?.();
-      
+
       // Redirect to dashboard after a short delay
       setTimeout(() => {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }, 2000);
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to verify OTP';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to verify OTP";
       setError(errorMessage);
       onError?.(errorMessage);
     }
   };
 
   const handleResendOtp = async () => {
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await sendOtp.mutateAsync({ email });
-      setSuccess('OTP resent! Check your email.');
+      setSuccess("OTP resent! Check your email.");
       startResendCountdown();
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to resend OTP';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to resend OTP";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -91,7 +100,7 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
   const startResendCountdown = () => {
     setIsResendDisabled(true);
     setResendCountdown(60);
-    
+
     const interval = setInterval(() => {
       setResendCountdown((prev) => {
         if (prev <= 1) {
@@ -106,9 +115,9 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
 
   const handleBackToEmail = () => {
     setIsOtpSent(false);
-    setOtp('');
-    setError('');
-    setSuccess('');
+    setOtp("");
+    setError("");
+    setSuccess("");
     setIsResendDisabled(false);
     setResendCountdown(0);
   };
@@ -147,7 +156,7 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
                 placeholder="Enter 6-digit code"
                 value={otp}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 6);
                   setOtp(value);
                 }}
                 className="text-center text-lg font-mono tracking-widest"
@@ -161,7 +170,9 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
               className="w-full"
               disabled={verifyOtp.isPending || otp.length !== 6}
             >
-              {verifyOtp.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {verifyOtp.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
               Verify OTP
             </Button>
           </form>
@@ -174,13 +185,14 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
               disabled={isResendDisabled || sendOtp.isPending}
               className="w-full"
             >
-              {sendOtp.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isResendDisabled 
-                ? `Resend in ${resendCountdown}s` 
-                : 'Resend OTP'
-              }
+              {sendOtp.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {isResendDisabled
+                ? `Resend in ${resendCountdown}s`
+                : "Resend OTP"}
             </Button>
-            
+
             <Button
               type="button"
               variant="ghost"
@@ -228,12 +240,10 @@ export function OtpForm({ onSuccess, onError }: OtpFormProps) {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={sendOtp.isPending}
-          >
-            {sendOtp.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="w-full" disabled={sendOtp.isPending}>
+            {sendOtp.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Send OTP Code
           </Button>
         </form>

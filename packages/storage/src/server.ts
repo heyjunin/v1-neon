@@ -1,7 +1,23 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { logger } from '@v1/logger';
-import type { FileInfo, ListOptions, ListResult, PresignedUrlOptions, StorageConfig, StorageError, UploadOptions, UploadResult } from './types';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { logger } from "@v1/logger";
+import type {
+  FileInfo,
+  ListOptions,
+  ListResult,
+  PresignedUrlOptions,
+  StorageConfig,
+  StorageError,
+  UploadOptions,
+  UploadResult,
+} from "./types";
 
 export class R2Storage {
   private client: S3Client;
@@ -9,10 +25,12 @@ export class R2Storage {
 
   constructor(config: StorageConfig) {
     this.config = config;
-    
+
     this.client = new S3Client({
-      region: config.region || 'auto',
-      endpoint: config.endpoint || `https://${config.accountId}.r2.cloudflarestorage.com`,
+      region: config.region || "auto",
+      endpoint:
+        config.endpoint ||
+        `https://${config.accountId}.r2.cloudflarestorage.com`,
       credentials: {
         accessKeyId: config.accessKeyId,
         secretAccessKey: config.secretAccessKey,
@@ -26,14 +44,14 @@ export class R2Storage {
   async upload(
     key: string,
     data: Buffer | string,
-    options: UploadOptions = {}
+    options: UploadOptions = {},
   ): Promise<UploadResult> {
     try {
       const {
         contentType,
         metadata = {},
         public: isPublic = false,
-        cacheControl = 'public, max-age=31536000',
+        cacheControl = "public, max-age=31536000",
       } = options;
 
       const command = new PutObjectCommand({
@@ -43,25 +61,28 @@ export class R2Storage {
         ContentType: contentType,
         Metadata: metadata,
         CacheControl: cacheControl,
-        ACL: isPublic ? 'public-read' : 'private',
+        ACL: isPublic ? "public-read" : "private",
       });
 
       const result = await this.client.send(command);
 
-      const url = isPublic 
+      const url = isPublic
         ? `https://${this.config.bucketName}.r2.dev/${key}`
         : `https://${this.config.accountId}.r2.cloudflarestorage.com/${this.config.bucketName}/${key}`;
 
       return {
         key,
         url,
-        size: data instanceof Buffer ? data.length : Buffer.byteLength(data, 'utf8'),
-        contentType: contentType || 'application/octet-stream',
-        etag: result.ETag?.replace(/"/g, '') || '',
+        size:
+          data instanceof Buffer
+            ? data.length
+            : Buffer.byteLength(data, "utf8"),
+        contentType: contentType || "application/octet-stream",
+        etag: result.ETag?.replace(/"/g, "") || "",
       };
     } catch (error) {
-      logger.error('R2 upload error:', error);
-      throw this.createStorageError(error, 'Upload failed');
+      logger.error("R2 upload error:", error);
+      throw this.createStorageError(error, "Upload failed");
     }
   }
 
@@ -76,15 +97,15 @@ export class R2Storage {
       });
 
       const result = await this.client.send(command);
-      
+
       if (!result.Body) {
-        throw new Error('File not found');
+        throw new Error("File not found");
       }
 
       return Buffer.from(await result.Body.transformToByteArray());
     } catch (error) {
-      logger.error('R2 get error:', error);
-      throw this.createStorageError(error, 'Get failed');
+      logger.error("R2 get error:", error);
+      throw this.createStorageError(error, "Get failed");
     }
   }
 
@@ -99,10 +120,10 @@ export class R2Storage {
       });
 
       await this.client.send(command);
-      logger.info('File deleted from R2:', key);
+      logger.info("File deleted from R2:", key);
     } catch (error) {
-      logger.error('R2 delete error:', error);
-      throw this.createStorageError(error, 'Delete failed');
+      logger.error("R2 delete error:", error);
+      throw this.createStorageError(error, "Delete failed");
     }
   }
 
@@ -111,11 +132,7 @@ export class R2Storage {
    */
   async list(options: ListOptions = {}): Promise<ListResult> {
     try {
-      const {
-        prefix = '',
-        maxKeys = 1000,
-        continuationToken,
-      } = options;
+      const { prefix = "", maxKeys = 1000, continuationToken } = options;
 
       const command = new ListObjectsV2Command({
         Bucket: this.config.bucketName,
@@ -130,9 +147,9 @@ export class R2Storage {
         key: item.Key!,
         url: `https://${this.config.bucketName}.r2.dev/${item.Key}`,
         size: item.Size || 0,
-        contentType: 'application/octet-stream', // R2 doesn't provide this in list
+        contentType: "application/octet-stream", // R2 doesn't provide this in list
         lastModified: item.LastModified || new Date(),
-        etag: item.ETag?.replace(/"/g, '') || '',
+        etag: item.ETag?.replace(/"/g, "") || "",
       }));
 
       return {
@@ -141,8 +158,8 @@ export class R2Storage {
         isTruncated: result.IsTruncated || false,
       };
     } catch (error) {
-      logger.error('R2 list error:', error);
-      throw this.createStorageError(error, 'List failed');
+      logger.error("R2 list error:", error);
+      throw this.createStorageError(error, "List failed");
     }
   }
 
@@ -162,13 +179,13 @@ export class R2Storage {
         key,
         url: `https://${this.config.bucketName}.r2.dev/${key}`,
         size: result.ContentLength || 0,
-        contentType: result.ContentType || 'application/octet-stream',
+        contentType: result.ContentType || "application/octet-stream",
         lastModified: result.LastModified || new Date(),
-        etag: result.ETag?.replace(/"/g, '') || '',
+        etag: result.ETag?.replace(/"/g, "") || "",
       };
     } catch (error) {
-      logger.error('R2 getInfo error:', error);
-      throw this.createStorageError(error, 'GetInfo failed');
+      logger.error("R2 getInfo error:", error);
+      throw this.createStorageError(error, "GetInfo failed");
     }
   }
 
@@ -177,14 +194,10 @@ export class R2Storage {
    */
   async getPresignedUploadUrl(
     key: string,
-    options: PresignedUrlOptions = {}
+    options: PresignedUrlOptions = {},
   ): Promise<string> {
     try {
-      const {
-        expiresIn = 3600,
-        contentType,
-        metadata = {},
-      } = options;
+      const { expiresIn = 3600, contentType, metadata = {} } = options;
 
       const command = new PutObjectCommand({
         Bucket: this.config.bucketName,
@@ -195,8 +208,8 @@ export class R2Storage {
 
       return await getSignedUrl(this.client, command, { expiresIn });
     } catch (error) {
-      logger.error('R2 presigned upload URL error:', error);
-      throw this.createStorageError(error, 'Presigned URL generation failed');
+      logger.error("R2 presigned upload URL error:", error);
+      throw this.createStorageError(error, "Presigned URL generation failed");
     }
   }
 
@@ -205,7 +218,7 @@ export class R2Storage {
    */
   async getPresignedDownloadUrl(
     key: string,
-    expiresIn: number = 3600
+    expiresIn: number = 3600,
   ): Promise<string> {
     try {
       const command = new GetObjectCommand({
@@ -215,8 +228,8 @@ export class R2Storage {
 
       return await getSignedUrl(this.client, command, { expiresIn });
     } catch (error) {
-      logger.error('R2 presigned download URL error:', error);
-      throw this.createStorageError(error, 'Presigned URL generation failed');
+      logger.error("R2 presigned download URL error:", error);
+      throw this.createStorageError(error, "Presigned URL generation failed");
     }
   }
 
@@ -238,7 +251,8 @@ export class R2Storage {
   private createStorageError(error: any, message: string): StorageError {
     const storageError = new Error(message) as StorageError;
     storageError.code = error.Code || error.code;
-    storageError.statusCode = error.$metadata?.httpStatusCode || error.statusCode;
+    storageError.statusCode =
+      error.$metadata?.httpStatusCode || error.statusCode;
     storageError.requestId = error.$metadata?.requestId || error.requestId;
     return storageError;
   }

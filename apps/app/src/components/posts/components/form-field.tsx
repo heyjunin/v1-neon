@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Textarea } from '@v1/ui/textarea';
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { Textarea } from "@v1/ui/textarea";
 
 interface FormFieldProps {
   id: string;
@@ -12,7 +12,7 @@ interface FormFieldProps {
   error?: string;
   disabled?: boolean;
   required?: boolean;
-  type?: 'text' | 'textarea';
+  type?: "text" | "textarea";
   placeholder?: string;
   maxLength?: number;
   minLength?: number;
@@ -27,24 +27,26 @@ export function FormField({
   error,
   disabled = false,
   required = false,
-  type = 'text',
+  type = "text",
   placeholder,
   maxLength,
   minLength,
-  className = '',
+  className = "",
 }: FormFieldProps) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     onChange(e.target.value);
   };
 
-  const InputComponent = type === 'textarea' ? Textarea : Input;
+  const InputComponent = type === "textarea" ? Textarea : Input;
   const inputProps = {
     id,
     value,
     onChange: handleChange,
     placeholder,
     disabled,
-    className: error ? 'border-destructive' : '',
+    className: error ? "border-destructive" : "",
     ...(maxLength && { maxLength }),
     ...(minLength && { minLength }),
   };
@@ -52,12 +54,10 @@ export function FormField({
   return (
     <div className={`space-y-2 ${className}`}>
       <Label htmlFor={id} className="text-sm font-medium">
-        {label} {required && '*'}
+        {label} {required && "*"}
       </Label>
       <InputComponent {...inputProps} />
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {maxLength && (
         <div className="text-xs text-muted-foreground">
           {value.length}/{maxLength} caracteres

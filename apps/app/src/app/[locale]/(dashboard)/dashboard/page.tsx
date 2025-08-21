@@ -1,10 +1,16 @@
-import { ProtectedRoute } from '@/components/auth';
-import { Navbar } from '@/components/layout/navbar';
-import { useGetCurrentUser } from '@/lib/trpc';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Calendar, Mail, Settings, User } from 'lucide-react';
-import Link from 'next/link';
+import { ProtectedRoute } from "@/components/auth";
+import { Navbar } from "@/components/layout/navbar";
+import { useGetCurrentUser } from "@/lib/trpc";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Calendar, Mail, Settings, User } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   return (
@@ -68,12 +74,14 @@ function DashboardContent() {
               <span className="text-sm text-gray-600">Email:</span>
               <span className="font-medium">{user?.email}</span>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Member since:</span>
               <span className="font-medium">
-                {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                {user?.created_at
+                  ? new Date(user.created_at).toLocaleDateString()
+                  : "N/A"}
               </span>
             </div>
 

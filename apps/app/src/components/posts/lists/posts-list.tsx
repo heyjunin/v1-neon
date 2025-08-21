@@ -1,16 +1,31 @@
-'use client';
+"use client";
 
-import { useDeletePost, usePosts } from '@/lib/trpc';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Calendar, Edit, ExternalLink, Eye, Plus, Search, Trash2, User } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState } from 'react';
-import { ConfirmationDialog } from '../components/dialogs';
-import { useConfirmation } from '../hooks/use-confirmation';
-import { usePostToast } from '../hooks/use-toast';
-import { Post } from '../types';
+import { useDeletePost, usePosts } from "@/lib/trpc";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import {
+  Calendar,
+  Edit,
+  ExternalLink,
+  Eye,
+  Plus,
+  Search,
+  Trash2,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import React, { useState } from "react";
+import { ConfirmationDialog } from "../components/dialogs";
+import { useConfirmation } from "../hooks/use-confirmation";
+import { usePostToast } from "../hooks/use-toast";
+import { Post } from "../types";
 
 interface PostsListProps {
   onEdit: (post: Post) => void;
@@ -19,52 +34,59 @@ interface PostsListProps {
 }
 
 export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const { data: posts, isLoading, refetch, error } = usePosts();
   const deletePostMutation = useDeletePost();
   const { showSuccess, showError } = usePostToast();
-  const { confirmation, openConfirmation, closeConfirmation, confirmAction } = useConfirmation();
+  const { confirmation, openConfirmation, closeConfirmation, confirmAction } =
+    useConfirmation();
 
   // Ensure posts is always an array and handle loading/error states
   const postsArray = React.useMemo(() => {
     if (!posts) return [];
-    
+
     // If posts is an object with data property (paginated response)
-    if (typeof posts === 'object' && 'data' in posts && Array.isArray(posts.data)) {
+    if (
+      typeof posts === "object" &&
+      "data" in posts &&
+      Array.isArray(posts.data)
+    ) {
       return posts.data;
     }
-    
+
     // If posts is already an array
     if (Array.isArray(posts)) {
       return posts;
     }
-    
+
     // Fallback to empty array
     return [];
   }, [posts]);
-  
+
   const filteredPosts = postsArray.filter((post: Post) => {
-    if (!post || typeof post !== 'object') return false;
-    
-    const title = post.title || '';
-    const content = post.content || '';
-    
-    return title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           content.toLowerCase().includes(searchTerm.toLowerCase());
+    if (!post || typeof post !== "object") return false;
+
+    const title = post.title || "";
+    const content = post.content || "";
+
+    return (
+      title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      content.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   const handleDelete = async (id: string) => {
     try {
       await deletePostMutation.mutateAsync({ id });
       await refetch();
-      showSuccess('Post excluído com sucesso!');
+      showSuccess("Post excluído com sucesso!");
     } catch (error) {
-      showError('Erro ao excluir post. Tente novamente.');
+      showError("Erro ao excluir post. Tente novamente.");
     }
   };
 
   const handleDeleteClick = (post: Post) => {
-    openConfirmation(post.id, post.title, 'delete');
+    openConfirmation(post.id, post.title, "delete");
   };
 
   const handleConfirmDelete = async () => {
@@ -90,11 +112,9 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
         </div>
         <div className="text-center py-12">
           <div className="text-red-500 mb-4">
-            Erro ao carregar posts: {error.message || 'Erro desconhecido'}
+            Erro ao carregar posts: {error.message || "Erro desconhecido"}
           </div>
-          <Button onClick={() => refetch()}>
-            Tentar novamente
-          </Button>
+          <Button onClick={() => refetch()}>Tentar novamente</Button>
         </div>
       </div>
     );
@@ -154,7 +174,9 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
       {filteredPosts.length === 0 ? (
         <div className="text-center py-12">
           <div className="text-gray-500 mb-4">
-            {searchTerm ? 'Nenhum post encontrado para sua busca.' : 'Nenhum post criado ainda.'}
+            {searchTerm
+              ? "Nenhum post encontrado para sua busca."
+              : "Nenhum post criado ainda."}
           </div>
           {!searchTerm && (
             <Button onClick={onCreate}>
@@ -186,10 +208,7 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
                       </Button>
                     )}
                     <Link href={`/posts/${post.id}`}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                      >
+                      <Button variant="outline" size="sm">
                         <ExternalLink className="h-4 w-4" />
                       </Button>
                     </Link>
@@ -214,15 +233,17 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <div className="flex items-center gap-1">
                     <User className="h-4 w-4" />
-                    <span>{post.user?.fullName || post.user?.email || 'Usuário'}</span>
+                    <span>
+                      {post.user?.fullName || post.user?.email || "Usuário"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      {new Date(post.createdAt).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
+                      {new Date(post.createdAt).toLocaleDateString("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
                       })}
                     </span>
                   </div>

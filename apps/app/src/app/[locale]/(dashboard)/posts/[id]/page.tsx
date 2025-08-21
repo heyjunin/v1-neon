@@ -1,4 +1,4 @@
-import { PostDetailPage } from '@/components/posts/pages/post-detail-page';
+import { PostDetailPage } from "@/components/posts/pages/post-detail-page";
 
 interface PostPageProps {
   params: {

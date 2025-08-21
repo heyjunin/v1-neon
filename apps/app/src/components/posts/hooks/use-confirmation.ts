@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface ConfirmationState {
   isOpen: boolean;
@@ -18,8 +18,8 @@ export function useConfirmation(): UseConfirmationReturn {
   const [confirmation, setConfirmation] = useState<ConfirmationState>({
     isOpen: false,
     itemId: null,
-    itemTitle: '',
-    actionType: '',
+    itemTitle: "",
+    actionType: "",
   });
 
   const openConfirmation = (id: string, title: string, actionType?: string) => {
@@ -35,8 +35,8 @@ export function useConfirmation(): UseConfirmationReturn {
     setConfirmation({
       isOpen: false,
       itemId: null,
-      itemTitle: '',
-      actionType: '',
+      itemTitle: "",
+      actionType: "",
     });
   };
 
@@ -49,7 +49,7 @@ export function useConfirmation(): UseConfirmationReturn {
     try {
       await onConfirm(confirmation.itemId);
     } catch (error) {
-      console.error('Error in confirmation:', error);
+      console.error("Error in confirmation:", error);
       throw error;
     }
   };

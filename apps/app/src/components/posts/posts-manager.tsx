@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { PostForm } from './forms';
-import { usePostToast } from './hooks/use-toast';
-import { PostsList } from './lists';
-import type { Post } from './types';
-import { PostView } from './views';
+import { useState } from "react";
+import { PostForm } from "./forms";
+import { usePostToast } from "./hooks/use-toast";
+import { PostsList } from "./lists";
+import type { Post } from "./types";
+import { PostView } from "./views";
 
 export function PostsManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -37,7 +37,9 @@ export function PostsManager() {
   };
 
   const handleFormSuccess = () => {
-    showSuccess(editingPost ? 'Post atualizado com sucesso!' : 'Post criado com sucesso!');
+    showSuccess(
+      editingPost ? "Post atualizado com sucesso!" : "Post criado com sucesso!",
+    );
   };
 
   return (

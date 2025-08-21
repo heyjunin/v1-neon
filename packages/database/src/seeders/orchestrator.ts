@@ -1,6 +1,6 @@
-import { logger } from '@v1/logger';
-import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
-import type { Seeder, SeederOptions, SeederResult } from './types';
+import { logger } from "@v1/logger";
+import { type NeonHttpDatabase } from "drizzle-orm/neon-http";
+import type { Seeder, SeederOptions, SeederResult } from "./types";
 
 export class SeederOrchestrator {
   private seeders: Map<string, Seeder> = new Map();
@@ -15,18 +15,20 @@ export class SeederOrchestrator {
   }
 
   registerMany(seeders: Seeder[]): void {
-    seeders.forEach(seeder => this.register(seeder));
+    seeders.forEach((seeder) => this.register(seeder));
   }
 
   async run(options: SeederOptions = {}): Promise<SeederResult[]> {
     const { specific, force = false, verbose = false } = options;
-    
-    const seedersToRun = specific 
-      ? specific.map(name => this.seeders.get(name)).filter(Boolean) as Seeder[]
+
+    const seedersToRun = specific
+      ? (specific
+          .map((name) => this.seeders.get(name))
+          .filter(Boolean) as Seeder[])
       : Array.from(this.seeders.values());
 
     if (seedersToRun.length === 0) {
-      logger.warn('No seeders found to run');
+      logger.warn("No seeders found to run");
       return [];
     }
 
@@ -36,19 +38,19 @@ export class SeederOrchestrator {
 
     for (const seeder of seedersToRun) {
       const startTime = Date.now();
-      
+
       try {
         if (verbose) {
           logger.info(`Running seeder: ${seeder.name}`);
         }
 
         await seeder.run(this.db, { force });
-        
+
         const duration = Date.now() - startTime;
         results.push({
           name: seeder.name,
           success: true,
-          duration
+          duration,
         });
 
         if (verbose) {
@@ -56,27 +58,30 @@ export class SeederOrchestrator {
         }
       } catch (error) {
         const duration = Date.now() - startTime;
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+
         results.push({
           name: seeder.name,
           success: false,
           error: errorMessage,
-          duration
+          duration,
         });
 
         logger.error(`❌ ${seeder.name} failed: ${errorMessage}`);
-        
+
         if (!force) {
           throw error;
         }
       }
     }
 
-    const successful = results.filter(r => r.success).length;
-    const failed = results.filter(r => !r.success).length;
-    
-    logger.info(`Seeding completed: ${successful} successful, ${failed} failed`);
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    logger.info(
+      `Seeding completed: ${successful} successful, ${failed} failed`,
+    );
 
     return results;
   }

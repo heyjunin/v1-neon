@@ -1,12 +1,14 @@
 {
-  "extends": "@v1/typescript/react-library.json",
+  "extends": "../../tooling/typescript/base.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@v1/ui/*": ["../ui/src/*"]
-    }
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   },
-  "include": ["."],
-  "exclude": ["node_modules"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", ".turbo", ".react-email"]
 }

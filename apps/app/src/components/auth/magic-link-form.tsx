@@ -1,13 +1,19 @@
-'use client';
+"use client";
 
-import { useSendMagicLink } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { CheckCircle, Loader2, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useSendMagicLink } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { CheckCircle, Loader2, Mail } from "lucide-react";
+import { useState } from "react";
 
 interface MagicLinkFormProps {
   onSuccess?: () => void;
@@ -15,40 +21,42 @@ interface MagicLinkFormProps {
 }
 
 export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isSent, setIsSent] = useState(false);
-  
+
   const sendMagicLink = useSendMagicLink();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await sendMagicLink.mutateAsync({ email });
-      setSuccess('Magic link sent! Check your email for the login link.');
+      setSuccess("Magic link sent! Check your email for the login link.");
       setIsSent(true);
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to send magic link';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to send magic link";
       setError(errorMessage);
       onError?.(errorMessage);
     }
   };
 
   const handleResend = async () => {
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await sendMagicLink.mutateAsync({ email });
-      setSuccess('Magic link resent! Check your email.');
+      setSuccess("Magic link resent! Check your email.");
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to resend magic link';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to resend magic link";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -62,9 +70,7 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
             <CheckCircle className="h-5 w-5 text-green-600" />
             Check your email
           </CardTitle>
-          <CardDescription>
-            We've sent a magic link to {email}
-          </CardDescription>
+          <CardDescription>We've sent a magic link to {email}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {success && (
@@ -81,9 +87,10 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
 
           <div className="text-center space-y-4">
             <p className="text-sm text-muted-foreground">
-              Click the link in your email to sign in. The link will expire in 1 hour.
+              Click the link in your email to sign in. The link will expire in 1
+              hour.
             </p>
-            
+
             <div className="space-y-2">
               <Button
                 type="button"
@@ -92,18 +99,20 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
                 disabled={sendMagicLink.isPending}
                 className="w-full"
               >
-                {sendMagicLink.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {sendMagicLink.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Resend magic link
               </Button>
-              
+
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => {
                   setIsSent(false);
-                  setEmail('');
-                  setSuccess('');
-                  setError('');
+                  setEmail("");
+                  setSuccess("");
+                  setError("");
                 }}
                 className="w-full"
               >
@@ -153,7 +162,9 @@ export function MagicLinkForm({ onSuccess, onError }: MagicLinkFormProps) {
             className="w-full"
             disabled={sendMagicLink.isPending}
           >
-            {sendMagicLink.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {sendMagicLink.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Send Magic Link
           </Button>
         </form>

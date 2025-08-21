@@ -1,16 +1,23 @@
-import { logger } from '@v1/logger';
-import { and, asc, desc, eq, like, or, sql } from 'drizzle-orm';
-import { db } from '../drizzle';
-import { organizationInvites, organizationMembers, organizations, type Organization, type OrganizationInvite, type OrganizationMember } from '../schema/organizations';
-import { users } from '../schema/users';
+import { logger } from "@v1/logger";
+import { and, asc, desc, eq, like, or, sql } from "drizzle-orm";
+import { db } from "../drizzle";
+import {
+  organizationInvites,
+  organizationMembers,
+  organizations,
+  type Organization,
+  type OrganizationInvite,
+  type OrganizationMember,
+} from "../schema/organizations";
+import { users } from "../schema/users";
 
 export interface OrganizationsFilters {
   search?: string;
   ownerId?: string;
   memberId?: string;
   isActive?: boolean;
-  sortBy?: 'createdAt' | 'updatedAt' | 'name';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: "createdAt" | "updatedAt" | "name";
+  sortOrder?: "asc" | "desc";
 }
 
 export interface OrganizationsPagination {
@@ -26,24 +33,34 @@ export interface OrganizationsResult {
   totalPages: number;
 }
 
-export async function getOrganizations(filters?: OrganizationsFilters, pagination?: OrganizationsPagination): Promise<OrganizationsResult> {
+export async function getOrganizations(
+  filters?: OrganizationsFilters,
+  pagination?: OrganizationsPagination,
+): Promise<OrganizationsResult> {
   try {
-    const { search, ownerId, memberId, isActive, sortBy = 'createdAt', sortOrder = 'desc' } = filters || {};
+    const {
+      search,
+      ownerId,
+      memberId,
+      isActive,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = filters || {};
     const { page = 1, limit = 10 } = pagination || {};
 
     // Build where conditions
     const conditions = [];
-    
+
     if (search) {
       conditions.push(
         or(
           like(organizations.name, `%${search}%`),
           like(organizations.description, `%${search}%`),
-          like(organizations.slug, `%${search}%`)
-        )
+          like(organizations.slug, `%${search}%`),
+        ),
       );
     }
-    
+
     if (ownerId) {
       conditions.push(eq(organizations.ownerId, ownerId));
     }
@@ -57,7 +74,7 @@ export async function getOrganizations(filters?: OrganizationsFilters, paginatio
       const memberConditions = and(
         eq(organizationMembers.organizationId, organizations.id),
         eq(organizationMembers.userId, memberId),
-        eq(organizationMembers.status, 'active')
+        eq(organizationMembers.status, "active"),
       );
       conditions.push(memberConditions);
     }
@@ -65,16 +82,20 @@ export async function getOrganizations(filters?: OrganizationsFilters, paginatio
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Build order by
-    const orderByClause = sortOrder === 'asc' 
-      ? asc(organizations[sortBy]) 
-      : desc(organizations[sortBy]);
+    const orderByClause =
+      sortOrder === "asc"
+        ? asc(organizations[sortBy])
+        : desc(organizations[sortBy]);
 
     // Get total count
-    const countQuery = memberId 
+    const countQuery = memberId
       ? db
           .select({ count: sql<number>`count(distinct ${organizations.id})` })
           .from(organizations)
-          .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
+          .innerJoin(
+            organizationMembers,
+            eq(organizations.id, organizationMembers.organizationId),
+          )
           .where(whereClause)
       : db
           .select({ count: sql<number>`count(*)` })
@@ -100,7 +121,10 @@ export async function getOrganizations(filters?: OrganizationsFilters, paginatio
             updatedAt: organizations.updatedAt,
           })
           .from(organizations)
-          .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
+          .innerJoin(
+            organizationMembers,
+            eq(organizations.id, organizationMembers.organizationId),
+          )
           .where(whereClause)
           .orderBy(orderByClause)
           .limit(limit)
@@ -120,32 +144,48 @@ export async function getOrganizations(filters?: OrganizationsFilters, paginatio
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   } catch (error) {
-    logger.error('Error getting organizations:', error);
+    logger.error("Error getting organizations:", error);
     throw error;
   }
 }
 
-export async function getOrganizationsWithOwner(filters?: OrganizationsFilters, pagination?: OrganizationsPagination): Promise<OrganizationsResult & { data: (Organization & { owner: { id: string; email: string; fullName: string | null } })[] }> {
+export async function getOrganizationsWithOwner(
+  filters?: OrganizationsFilters,
+  pagination?: OrganizationsPagination,
+): Promise<
+  OrganizationsResult & {
+    data: (Organization & {
+      owner: { id: string; email: string; fullName: string | null };
+    })[];
+  }
+> {
   try {
-    const { search, ownerId, memberId, isActive, sortBy = 'createdAt', sortOrder = 'desc' } = filters || {};
+    const {
+      search,
+      ownerId,
+      memberId,
+      isActive,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+    } = filters || {};
     const { page = 1, limit = 10 } = pagination || {};
 
     // Build where conditions
     const conditions = [];
-    
+
     if (search) {
       conditions.push(
         or(
           like(organizations.name, `%${search}%`),
           like(organizations.description, `%${search}%`),
-          like(organizations.slug, `%${search}%`)
-        )
+          like(organizations.slug, `%${search}%`),
+        ),
       );
     }
-    
+
     if (ownerId) {
       conditions.push(eq(organizations.ownerId, ownerId));
     }
@@ -158,7 +198,7 @@ export async function getOrganizationsWithOwner(filters?: OrganizationsFilters, 
       const memberConditions = and(
         eq(organizationMembers.organizationId, organizations.id),
         eq(organizationMembers.userId, memberId),
-        eq(organizationMembers.status, 'active')
+        eq(organizationMembers.status, "active"),
       );
       conditions.push(memberConditions);
     }
@@ -166,16 +206,20 @@ export async function getOrganizationsWithOwner(filters?: OrganizationsFilters, 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Build order by
-    const orderByClause = sortOrder === 'asc' 
-      ? asc(organizations[sortBy]) 
-      : desc(organizations[sortBy]);
+    const orderByClause =
+      sortOrder === "asc"
+        ? asc(organizations[sortBy])
+        : desc(organizations[sortBy]);
 
     // Get total count
-    const countQuery = memberId 
+    const countQuery = memberId
       ? db
           .select({ count: sql<number>`count(distinct ${organizations.id})` })
           .from(organizations)
-          .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
+          .innerJoin(
+            organizationMembers,
+            eq(organizations.id, organizationMembers.organizationId),
+          )
           .innerJoin(users, eq(organizations.ownerId, users.id))
           .where(whereClause)
       : db
@@ -208,7 +252,10 @@ export async function getOrganizationsWithOwner(filters?: OrganizationsFilters, 
             },
           })
           .from(organizations)
-          .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
+          .innerJoin(
+            organizationMembers,
+            eq(organizations.id, organizationMembers.organizationId),
+          )
           .innerJoin(users, eq(organizations.ownerId, users.id))
           .where(whereClause)
           .orderBy(orderByClause)
@@ -245,44 +292,64 @@ export async function getOrganizationsWithOwner(filters?: OrganizationsFilters, 
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     };
   } catch (error) {
-    logger.error('Error getting organizations with owner:', error);
+    logger.error("Error getting organizations with owner:", error);
     throw error;
   }
 }
 
-export async function getOrganizationById(organizationId: string): Promise<Organization | null> {
+export async function getOrganizationById(
+  organizationId: string,
+): Promise<Organization | null> {
   try {
-    const result = await db.select().from(organizations).where(eq(organizations.id, organizationId)).limit(1);
+    const result = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, organizationId))
+      .limit(1);
     return result[0] || null;
   } catch (error) {
-    logger.error('Error getting organization by ID:', error);
+    logger.error("Error getting organization by ID:", error);
     throw error;
   }
 }
 
-export async function getOrganizationBySlug(slug: string): Promise<Organization | null> {
+export async function getOrganizationBySlug(
+  slug: string,
+): Promise<Organization | null> {
   try {
-    const result = await db.select().from(organizations).where(eq(organizations.slug, slug)).limit(1);
+    const result = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.slug, slug))
+      .limit(1);
     return result[0] || null;
   } catch (error) {
-    logger.error('Error getting organization by slug:', error);
+    logger.error("Error getting organization by slug:", error);
     throw error;
   }
 }
 
-export async function getOrganizationsByOwnerId(ownerId: string): Promise<Organization[]> {
+export async function getOrganizationsByOwnerId(
+  ownerId: string,
+): Promise<Organization[]> {
   try {
-    return await db.select().from(organizations).where(eq(organizations.ownerId, ownerId)).orderBy(desc(organizations.createdAt));
+    return await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.ownerId, ownerId))
+      .orderBy(desc(organizations.createdAt));
   } catch (error) {
-    logger.error('Error getting organizations by owner ID:', error);
+    logger.error("Error getting organizations by owner ID:", error);
     throw error;
   }
 }
 
-export async function getOrganizationsByMemberId(memberId: string): Promise<Organization[]> {
+export async function getOrganizationsByMemberId(
+  memberId: string,
+): Promise<Organization[]> {
   try {
     return await db
       .select({
@@ -297,20 +364,31 @@ export async function getOrganizationsByMemberId(memberId: string): Promise<Orga
         updatedAt: organizations.updatedAt,
       })
       .from(organizations)
-      .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
-      .where(and(
-        eq(organizationMembers.userId, memberId),
-        eq(organizationMembers.status, 'active')
-      ))
+      .innerJoin(
+        organizationMembers,
+        eq(organizations.id, organizationMembers.organizationId),
+      )
+      .where(
+        and(
+          eq(organizationMembers.userId, memberId),
+          eq(organizationMembers.status, "active"),
+        ),
+      )
       .orderBy(desc(organizations.createdAt));
   } catch (error) {
-    logger.error('Error getting organizations by member ID:', error);
+    logger.error("Error getting organizations by member ID:", error);
     throw error;
   }
 }
 
 // Member queries
-export async function getOrganizationMembers(organizationId: string): Promise<(OrganizationMember & { user: { id: string; email: string; fullName: string | null } })[]> {
+export async function getOrganizationMembers(
+  organizationId: string,
+): Promise<
+  (OrganizationMember & {
+    user: { id: string; email: string; fullName: string | null };
+  })[]
+> {
   try {
     return await db
       .select({
@@ -335,29 +413,36 @@ export async function getOrganizationMembers(organizationId: string): Promise<(O
       .where(eq(organizationMembers.organizationId, organizationId))
       .orderBy(asc(organizationMembers.role), asc(users.fullName));
   } catch (error) {
-    logger.error('Error getting organization members:', error);
+    logger.error("Error getting organization members:", error);
     throw error;
   }
 }
 
-export async function getOrganizationMember(organizationId: string, userId: string): Promise<OrganizationMember | null> {
+export async function getOrganizationMember(
+  organizationId: string,
+  userId: string,
+): Promise<OrganizationMember | null> {
   try {
     const result = await db
       .select()
       .from(organizationMembers)
-      .where(and(
-        eq(organizationMembers.organizationId, organizationId),
-        eq(organizationMembers.userId, userId)
-      ))
+      .where(
+        and(
+          eq(organizationMembers.organizationId, organizationId),
+          eq(organizationMembers.userId, userId),
+        ),
+      )
       .limit(1);
     return result[0] || null;
   } catch (error) {
-    logger.error('Error getting organization member:', error);
+    logger.error("Error getting organization member:", error);
     throw error;
   }
 }
 
-export async function getUserOrganizations(userId: string): Promise<(Organization & { role: string; status: string })[]> {
+export async function getUserOrganizations(
+  userId: string,
+): Promise<(Organization & { role: string; status: string })[]> {
   try {
     return await db
       .select({
@@ -374,20 +459,31 @@ export async function getUserOrganizations(userId: string): Promise<(Organizatio
         status: organizationMembers.status,
       })
       .from(organizations)
-      .innerJoin(organizationMembers, eq(organizations.id, organizationMembers.organizationId))
-      .where(and(
-        eq(organizationMembers.userId, userId),
-        eq(organizationMembers.status, 'active')
-      ))
+      .innerJoin(
+        organizationMembers,
+        eq(organizations.id, organizationMembers.organizationId),
+      )
+      .where(
+        and(
+          eq(organizationMembers.userId, userId),
+          eq(organizationMembers.status, "active"),
+        ),
+      )
       .orderBy(desc(organizations.createdAt));
   } catch (error) {
-    logger.error('Error getting user organizations:', error);
+    logger.error("Error getting user organizations:", error);
     throw error;
   }
 }
 
 // Invite queries
-export async function getOrganizationInvites(organizationId: string): Promise<(OrganizationInvite & { invitedByUser: { id: string; email: string; fullName: string | null } })[]> {
+export async function getOrganizationInvites(
+  organizationId: string,
+): Promise<
+  (OrganizationInvite & {
+    invitedByUser: { id: string; email: string; fullName: string | null };
+  })[]
+> {
   try {
     return await db
       .select({
@@ -414,12 +510,14 @@ export async function getOrganizationInvites(organizationId: string): Promise<(O
       .where(eq(organizationInvites.organizationId, organizationId))
       .orderBy(desc(organizationInvites.createdAt));
   } catch (error) {
-    logger.error('Error getting organization invites:', error);
+    logger.error("Error getting organization invites:", error);
     throw error;
   }
 }
 
-export async function getInviteByToken(token: string): Promise<OrganizationInvite | null> {
+export async function getInviteByToken(
+  token: string,
+): Promise<OrganizationInvite | null> {
   try {
     const result = await db
       .select()
@@ -428,24 +526,28 @@ export async function getInviteByToken(token: string): Promise<OrganizationInvit
       .limit(1);
     return result[0] || null;
   } catch (error) {
-    logger.error('Error getting invite by token:', error);
+    logger.error("Error getting invite by token:", error);
     throw error;
   }
 }
 
-export async function getPendingInvitesByEmail(email: string): Promise<OrganizationInvite[]> {
+export async function getPendingInvitesByEmail(
+  email: string,
+): Promise<OrganizationInvite[]> {
   try {
     return await db
       .select()
       .from(organizationInvites)
-      .where(and(
-        eq(organizationInvites.email, email),
-        eq(organizationInvites.status, 'pending'),
-        sql`${organizationInvites.expiresAt} > now()`
-      ))
+      .where(
+        and(
+          eq(organizationInvites.email, email),
+          eq(organizationInvites.status, "pending"),
+          sql`${organizationInvites.expiresAt} > now()`,
+        ),
+      )
       .orderBy(desc(organizationInvites.createdAt));
   } catch (error) {
-    logger.error('Error getting pending invites by email:', error);
+    logger.error("Error getting pending invites by email:", error);
     throw error;
   }
 }

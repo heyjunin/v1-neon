@@ -1,37 +1,47 @@
-'use client';
+"use client";
 
-import { useResetPassword } from '@/lib/trpc';
-import { Alert, AlertDescription } from '@v1/ui/alert';
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { Input } from '@v1/ui/input';
-import { Label } from '@v1/ui/label';
-import { Loader2, Mail } from 'lucide-react';
-import { useState } from 'react';
+import { useResetPassword } from "@/lib/trpc";
+import { Alert, AlertDescription } from "@v1/ui/alert";
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { Input } from "@v1/ui/input";
+import { Label } from "@v1/ui/label";
+import { Loader2, Mail } from "lucide-react";
+import { useState } from "react";
 
 interface ResetPasswordFormProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
 
-export function ResetPasswordForm({ onSuccess, onError }: ResetPasswordFormProps) {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
+export function ResetPasswordForm({
+  onSuccess,
+  onError,
+}: ResetPasswordFormProps) {
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const resetPassword = useResetPassword();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await resetPassword.mutateAsync({ email });
-      setSuccess('Password reset email sent. Check your inbox.');
+      setSuccess("Password reset email sent. Check your inbox.");
       onSuccess?.();
     } catch (err: any) {
-      const errorMessage = err.data?.message || err.message || 'Failed to send reset email';
+      const errorMessage =
+        err.data?.message || err.message || "Failed to send reset email";
       setError(errorMessage);
       onError?.(errorMessage);
     }
@@ -42,7 +52,8 @@ export function ResetPasswordForm({ onSuccess, onError }: ResetPasswordFormProps
       <CardHeader>
         <CardTitle>Reset Password</CardTitle>
         <CardDescription>
-          Enter your email address and we'll send you a link to reset your password
+          Enter your email address and we'll send you a link to reset your
+          password
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,7 +91,9 @@ export function ResetPasswordForm({ onSuccess, onError }: ResetPasswordFormProps
             className="w-full"
             disabled={resetPassword.isPending}
           >
-            {resetPassword.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {resetPassword.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
             Send Reset Link
           </Button>
         </form>

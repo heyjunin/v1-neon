@@ -15,10 +15,13 @@
     "@aws-sdk/s3-request-presigner": "^3.540.0",
     "@v1/logger": "workspace:*",
     "mime-types": "^2.1.35",
+    "react-dropzone": "^14.2.3",
     "sharp": "^0.33.0"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.4",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
     "typescript": "^5.5.4"
   },
   "exports": {
@@ -26,6 +29,7 @@
     "./server": "./src/server.ts",
     "./types": "./src/types.ts",
     "./utils": "./src/utils.ts",
-    "./components": "./src/components/index.ts"
+    "./components": "./src/components/index.ts",
+    "./hooks": "./src/hooks/use-upload.ts"
   }
 }

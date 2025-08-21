@@ -1,6 +1,7 @@
 "use server";
 
 import { authActionClient } from "@/actions/safe-action";
+import { updateUser } from "@v1/database/mutations";
 import { updateUserSchema } from "./schema";
 
 export const updateUserAction = authActionClient
@@ -8,8 +9,8 @@ export const updateUserAction = authActionClient
   .metadata({
     name: "update-user",
   })
-  .action(async ({ parsedInput: input, ctx: { adapter, user } }) => {
-    const result = await adapter.updateUser(user.id, input);
+  .action(async ({ parsedInput: input, ctx: { user } }) => {
+    const result = await updateUser(user.id, input);
 
     return result;
   });

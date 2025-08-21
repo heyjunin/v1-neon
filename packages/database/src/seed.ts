@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
 
-import { logger } from '@v1/logger';
-import { db } from './drizzle';
-import { SeederOrchestrator, seeders } from './seeders';
+import { logger } from "@v1/logger";
+import { db } from "./drizzle";
+import { SeederOrchestrator, seeders } from "./seeders";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -12,20 +12,20 @@ async function main() {
   orchestrator.registerMany(seeders);
 
   switch (command) {
-    case 'run':
+    case "run":
       const options = parseOptions(args.slice(1));
       await orchestrator.run(options);
       break;
 
-    case 'list':
+    case "list":
       const availableSeeders = orchestrator.list();
-      logger.info('Available seeders:');
-      availableSeeders.forEach(name => logger.info(`  - ${name}`));
+      logger.info("Available seeders:");
+      availableSeeders.forEach((name) => logger.info(`  - ${name}`));
       break;
 
-    case 'help':
-    case '--help':
-    case '-h':
+    case "help":
+    case "--help":
+    case "-h":
       showHelp();
       break;
 
@@ -37,40 +37,40 @@ async function main() {
 
 function parseOptions(args: string[]) {
   const options: any = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    
+
     switch (arg) {
-      case '--force':
-      case '-f':
+      case "--force":
+      case "-f":
         options.force = true;
         break;
-        
-      case '--verbose':
-      case '-v':
+
+      case "--verbose":
+      case "-v":
         options.verbose = true;
         break;
-        
-      case '--specific':
-      case '-s':
+
+      case "--specific":
+      case "-s":
         if (i + 1 < args.length) {
           const nextArg = args[i + 1];
           if (nextArg) {
-            options.specific = nextArg.split(',');
+            options.specific = nextArg.split(",");
             i++; // Skip next argument
           }
         }
         break;
-        
+
       default:
-        if (arg && !arg.startsWith('-')) {
+        if (arg && !arg.startsWith("-")) {
           // Treat as specific seeder names
           options.specific = [arg];
         }
     }
   }
-  
+
   return options;
 }
 
@@ -99,6 +99,6 @@ Examples:
 }
 
 main().catch((error) => {
-  logger.error('Seeder failed:', error);
+  logger.error("Seeder failed:", error);
   process.exit(1);
 });

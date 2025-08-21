@@ -1,7 +1,7 @@
-import { TRPCError } from '@trpc/server';
-import { createClient } from '@v1/supabase/server';
-import { z } from 'zod';
-import { protectedProcedure, publicProcedure, router } from '../context';
+import { TRPCError } from "@trpc/server";
+import { createClient } from "@v1/supabase/server";
+import { z } from "zod";
+import { protectedProcedure, publicProcedure, router } from "../context";
 
 const signUpSchema = z.object({
   email: z.string().email(),
@@ -51,94 +51,89 @@ const changePasswordSchema = z.object({
 
 export const authRouter = router({
   // Sign up with email/password
-  signUp: publicProcedure
-    .input(signUpSchema)
-    .mutation(async ({ input }) => {
-      const supabase = createClient();
-      
-      const { data, error } = await supabase.auth.signUp({
-        email: input.email,
-        password: input.password,
-        options: {
-          data: {
-            full_name: input.fullName,
-          },
+  signUp: publicProcedure.input(signUpSchema).mutation(async ({ input }) => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase.auth.signUp({
+      email: input.email,
+      password: input.password,
+      options: {
+        data: {
+          full_name: input.fullName,
         },
+      },
+    });
+
+    if (error) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: error.message,
       });
+    }
 
-      if (error) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: error.message,
-        });
-      }
-
-      return {
-        user: data.user,
-        session: data.session,
-        message: 'Check your email for the confirmation link',
-      };
-    }),
+    return {
+      user: data.user,
+      session: data.session,
+      message: "Check your email for the confirmation link",
+    };
+  }),
 
   // Sign in with email/password
-  signIn: publicProcedure
-    .input(signInSchema)
-    .mutation(async ({ input }) => {
-      const supabase = createClient();
-      
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: input.email,
-        password: input.password,
+  signIn: publicProcedure.input(signInSchema).mutation(async ({ input }) => {
+    const supabase = createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: input.email,
+      password: input.password,
+    });
+
+    if (error) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: error.message,
       });
+    }
 
-      if (error) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: error.message,
-        });
-      }
-
-      return {
-        user: data.user,
-        session: data.session,
-      };
-    }),
+    return {
+      user: data.user,
+      session: data.session,
+    };
+  }),
 
   // Sign out
-  signOut: protectedProcedure
-    .mutation(async () => {
-      const supabase = createClient();
-      
-      const { error } = await supabase.auth.signOut();
+  signOut: protectedProcedure.mutation(async () => {
+    const supabase = createClient();
 
-      if (error) {
-        throw new TRPCError({
-          code: 'INTERNAL_SERVER_ERROR',
-          message: error.message,
-        });
-      }
+    const { error } = await supabase.auth.signOut();
 
-      return { message: 'Signed out successfully' };
-    }),
+    if (error) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: error.message,
+      });
+    }
+
+    return { message: "Signed out successfully" };
+  }),
 
   // Request password reset
   resetPassword: publicProcedure
     .input(resetPasswordSchema)
     .mutation(async ({ input }) => {
       const supabase = createClient();
-      
+
       const { error } = await supabase.auth.resetPasswordForEmail(input.email, {
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
       });
 
       if (error) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: error.message,
         });
       }
 
-      return { message: 'Password reset email sent' };
+      return { message: "Password reset email sent" };
     }),
 
   // Update password (after reset)
@@ -146,54 +141,57 @@ export const authRouter = router({
     .input(updatePasswordSchema)
     .mutation(async ({ input }) => {
       const supabase = createClient();
-      
+
       const { error } = await supabase.auth.updateUser({
         password: input.password,
       });
 
       if (error) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: error.message,
         });
       }
 
-      return { message: 'Password updated successfully' };
+      return { message: "Password updated successfully" };
     }),
 
   // Get current user
-  getCurrentUser: protectedProcedure
-    .query(async () => {
-      const supabase = createClient();
-      
-      const { data: { user }, error } = await supabase.auth.getUser();
+  getCurrentUser: protectedProcedure.query(async () => {
+    const supabase = createClient();
 
-      if (error) {
-        throw new TRPCError({
-          code: 'UNAUTHORIZED',
-          message: error.message,
-        });
-      }
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
 
-      return { user };
-    }),
+    if (error) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: error.message,
+      });
+    }
+
+    return { user };
+  }),
 
   // Check if user is authenticated
-  isAuthenticated: publicProcedure
-    .query(async () => {
-      const supabase = createClient();
-      
-      const { data: { user } } = await supabase.auth.getUser();
+  isAuthenticated: publicProcedure.query(async () => {
+    const supabase = createClient();
 
-      return { isAuthenticated: !!user, user };
-    }),
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    return { isAuthenticated: !!user, user };
+  }),
 
   // Send magic link
   sendMagicLink: publicProcedure
     .input(magicLinkSchema)
     .mutation(async ({ input }) => {
       const supabase = createClient();
-      
+
       const { error } = await supabase.auth.signInWithOtp({
         email: input.email,
         options: {
@@ -203,52 +201,50 @@ export const authRouter = router({
 
       if (error) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: error.message,
         });
       }
 
-      return { message: 'Magic link sent to your email' };
+      return { message: "Magic link sent to your email" };
     }),
 
   // Send OTP
-  sendOtp: publicProcedure
-    .input(otpSchema)
-    .mutation(async ({ input }) => {
-      const supabase = createClient();
-      
-      const { error } = await supabase.auth.signInWithOtp({
-        email: input.email,
-        options: {
-          shouldCreateUser: true,
-        },
+  sendOtp: publicProcedure.input(otpSchema).mutation(async ({ input }) => {
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: input.email,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: error.message,
       });
+    }
 
-      if (error) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: error.message,
-        });
-      }
-
-      return { message: 'OTP sent to your email' };
-    }),
+    return { message: "OTP sent to your email" };
+  }),
 
   // Verify OTP
   verifyOtp: publicProcedure
     .input(verifyOtpSchema)
     .mutation(async ({ input }) => {
       const supabase = createClient();
-      
+
       const { data, error } = await supabase.auth.verifyOtp({
         email: input.email,
         token: input.token,
-        type: 'email',
+        type: "email",
       });
 
       if (error) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: error.message,
         });
       }
@@ -256,7 +252,7 @@ export const authRouter = router({
       return {
         user: data.user,
         session: data.session,
-        message: 'OTP verified successfully',
+        message: "OTP verified successfully",
       };
     }),
 
@@ -265,19 +261,19 @@ export const authRouter = router({
     .input(updateProfileSchema)
     .mutation(async ({ input, ctx }) => {
       const supabase = createClient();
-      
+
       const { error } = await supabase.auth.updateUser({
         data: input,
       });
 
       if (error) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: error.message,
         });
       }
 
-      return { message: 'Profile updated successfully' };
+      return { message: "Profile updated successfully" };
     }),
 
   // Change password
@@ -285,7 +281,7 @@ export const authRouter = router({
     .input(changePasswordSchema)
     .mutation(async ({ input }) => {
       const supabase = createClient();
-      
+
       // Verify current password first
       const { error: verifyError } = await supabase.auth.updateUser({
         password: input.newPassword,
@@ -293,30 +289,29 @@ export const authRouter = router({
 
       if (verifyError) {
         throw new TRPCError({
-          code: 'BAD_REQUEST',
+          code: "BAD_REQUEST",
           message: verifyError.message,
         });
       }
 
-      return { message: 'Password changed successfully' };
+      return { message: "Password changed successfully" };
     }),
 
   // Delete account
-  deleteAccount: protectedProcedure
-    .mutation(async () => {
-      const supabase = createClient();
-      
-      const { error } = await supabase.auth.admin.deleteUser(
-        (await supabase.auth.getUser()).data.user?.id || ''
-      );
+  deleteAccount: protectedProcedure.mutation(async () => {
+    const supabase = createClient();
 
-      if (error) {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: error.message,
-        });
-      }
+    const { error } = await supabase.auth.admin.deleteUser(
+      (await supabase.auth.getUser()).data.user?.id || "",
+    );
 
-      return { message: 'Account deleted successfully' };
-    }),
+    if (error) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: error.message,
+      });
+    }
+
+    return { message: "Account deleted successfully" };
+  }),
 });

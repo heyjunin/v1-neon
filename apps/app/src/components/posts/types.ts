@@ -17,7 +17,7 @@ export interface PostFormData {
   content: string;
 }
 
-export type NotificationType = 'success' | 'error';
+export type NotificationType = "success" | "error";
 
 export interface NotificationState {
   type: NotificationType;

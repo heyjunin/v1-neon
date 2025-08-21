@@ -47,15 +47,24 @@ export interface ImageTransformOptions {
   width?: number;
   height?: number;
   quality?: number;
-  format?: 'jpeg' | 'png' | 'webp' | 'avif';
-  fit?: 'cover' | 'contain' | 'fill' | 'inside' | 'outside';
-  position?: 'top' | 'right top' | 'right' | 'right bottom' | 'bottom' | 'left bottom' | 'left' | 'left top' | 'center';
+  format?: "jpeg" | "png" | "webp" | "avif";
+  fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+  position?:
+    | "top"
+    | "right top"
+    | "right"
+    | "right bottom"
+    | "bottom"
+    | "left bottom"
+    | "left"
+    | "left top"
+    | "center";
   background?: string;
   blur?: number;
   sharpen?: number;
   rotate?: number;
-  flip?: 'horizontal' | 'vertical';
-  flop?: 'horizontal' | 'vertical';
+  flip?: "horizontal" | "vertical";
+  flop?: "horizontal" | "vertical";
 }
 
 export interface PresignedUrlOptions {

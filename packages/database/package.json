@@ -35,7 +35,6 @@
     "./queries": "./src/queries/index.ts",
     "./mutations": "./src/mutations/index.ts",
     "./types": "./src/types.ts",
-    "./adapters": "./src/adapters/database-adapter.ts",
     "./seeders": "./src/seeders/index.ts"
   }
 }

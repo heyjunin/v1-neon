@@ -1,12 +1,10 @@
-
-
-const { exec } = require('child_process');
-const util = require('util');
+const { exec } = require("child_process");
+const util = require("util");
 const execPromise = util.promisify(exec);
 
 const scriptsToRun = [
-  'scripts/setup-gemini-context.js',
-  'scripts/setup-windsurf-context.js'
+  "scripts/setup-gemini-context.js",
+  "scripts/setup-windsurf-context.js",
 ];
 
 async function runScript(scriptPath) {
@@ -15,7 +13,7 @@ async function runScript(scriptPath) {
     const { stdout, stderr } = await execPromise(`node ${scriptPath}`);
     console.log(stdout);
     if (stderr) {
-      console.error('Stderr:', stderr);
+      console.error("Stderr:", stderr);
     }
     console.log(`--- Finished: ${scriptPath} ---`);
   } catch (error) {
@@ -25,24 +23,23 @@ async function runScript(scriptPath) {
 }
 
 async function syncAllAiContexts() {
-  console.log('############################################');
-  console.log('# Starting AI Contexts Synchronization #');
-  console.log('############################################');
-  
+  console.log("############################################");
+  console.log("# Starting AI Contexts Synchronization #");
+  console.log("############################################");
+
   try {
     for (const script of scriptsToRun) {
       await runScript(script);
     }
-    console.log('\n#############################################');
-    console.log('# AI Contexts Synchronization Complete! #');
-    console.log('#############################################');
+    console.log("\n#############################################");
+    console.log("# AI Contexts Synchronization Complete! #");
+    console.log("#############################################");
   } catch (error) {
-    console.error('\n##########################################');
-    console.error('# AI Contexts Synchronization Failed! #');
-    console.error('##########################################');
+    console.error("\n##########################################");
+    console.error("# AI Contexts Synchronization Failed! #");
+    console.error("##########################################");
     process.exit(1);
   }
 }
 
 syncAllAiContexts();
-

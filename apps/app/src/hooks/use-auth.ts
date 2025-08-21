@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useIsAuthenticated, useGetCurrentUser } from '@/lib/trpc';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useIsAuthenticated, useGetCurrentUser } from "@/lib/trpc";
 
 export function useAuth() {
   const router = useRouter();
@@ -16,7 +16,7 @@ export function useAuth() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
 

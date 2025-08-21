@@ -4,7 +4,7 @@ import { validateConfig } from "../config";
 export const healthHandler = (c: Context) => {
   try {
     validateConfig();
-    
+
     return c.json({
       status: "healthy",
       timestamp: new Date().toISOString(),
@@ -16,7 +16,7 @@ export const healthHandler = (c: Context) => {
         status: "error",
         message: error instanceof Error ? error.message : "Configuration error",
       },
-      500
+      500,
     );
   }
 };

@@ -1,10 +1,16 @@
-import { Button } from '@v1/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { AlertTriangle } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@v1/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 export const metadata = {
-  title: 'Authentication Error',
+  title: "Authentication Error",
 };
 
 export default function AuthCodeErrorPage() {
@@ -30,18 +36,14 @@ export default function AuthCodeErrorPage() {
                 <li>The link is invalid or corrupted</li>
               </ul>
             </div>
-            
+
             <div className="space-y-2">
               <Button asChild className="w-full">
-                <Link href="/login">
-                  Try signing in again
-                </Link>
+                <Link href="/login">Try signing in again</Link>
               </Button>
-              
+
               <Button asChild variant="outline" className="w-full">
-                <Link href="/magic-link">
-                  Send new magic link
-                </Link>
+                <Link href="/magic-link">Send new magic link</Link>
               </Button>
             </div>
           </CardContent>

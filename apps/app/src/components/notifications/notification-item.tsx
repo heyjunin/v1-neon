@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@v1/ui/button';
+import { Button } from "@v1/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@v1/ui/dropdown-menu';
-import { formatDistanceToNow } from 'date-fns';
-import { Check, Eye, MoreHorizontal } from 'lucide-react';
-import { useState } from 'react';
-import { NotificationDetailModal } from './notification-detail-modal';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@v1/ui/dropdown-menu";
+import { formatDistanceToNow } from "date-fns";
+import { Check, Eye, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
+import { NotificationDetailModal } from "./notification-detail-modal";
 
 interface NotificationItemProps {
   notification: {
@@ -34,7 +34,11 @@ interface NotificationItemProps {
   getIcon: (type: string) => string;
 }
 
-export function NotificationItem({ notification, onMarkAsRead, getIcon }: NotificationItemProps) {
+export function NotificationItem({
+  notification,
+  onMarkAsRead,
+  getIcon,
+}: NotificationItemProps) {
   const [showDetailModal, setShowDetailModal] = useState(false);
 
   const handleMarkAsRead = (e: React.MouseEvent) => {
@@ -50,28 +54,32 @@ export function NotificationItem({ notification, onMarkAsRead, getIcon }: Notifi
     <>
       <div
         className={`flex items-start gap-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-accent ${
-          !notification.isRead ? 'bg-accent/50' : ''
+          !notification.isRead ? "bg-accent/50" : ""
         }`}
         onClick={handleViewDetail}
       >
         <div className="flex-shrink-0 text-lg">
           {getIcon(notification.type)}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium truncate ${!notification.isRead ? 'font-semibold' : ''}`}>
+              <p
+                className={`text-sm font-medium truncate ${!notification.isRead ? "font-semibold" : ""}`}
+              >
                 {notification.title}
               </p>
               <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
                 {notification.message}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(notification.createdAt), {
+                  addSuffix: true,
+                })}
               </p>
             </div>
-            
+
             <div className="flex items-center gap-1">
               {!notification.isRead && (
                 <Button
@@ -83,7 +91,7 @@ export function NotificationItem({ notification, onMarkAsRead, getIcon }: Notifi
                   <Check className="h-3 w-3" />
                 </Button>
               )}
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-6 w-6 p-0">

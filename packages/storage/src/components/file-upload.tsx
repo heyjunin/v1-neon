@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button } from '@v1/ui/button';
-import { Input } from '@v1/ui/input';
-import { AlertCircle, CheckCircle, File, Upload, X } from 'lucide-react';
-import { useRef, useState } from 'react';
-import type { UploadResult } from '../types';
+import { Button } from "@v1/ui/button";
+import { Input } from "@v1/ui/input";
+import { AlertCircle, CheckCircle, File, Upload, X } from "lucide-react";
+import { useRef, useState } from "react";
+import type { UploadResult } from "../types";
 
 interface FileUploadProps {
   onUpload: (file: File) => Promise<UploadResult>;
@@ -21,19 +21,23 @@ export function FileUpload({
   onUpload,
   onUploadComplete,
   onUploadError,
-  accept = '*/*',
+  accept = "*/*",
   maxSize = 10 * 1024 * 1024, // 10MB
   multiple = false,
   disabled = false,
-  className = '',
+  className = "",
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {},
+  );
   const [uploadResults, setUploadResults] = useState<UploadResult[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = Array.from(event.target.files || []);
     if (files.length === 0) return;
 
@@ -44,47 +48,52 @@ export function FileUpload({
       try {
         // Validate file size
         if (file.size > maxSize) {
-          throw new Error(`File ${file.name} is too large. Maximum size is ${maxSize / 1024 / 1024}MB`);
+          throw new Error(
+            `File ${file.name} is too large. Maximum size is ${maxSize / 1024 / 1024}MB`,
+          );
         }
 
         // Update progress
-        setUploadProgress(prev => ({ ...prev, [file.name]: 0 }));
+        setUploadProgress((prev) => ({ ...prev, [file.name]: 0 }));
 
         // Upload file
         const result = await onUpload(file);
-        
-        setUploadResults(prev => [...prev, result]);
-        setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
-        onUploadComplete?.(result);
 
+        setUploadResults((prev) => [...prev, result]);
+        setUploadProgress((prev) => ({ ...prev, [file.name]: 100 }));
+        onUploadComplete?.(result);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-        setErrors(prev => ({ ...prev, [file.name]: errorMessage }));
-        onUploadError?.(error instanceof Error ? error : new Error(errorMessage));
+        const errorMessage =
+          error instanceof Error ? error.message : "Upload failed";
+        setErrors((prev) => ({ ...prev, [file.name]: errorMessage }));
+        onUploadError?.(
+          error instanceof Error ? error : new Error(errorMessage),
+        );
       }
     }
 
     setIsUploading(false);
-    
+
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
   const removeFile = (index: number) => {
-    setUploadResults(prev => prev.filter((_, i) => i !== index));
+    setUploadResults((prev) => prev.filter((_, i) => i !== index));
   };
 
   const retryUpload = async (file: File) => {
     try {
-      setErrors(prev => ({ ...prev, [file.name]: '' }));
+      setErrors((prev) => ({ ...prev, [file.name]: "" }));
       const result = await onUpload(file);
-      setUploadResults(prev => [...prev, result]);
+      setUploadResults((prev) => [...prev, result]);
       onUploadComplete?.(result);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-      setErrors(prev => ({ ...prev, [file.name]: errorMessage }));
+      const errorMessage =
+        error instanceof Error ? error.message : "Upload failed";
+      setErrors((prev) => ({ ...prev, [file.name]: errorMessage }));
       onUploadError?.(error instanceof Error ? error : new Error(errorMessage));
     }
   };
@@ -110,9 +119,9 @@ export function FileUpload({
           className="flex items-center gap-2"
         >
           <Upload className="h-4 w-4" />
-          {isUploading ? 'Uploading...' : 'Choose Files'}
+          {isUploading ? "Uploading..." : "Choose Files"}
         </Button>
-        
+
         {isUploading && (
           <div className="text-sm text-muted-foreground">
             Uploading files...
@@ -144,7 +153,10 @@ export function FileUpload({
         <div className="space-y-2">
           <h4 className="text-sm font-medium">Uploaded Files</h4>
           {uploadResults.map((result, index) => (
-            <div key={result.key} className="flex items-center gap-2 p-2 bg-green-50 rounded">
+            <div
+              key={result.key}
+              className="flex items-center gap-2 p-2 bg-green-50 rounded"
+            >
               <CheckCircle className="h-4 w-4 text-green-600" />
               <span className="text-sm flex-1">{result.key}</span>
               <span className="text-sm text-muted-foreground">
@@ -169,7 +181,10 @@ export function FileUpload({
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-red-600">Upload Errors</h4>
           {Object.entries(errors).map(([fileName, error]) => (
-            <div key={fileName} className="flex items-center gap-2 p-2 bg-red-50 rounded">
+            <div
+              key={fileName}
+              className="flex items-center gap-2 p-2 bg-red-50 rounded"
+            >
               <AlertCircle className="h-4 w-4 text-red-600" />
               <span className="text-sm flex-1">{fileName}</span>
               <span className="text-sm text-red-600">{error}</span>

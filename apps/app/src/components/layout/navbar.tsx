@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { LogoutButton } from '@/components/auth';
-import { NotificationDropdown } from '@/components/notifications/notification-dropdown';
-import { useGetCurrentUser } from '@/lib/trpc';
-import { Avatar, AvatarFallback, AvatarImage } from '@v1/ui/avatar';
-import { Button } from '@v1/ui/button';
+import { LogoutButton } from "@/components/auth";
+import { NotificationDropdown } from "@/components/notifications/notification-dropdown";
+import { useGetCurrentUser } from "@/lib/trpc";
+import { Avatar, AvatarFallback, AvatarImage } from "@v1/ui/avatar";
+import { Button } from "@v1/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from '@v1/ui/dropdown-menu';
-import { Building2, FileText, Home, Settings, User } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@v1/ui/dropdown-menu";
+import { Building2, FileText, Home, Settings, User } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export function Navbar() {
   const { data: userData } = useGetCurrentUser();
@@ -23,16 +23,16 @@ export function Navbar() {
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
+      .split(" ")
+      .map((word) => word.charAt(0))
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
 
   const userMetadata = user?.user_metadata || {};
-  const fullName = userMetadata.full_name || user?.email || 'User';
-  const avatarUrl = userMetadata.avatar_url || '';
+  const fullName = userMetadata.full_name || user?.email || "User";
+  const avatarUrl = userMetadata.avatar_url || "";
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -53,14 +53,14 @@ export function Navbar() {
               Dashboard
             </Link>
           </Button>
-          
+
           <Button asChild variant="ghost" size="sm">
             <Link href="/posts">
               <FileText className="h-4 w-4 mr-2" />
               Posts
             </Link>
           </Button>
-          
+
           <Button asChild variant="ghost" size="sm">
             <Link href="/organizations">
               <Building2 className="h-4 w-4 mr-2" />
@@ -80,9 +80,7 @@ export function Navbar() {
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={avatarUrl} alt={fullName} />
-                  <AvatarFallback>
-                    {getInitials(fullName)}
-                  </AvatarFallback>
+                  <AvatarFallback>{getInitials(fullName)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>

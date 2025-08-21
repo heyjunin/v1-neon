@@ -6,9 +6,9 @@ Servidor Hono para envio de emails, substituindo a edge function do Supabase.
 
 - **Hono** - Framework web rápido e leve
 - **Bun** - Runtime JavaScript/TypeScript
-- **Resend** - Serviço de envio de emails
-- **React Email** - Templates de email
-- **Zod** - Validação de dados
+- **@v1/email** - Package de email reutilizável
+- **Resend** - Serviço de envio de emails (via package)
+- **React Email** - Templates de email (via package)
 
 ## 📦 Instalação
 
@@ -30,10 +30,10 @@ Copie o arquivo `.env.example` para `.env` e configure:
 # Porta do servidor
 PORT=3002
 
-# Resend (envio de emails)
+# Resend (envio de emails) - Usado pelo package @v1/email
 RESEND_API_KEY=your_resend_api_key
 
-# Supabase Webhook Secret
+# Supabase Webhook Secret - Usado pelo package @v1/email
 SEND_EMAIL_HOOK_SECRET=your_webhook_secret
 
 # URL base da aplicação (para templates de email)
@@ -80,15 +80,15 @@ bun run start
 
 ### 1. Welcome Email (`signup`)
 - Enviado quando um usuário se cadastra
-- Template: `WelcomeEmail`
+- Template: `WelcomeEmail` (do package @v1/email)
 
 ### 2. Password Reset (`reset_password`)
 - Enviado quando usuário solicita reset de senha
-- **TODO**: Implementar template
+- **TODO**: Implementar template no package
 
 ### 3. Magic Link (`magic_link`)
 - Enviado quando usuário solicita magic link
-- **TODO**: Implementar template
+- **TODO**: Implementar template no package
 
 ## 🏗️ Estrutura do Projeto
 
@@ -96,7 +96,11 @@ bun run start
 apps/email/
 ├── src/
 │   ├── index.ts          # Ponto de entrada do servidor
-│   └── server.ts         # Configuração do Hono
+│   ├── server.ts         # Configuração do Hono
+│   ├── config/           # Configuração do app
+│   ├── handlers/         # Handlers HTTP
+│   ├── routes/           # Definição de rotas
+│   └── middleware/       # Middleware específico
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -149,8 +153,21 @@ railway up
 
 ## 🔒 Segurança
 
-- Validação de webhook com `standardwebhooks`
-- Validação de payload com Zod
+- Validação de webhook com `standardwebhooks` (via package)
+- Validação de payload com Zod (via package)
 - CORS configurado
 - Headers de segurança
 - Rate limiting (TODO)
+
+## 📦 Package @v1/email
+
+Este app utiliza o package `@v1/email` que contém:
+
+- **EmailService**: Lógica de envio de emails
+- **WebhookService**: Validação de webhooks
+- **Templates**: Templates de email React
+- **Componentes**: Componentes reutilizáveis
+- **Tipos**: Definições TypeScript
+- **Configuração**: Sistema de configuração
+
+O package pode ser usado por outros apps do monorepo para enviar emails sem precisar reimplementar a lógica.

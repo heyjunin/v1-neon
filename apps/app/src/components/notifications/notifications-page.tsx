@@ -1,33 +1,58 @@
-'use client';
+"use client";
 
-import { useArchiveNotification, useDeleteNotification, useMarkNotificationAsRead, useMarkNotificationAsUnread, useNotifications, useUnarchiveNotification } from '@/lib/trpc';
-import { Badge } from '@v1/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
-import { ScrollArea } from '@v1/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@v1/ui/tabs';
-import { Archive, Bell, Check, Filter, Loader2 } from 'lucide-react';
-import { useState } from 'react';
-import { NotificationDetailModal } from './notification-detail-modal';
-import { NotificationItem } from './notification-item';
+import {
+  useArchiveNotification,
+  useDeleteNotification,
+  useMarkNotificationAsRead,
+  useMarkNotificationAsUnread,
+  useNotifications,
+  useUnarchiveNotification,
+} from "@/lib/trpc";
+import { Badge } from "@v1/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@v1/ui/card";
+import { ScrollArea } from "@v1/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v1/ui/tabs";
+import { Archive, Bell, Check, Filter, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { NotificationDetailModal } from "./notification-detail-modal";
+import { NotificationItem } from "./notification-item";
 
 export function NotificationsPage() {
-  const [selectedTab, setSelectedTab] = useState('all');
+  const [selectedTab, setSelectedTab] = useState("all");
   const [selectedNotification, setSelectedNotification] = useState<any>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  const { data: allNotifications, isLoading: isLoadingAll, refetch: refetchAll } = useNotifications({
+  const {
+    data: allNotifications,
+    isLoading: isLoadingAll,
+    refetch: refetchAll,
+  } = useNotifications({
     limit: 50,
     includeRead: true,
     includeArchived: false,
   });
 
-  const { data: unreadNotifications, isLoading: isLoadingUnread, refetch: refetchUnread } = useNotifications({
+  const {
+    data: unreadNotifications,
+    isLoading: isLoadingUnread,
+    refetch: refetchUnread,
+  } = useNotifications({
     limit: 50,
     includeRead: false,
     includeArchived: false,
   });
 
-  const { data: archivedNotifications, isLoading: isLoadingArchived, refetch: refetchArchived } = useNotifications({
+  const {
+    data: archivedNotifications,
+    isLoading: isLoadingArchived,
+    refetch: refetchArchived,
+  } = useNotifications({
     limit: 50,
     includeRead: true,
     includeArchived: true,
@@ -41,9 +66,9 @@ export function NotificationsPage() {
 
   const getCurrentNotifications = () => {
     switch (selectedTab) {
-      case 'unread':
+      case "unread":
         return unreadNotifications?.notifications || [];
-      case 'archived':
+      case "archived":
         return archivedNotifications?.notifications || [];
       default:
         return allNotifications?.notifications || [];
@@ -52,9 +77,9 @@ export function NotificationsPage() {
 
   const getCurrentLoading = () => {
     switch (selectedTab) {
-      case 'unread':
+      case "unread":
         return isLoadingUnread;
-      case 'archived':
+      case "archived":
         return isLoadingArchived;
       default:
         return isLoadingAll;
@@ -63,10 +88,10 @@ export function NotificationsPage() {
 
   const refetchCurrent = () => {
     switch (selectedTab) {
-      case 'unread':
+      case "unread":
         refetchUnread();
         break;
-      case 'archived':
+      case "archived":
         refetchArchived();
         break;
       default:
@@ -80,7 +105,7 @@ export function NotificationsPage() {
       await markAsRead.mutateAsync({ id: notificationId });
       refetchCurrent();
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      console.error("Failed to mark notification as read:", error);
     }
   };
 
@@ -89,7 +114,7 @@ export function NotificationsPage() {
       await markAsUnread.mutateAsync({ id: notificationId });
       refetchCurrent();
     } catch (error) {
-      console.error('Failed to mark notification as unread:', error);
+      console.error("Failed to mark notification as unread:", error);
     }
   };
 
@@ -98,7 +123,7 @@ export function NotificationsPage() {
       await archive.mutateAsync({ id: notificationId });
       refetchCurrent();
     } catch (error) {
-      console.error('Failed to archive notification:', error);
+      console.error("Failed to archive notification:", error);
     }
   };
 
@@ -107,7 +132,7 @@ export function NotificationsPage() {
       await unarchive.mutateAsync({ id: notificationId });
       refetchCurrent();
     } catch (error) {
-      console.error('Failed to unarchive notification:', error);
+      console.error("Failed to unarchive notification:", error);
     }
   };
 
@@ -116,7 +141,7 @@ export function NotificationsPage() {
       await deleteNotification.mutateAsync({ id: notificationId });
       refetchCurrent();
     } catch (error) {
-      console.error('Failed to delete notification:', error);
+      console.error("Failed to delete notification:", error);
     }
   };
 
@@ -127,18 +152,18 @@ export function NotificationsPage() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'success':
-        return '✅';
-      case 'warning':
-        return '⚠️';
-      case 'error':
-        return '❌';
-      case 'invite':
-        return '📨';
-      case 'mention':
-        return '👤';
+      case "success":
+        return "✅";
+      case "warning":
+        return "⚠️";
+      case "error":
+        return "❌";
+      case "invite":
+        return "📨";
+      case "mention":
+        return "👤";
       default:
-        return 'ℹ️';
+        return "ℹ️";
     }
   };
 
@@ -152,12 +177,18 @@ export function NotificationsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold">Notifications</h1>
-            <p className="text-muted-foreground">Manage your notifications and preferences</p>
+            <p className="text-muted-foreground">
+              Manage your notifications and preferences
+            </p>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="all" className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
@@ -182,53 +213,53 @@ export function NotificationsPage() {
             </TabsTrigger>
           </TabsList>
 
-                     <TabsContent value="all" className="space-y-4">
-             <NotificationsList
-               notifications={notifications}
-               isLoading={isLoading}
-               onMarkAsRead={handleMarkAsRead}
-               onMarkAsUnread={handleMarkAsUnread}
-               onArchive={handleArchive}
-               onUnarchive={handleUnarchive}
-               onDelete={handleDelete}
-               onViewDetail={handleViewDetail}
-               getIcon={getNotificationIcon}
-               showActions={true}
-               selectedTab={selectedTab}
-             />
-           </TabsContent>
+          <TabsContent value="all" className="space-y-4">
+            <NotificationsList
+              notifications={notifications}
+              isLoading={isLoading}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAsUnread={handleMarkAsUnread}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+              onDelete={handleDelete}
+              onViewDetail={handleViewDetail}
+              getIcon={getNotificationIcon}
+              showActions={true}
+              selectedTab={selectedTab}
+            />
+          </TabsContent>
 
-           <TabsContent value="unread" className="space-y-4">
-             <NotificationsList
-               notifications={notifications}
-               isLoading={isLoading}
-               onMarkAsRead={handleMarkAsRead}
-               onMarkAsUnread={handleMarkAsUnread}
-               onArchive={handleArchive}
-               onUnarchive={handleUnarchive}
-               onDelete={handleDelete}
-               onViewDetail={handleViewDetail}
-               getIcon={getNotificationIcon}
-               showActions={true}
-               selectedTab={selectedTab}
-             />
-           </TabsContent>
+          <TabsContent value="unread" className="space-y-4">
+            <NotificationsList
+              notifications={notifications}
+              isLoading={isLoading}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAsUnread={handleMarkAsUnread}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+              onDelete={handleDelete}
+              onViewDetail={handleViewDetail}
+              getIcon={getNotificationIcon}
+              showActions={true}
+              selectedTab={selectedTab}
+            />
+          </TabsContent>
 
-           <TabsContent value="archived" className="space-y-4">
-             <NotificationsList
-               notifications={notifications}
-               isLoading={isLoading}
-               onMarkAsRead={handleMarkAsRead}
-               onMarkAsUnread={handleMarkAsUnread}
-               onArchive={handleArchive}
-               onUnarchive={handleUnarchive}
-               onDelete={handleDelete}
-               onViewDetail={handleViewDetail}
-               getIcon={getNotificationIcon}
-               showActions={true}
-               selectedTab={selectedTab}
-             />
-           </TabsContent>
+          <TabsContent value="archived" className="space-y-4">
+            <NotificationsList
+              notifications={notifications}
+              isLoading={isLoading}
+              onMarkAsRead={handleMarkAsRead}
+              onMarkAsUnread={handleMarkAsUnread}
+              onArchive={handleArchive}
+              onUnarchive={handleUnarchive}
+              onDelete={handleDelete}
+              onViewDetail={handleViewDetail}
+              getIcon={getNotificationIcon}
+              showActions={true}
+              selectedTab={selectedTab}
+            />
+          </TabsContent>
         </Tabs>
       </div>
 
@@ -306,9 +337,9 @@ function NotificationsList({
           Notifications ({notifications.length})
         </CardTitle>
         <CardDescription>
-          {selectedTab === 'unread' && 'Unread notifications'}
-          {selectedTab === 'archived' && 'Archived notifications'}
-          {selectedTab === 'all' && 'All notifications'}
+          {selectedTab === "unread" && "Unread notifications"}
+          {selectedTab === "archived" && "Archived notifications"}
+          {selectedTab === "all" && "All notifications"}
         </CardDescription>
       </CardHeader>
       <CardContent>

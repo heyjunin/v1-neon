@@ -1,9 +1,9 @@
-import { ProtectedRoute } from '@/components/auth';
-import { Navbar } from '@/components/layout/navbar';
-import { NotificationsPage } from '@/components/notifications/notifications-page';
+import { ProtectedRoute } from "@/components/auth";
+import { Navbar } from "@/components/layout/navbar";
+import { NotificationsPage } from "@/components/notifications/notifications-page";
 
 export const metadata = {
-  title: 'Notifications',
+  title: "Notifications",
 };
 
 export default function NotificationsPageWrapper() {

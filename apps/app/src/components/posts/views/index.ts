@@ -1,1 +1,1 @@
-export { PostView } from './post-view';
+export { PostView } from "./post-view";

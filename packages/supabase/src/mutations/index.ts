@@ -1,8 +1,16 @@
 import { logger } from "@v1/logger";
 import { createClient } from "@v1/supabase/server";
-import type { Database, Tables, TablesUpdate } from "../types";
+import type { Tables, TablesUpdate } from "../types";
 
-export async function updateUser(userId: string, data: TablesUpdate<"users">) {
+export interface UpdateUserResult {
+  data: Tables<"users"> | null;
+  error: any;
+}
+
+export async function updateUser(
+  userId: string,
+  data: TablesUpdate<"users">,
+): Promise<UpdateUserResult> {
   const supabase = createClient();
 
   try {

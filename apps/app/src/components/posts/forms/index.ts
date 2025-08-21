@@ -1,1 +1,1 @@
-export { PostForm } from './post-form';
+export { PostForm } from "./post-form";

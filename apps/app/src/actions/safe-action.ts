@@ -2,7 +2,8 @@ import * as Sentry from "@sentry/nextjs";
 import { setupAnalytics } from "@v1/analytics/server";
 import { ratelimit } from "@v1/kv/ratelimit";
 import { logger } from "@v1/logger";
-import { createDatabaseAdapter } from "@v1/database/adapters";
+import { getUser } from "@v1/supabase/queries";
+import { getUserById } from "@v1/database/queries";
 import {
   DEFAULT_SERVER_ERROR_MESSAGE,
   createSafeActionClient,
@@ -73,16 +74,23 @@ export const authActionClient = actionClientWithMeta
     });
   })
   .use(async ({ next, metadata }) => {
-    const adapter = createDatabaseAdapter();
-    const { data, error } = await adapter.getUser();
+    // Obter usuário autenticado do Supabase
+    const supabaseResult = await getUser();
 
-    if (error || !data?.user) {
+    if (supabaseResult.error || !supabaseResult.data?.user) {
       throw new Error("Unauthorized");
+    }
+
+    // Buscar dados completos do usuário no Drizzle/Neon
+    const user = await getUserById(supabaseResult.data.user.id);
+
+    if (!user) {
+      throw new Error("User not found in database");
     }
 
     if (metadata) {
       const analytics = await setupAnalytics({
-        userId: data.user.id,
+        userId: user.id,
       });
 
       if (metadata.track) {
@@ -93,8 +101,7 @@ export const authActionClient = actionClientWithMeta
     return Sentry.withServerActionInstrumentation(metadata.name, async () => {
       return next({
         ctx: {
-          adapter,
-          user: data.user,
+          user,
         },
       });
     });

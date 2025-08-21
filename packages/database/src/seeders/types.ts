@@ -1,4 +1,4 @@
-import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
+import { type NeonHttpDatabase } from "drizzle-orm/neon-http";
 
 export interface Seeder {
   name: string;

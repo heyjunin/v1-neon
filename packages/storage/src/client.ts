@@ -1,4 +1,8 @@
-import type { ImageTransformOptions, UploadOptions, UploadResult } from './types';
+import type {
+  ImageTransformOptions,
+  UploadOptions,
+  UploadResult,
+} from "./types";
 
 export interface ClientStorageConfig {
   uploadUrl: string;
@@ -12,7 +16,7 @@ export class ClientStorage {
   constructor(config: ClientStorageConfig) {
     this.config = {
       maxFileSize: 10 * 1024 * 1024, // 10MB default
-      allowedTypes: ['image/*', 'application/pdf', 'text/*'],
+      allowedTypes: ["image/*", "application/pdf", "text/*"],
       ...config,
     };
   }
@@ -23,7 +27,7 @@ export class ClientStorage {
   async uploadFile(
     file: File,
     key?: string,
-    options: UploadOptions = {}
+    options: UploadOptions = {},
   ): Promise<UploadResult> {
     try {
       // Validate file
@@ -34,20 +38,20 @@ export class ClientStorage {
 
       // Create FormData
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('key', fileKey);
-      
+      formData.append("file", file);
+      formData.append("key", fileKey);
+
       if (options.contentType) {
-        formData.append('contentType', options.contentType);
+        formData.append("contentType", options.contentType);
       }
-      
+
       if (options.metadata) {
-        formData.append('metadata', JSON.stringify(options.metadata));
+        formData.append("metadata", JSON.stringify(options.metadata));
       }
 
       // Upload file
       const response = await fetch(this.config.uploadUrl, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
@@ -58,7 +62,7 @@ export class ClientStorage {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error('Client upload error:', error);
+      console.error("Client upload error:", error);
       throw error;
     }
   }
@@ -69,7 +73,7 @@ export class ClientStorage {
   async uploadFiles(
     files: File[],
     keyPrefix?: string,
-    options: UploadOptions = {}
+    options: UploadOptions = {},
   ): Promise<UploadResult[]> {
     const uploads = files.map((file, index) => {
       const key = keyPrefix ? `${keyPrefix}/${index}-${file.name}` : undefined;
@@ -84,19 +88,19 @@ export class ClientStorage {
    */
   getImageUrl(key: string, options: ImageTransformOptions = {}): string {
     const params = new URLSearchParams();
-    
-    if (options.width) params.append('w', options.width.toString());
-    if (options.height) params.append('h', options.height.toString());
-    if (options.quality) params.append('q', options.quality.toString());
-    if (options.format) params.append('f', options.format);
-    if (options.fit) params.append('fit', options.fit);
-    if (options.position) params.append('p', options.position);
-    if (options.background) params.append('bg', options.background);
-    if (options.blur) params.append('blur', options.blur.toString());
-    if (options.sharpen) params.append('sharpen', options.sharpen.toString());
-    if (options.rotate) params.append('r', options.rotate.toString());
-    if (options.flip) params.append('flip', options.flip);
-    if (options.flop) params.append('flop', options.flop);
+
+    if (options.width) params.append("w", options.width.toString());
+    if (options.height) params.append("h", options.height.toString());
+    if (options.quality) params.append("q", options.quality.toString());
+    if (options.format) params.append("f", options.format);
+    if (options.fit) params.append("fit", options.fit);
+    if (options.position) params.append("p", options.position);
+    if (options.background) params.append("bg", options.background);
+    if (options.blur) params.append("blur", options.blur.toString());
+    if (options.sharpen) params.append("sharpen", options.sharpen.toString());
+    if (options.rotate) params.append("r", options.rotate.toString());
+    if (options.flip) params.append("flip", options.flip);
+    if (options.flop) params.append("flop", options.flop);
 
     const queryString = params.toString();
     return queryString ? `${key}?${queryString}` : key;
@@ -108,17 +112,24 @@ export class ClientStorage {
   private validateFile(file: File): void {
     // Check file size
     if (this.config.maxFileSize && file.size > this.config.maxFileSize) {
-      throw new Error(`File too large. Maximum size is ${this.config.maxFileSize / 1024 / 1024}MB`);
+      throw new Error(
+        `File too large. Maximum size is ${this.config.maxFileSize / 1024 / 1024}MB`,
+      );
     }
 
     // Check file type
-    if (this.config.allowedTypes && !this.config.allowedTypes.some(type => {
-      if (type.endsWith('/*')) {
-        return file.type.startsWith(type.slice(0, -1));
-      }
-      return file.type === type;
-    })) {
-      throw new Error(`File type not allowed. Allowed types: ${this.config.allowedTypes.join(', ')}`);
+    if (
+      this.config.allowedTypes &&
+      !this.config.allowedTypes.some((type) => {
+        if (type.endsWith("/*")) {
+          return file.type.startsWith(type.slice(0, -1));
+        }
+        return file.type === type;
+      })
+    ) {
+      throw new Error(
+        `File type not allowed. Allowed types: ${this.config.allowedTypes.join(", ")}`,
+      );
     }
   }
 
@@ -128,13 +139,15 @@ export class ClientStorage {
   private generateKey(filename: string): string {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 15);
-    const extension = filename.split('.').pop();
+    const extension = filename.split(".").pop();
     return `uploads/${timestamp}-${random}.${extension}`;
   }
 }
 
 // Factory function to create ClientStorage instance
-export function createClientStorage(config: ClientStorageConfig): ClientStorage {
+export function createClientStorage(
+  config: ClientStorageConfig,
+): ClientStorage {
   return new ClientStorage(config);
 }
 
