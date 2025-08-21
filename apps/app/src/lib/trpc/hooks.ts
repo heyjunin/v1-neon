@@ -187,3 +187,60 @@ export const useTransferOwnership = () => {
 export const useBulkAddMembers = () => {
   return trpc.organizations.bulkAddMembers.useMutation();
 };
+
+// Auth hooks
+export const useSignUp = () => {
+  return trpc.auth.signUp.useMutation();
+};
+
+export const useSignIn = () => {
+  return trpc.auth.signIn.useMutation();
+};
+
+export const useSignOut = () => {
+  return trpc.auth.signOut.useMutation();
+};
+
+export const useResetPassword = () => {
+  return trpc.auth.resetPassword.useMutation();
+};
+
+export const useUpdatePassword = () => {
+  return trpc.auth.updatePassword.useMutation();
+};
+
+export const useGetCurrentUser = () => {
+  return trpc.auth.getCurrentUser.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useIsAuthenticated = () => {
+  return trpc.auth.isAuthenticated.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useSendMagicLink = () => {
+  return trpc.auth.sendMagicLink.useMutation();
+};
+
+export const useSendOtp = () => {
+  return trpc.auth.sendOtp.useMutation();
+};
+
+export const useVerifyOtp = () => {
+  return trpc.auth.verifyOtp.useMutation();
+};
+
+export const useUpdateProfile = () => {
+  return trpc.auth.updateProfile.useMutation();
+};
+
+export const useChangePassword = () => {
+  return trpc.auth.changePassword.useMutation();
+};
+
+export const useDeleteAccount = () => {
+  return trpc.auth.deleteAccount.useMutation();
+};

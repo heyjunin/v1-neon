@@ -1,6 +1,6 @@
 import { updateSession } from "@v1/supabase/middleware";
 import { createI18nMiddleware } from "next-international/middleware";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
 const I18nMiddleware = createI18nMiddleware({
   locales: ["en", "fr"],
@@ -14,7 +14,22 @@ export async function middleware(request: NextRequest) {
     I18nMiddleware(request),
   );
 
-  if (!request.nextUrl.pathname.endsWith("/login") && !user) {
+  // Define public routes that don't require authentication
+  const publicRoutes = [
+    '/login',
+    '/signup', 
+    '/reset-password',
+    '/update-password',
+    '/magic-link',
+    '/auth/auth-code-error',
+    '/api/auth/callback'
+  ];
+
+  const isPublicRoute = publicRoutes.some(route => 
+    request.nextUrl.pathname.endsWith(route)
+  );
+
+  if (!isPublicRoute && !user) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 

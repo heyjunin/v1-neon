@@ -163,6 +163,9 @@ This is an enhanced version of the V1 boilerplate with significant improvements 
 
 ### 🔐 Authentication Features
 - **Supabase Auth**: OAuth providers (Google, Discord, GitHub)
+- **Email/Password**: Traditional email and password authentication
+- **Magic Link**: Passwordless authentication via email links
+- **Password Reset**: Secure password recovery system
 - **Session Management**: Secure session handling
 - **Role-based Access**: Integration with organization roles
 - **Email Verification**: Secure email verification flow
@@ -314,8 +317,62 @@ The tRPC API is implemented as a Backend for Frontend (BFF) pattern within the m
 - **Automatic Caching**: React Query integration for optimal performance
 - **Error Handling**: Comprehensive error handling with type safety
 
+### Authentication Routes
+- `auth.signUp` - Email/password registration
+- `auth.signIn` - Email/password login
+- `auth.signOut` - User logout
+- `auth.resetPassword` - Password reset request
+- `auth.updatePassword` - Password update after reset
+- `auth.sendMagicLink` - Passwordless authentication
+- `auth.sendOtp` - Send OTP code
+- `auth.verifyOtp` - Verify OTP code
+- `auth.updateProfile` - Update user profile
+- `auth.changePassword` - Change user password
+- `auth.deleteAccount` - Delete user account
+- `auth.getCurrentUser` - Get current user data
+- `auth.isAuthenticated` - Check authentication status
+
 ### Usage
 
+#### Authentication Example
+```tsx
+import { useSignIn, useSignUp, useSendMagicLink } from '@/lib/trpc';
+
+function AuthExample() {
+  const signIn = useSignIn();
+  const signUp = useSignUp();
+  const sendMagicLink = useSendMagicLink();
+
+  const handleSignIn = async (email: string, password: string) => {
+    try {
+      await signIn.mutateAsync({ email, password });
+      // Redirect to dashboard
+    } catch (error) {
+      console.error('Sign in failed:', error);
+    }
+  };
+
+  const handleSignUp = async (email: string, password: string, fullName: string) => {
+    try {
+      await signUp.mutateAsync({ email, password, fullName });
+      // Show email confirmation message
+    } catch (error) {
+      console.error('Sign up failed:', error);
+    }
+  };
+
+  const handleMagicLink = async (email: string) => {
+    try {
+      await sendMagicLink.mutateAsync({ email });
+      // Show magic link sent message
+    } catch (error) {
+      console.error('Magic link failed:', error);
+    }
+  };
+}
+```
+
+#### Posts Example
 ```tsx
 import { usePosts, useCreatePost } from '@/lib/trpc';
 
@@ -583,6 +640,53 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE.md) f
 - Based on [Midday](https://midday.ai) and the original [V1](https://v1.run) boilerplate
 - Enhanced with modern database architecture and development practices
 - Built with the latest technologies and best practices
+
+## 👤 Profile Management
+
+The application includes a comprehensive profile management system with the following features:
+
+### Profile Features
+- **Profile Information**: Edit name, bio, website, location, avatar URL
+- **Security Settings**: Change password with current password verification
+- **Account Management**: Delete account with confirmation dialog
+- **User Overview**: Display account statistics and metadata
+
+### Profile Components
+```tsx
+import { ProfileForm, ChangePasswordForm, DeleteAccountForm } from '@/components/profile';
+
+// Profile editing form
+<ProfileForm />
+
+// Password change form with validation
+<ChangePasswordForm />
+
+// Account deletion with confirmation dialog
+<DeleteAccountForm />
+```
+
+### Profile Page Structure
+- **Account Overview**: User info, email verification status, member since date
+- **Profile Tab**: Edit personal information and preferences
+- **Security Tab**: Change password with current password verification
+- **Danger Zone**: Delete account with confirmation and warnings
+- **Quick Actions**: Links to dashboard, organizations, and posts
+
+### Profile Routes
+- `/profile` - Main profile management page
+- `/dashboard` - Dashboard with profile link
+
+### Profile API Endpoints
+```typescript
+// Update profile information
+const { mutate: updateProfile } = useUpdateProfile();
+
+// Change password
+const { mutate: changePassword } = useChangePassword();
+
+// Delete account
+const { mutate: deleteAccount } = useDeleteAccount();
+```
 
 ## 🆕 What's Different from Original V1
 

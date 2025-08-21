@@ -6,6 +6,6 @@ interface PostEditPageProps {
   };
 }
 
-export default function PostEditPage({ params }: PostEditPageProps) {
+export default function PostEditPageWrapper({ params }: PostEditPageProps) {
   return <PostEditPage postId={params.id} />;
 }
