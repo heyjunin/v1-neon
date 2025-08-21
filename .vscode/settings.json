@@ -22,6 +22,17 @@
   ],
   "terminal.integrated.localEchoStyle": "dim",
   "search.exclude": {
-    "**/node_modules": true
-  }
+    "**/node_modules": true,
+    "**/.ai": true,
+    "**/.cursor": true,
+    "**/.gemini": true,
+    "**/.windsurf": true
+  },
+  "files.exclude": {
+    "**/.ai": true,
+    "**/.cursor": true,
+    "**/.gemini": true,
+    "**/.windsurf": true
+  },
+  "typescript.preferences.includePackageJsonAutoImports": "off"
 }

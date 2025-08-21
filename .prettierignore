@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Environment files
+.env*
+
+# Generated files
+*.tsbuildinfo
+.turbo/
+
+# Supabase
+.branches
+.temp
+
+# Trigger
+.trigger

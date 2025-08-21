@@ -1,5 +1,6 @@
 import { RootLayout } from '@/components/layout/root-layout'
 import { DashboardPage } from '@/pages/dashboard'
+import { ExamplesPage } from '@/pages/examples'
 import { HomePage } from '@/pages/home'
 import { NotFoundPage } from '@/pages/not-found'
 import { PostsPage } from '@/pages/posts'
@@ -36,6 +37,10 @@ export const router = createBrowserRouter([
       {
         path: 'pwa',
         element: <PWAPage />,
+      },
+      {
+        path: 'examples',
+        element: <ExamplesPage />,
       },
       {
         path: '*',

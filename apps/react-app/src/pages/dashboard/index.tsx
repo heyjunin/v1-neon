@@ -1,16 +1,18 @@
+import { DashboardLayout } from '@/components/layouts'
+import { DashboardPageHeader } from '@/components/templates'
 import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
 import { Progress } from '@v1/ui/progress'
 import {
-    Activity,
-    BarChart3,
-    Calendar,
-    FileText,
-    Mail,
-    TrendingUp,
-    User,
-    Users
+  Activity,
+  BarChart3,
+  Calendar,
+  FileText,
+  Mail,
+  TrendingUp,
+  User,
+  Users
 } from 'lucide-react'
 
 export function DashboardPage() {
@@ -30,18 +32,22 @@ export function DashboardPage() {
   ]
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
-        </div>
-        <Button>
-          <Calendar className="h-4 w-4 mr-2" />
-          Today
-        </Button>
-      </div>
+    <DashboardLayout
+      meta={{
+        title: 'Dashboard - V1 React App',
+        description: 'Painel de controle com métricas e informações importantes'
+      }}
+    >
+      <DashboardPageHeader
+        title="Dashboard"
+        description="Welcome back! Here's what's happening today."
+        actions={
+          <Button>
+            <Calendar className="h-4 w-4 mr-2" />
+            Today
+          </Button>
+        }
+      />
 
       {/* Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -163,6 +169,6 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

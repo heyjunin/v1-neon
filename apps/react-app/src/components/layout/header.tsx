@@ -1,6 +1,6 @@
 import { Button } from '@v1/ui/button'
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from '@v1/ui/navigation-menu'
-import { BarChart3, FileText, Globe, Home, User } from 'lucide-react'
+import { BarChart3, Code2, FileText, Globe, Home, User } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { ThemeToggle } from '../theme'
 
@@ -13,6 +13,7 @@ export function Header() {
     { path: '/posts', label: 'Posts', icon: FileText },
     { path: '/profile', label: 'Profile', icon: User },
     { path: '/pwa', label: 'PWA', icon: Globe },
+    { path: '/examples', label: 'Examples', icon: Code2 },
   ]
 
   return (

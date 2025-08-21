@@ -4,7 +4,7 @@
     "enabled": true
   },
   "linter": {
-    "ignore": ["node_modules", ".next", "packages/tsconfig"],
+    "ignore": ["node_modules", ".next", "packages/tsconfig", ".ai", ".cursor", ".gemini", ".windsurf"],
     "enabled": true,
     "rules": {
       "recommended": true,
@@ -21,5 +21,8 @@
   },
   "formatter": {
     "indentStyle": "space"
+  },
+  "files": {
+    "ignoreUnknown": true
   }
 }

@@ -59,3 +59,9 @@ tailwind.css
 
 # Trigger
 .trigger
+
+# AI Demo Files
+.ai/
+.cursor/
+.gemini/
+.windsurf/
