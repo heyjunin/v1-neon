@@ -1,3 +1,5 @@
+"use client";
+
 import { ProtectedRoute } from "@/components/auth";
 import { Navbar } from "@/components/layout/navbar";
 import { useGetCurrentUser } from "@/lib/trpc";
