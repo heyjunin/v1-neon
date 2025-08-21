@@ -6,6 +6,7 @@ import { prettyJSON } from 'hono/pretty-json';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { protectedRoutes } from './routes/protected';
+import { webhookRoutes } from './routes/webhooks';
 
 const app = new OpenAPIHono();
 
@@ -34,6 +35,7 @@ app.doc('/docs', {
 app.route('/auth', authRoutes);
 app.route('/', healthRoutes);
 app.route('/protected', protectedRoutes);
+app.route('/webhooks', webhookRoutes);
 
 // Swagger UI
 app.get('/swagger', swaggerUI({ url: '/docs' }));
@@ -66,6 +68,9 @@ console.log(`📚 API Documentation: http://localhost:${port}/docs`);
 console.log(`🔍 Swagger UI: http://localhost:${port}/swagger`);
 
 export { app };
+
+// Export the app type for RPC client usage
+export type AppType = typeof app;
 
 export default {
   port,

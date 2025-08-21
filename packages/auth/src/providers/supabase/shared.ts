@@ -113,7 +113,7 @@ export class SupabaseAuthProvider implements AuthProvider {
 
   onAuthStateChange(callback: (session: AuthSession) => void): () => void {
     const { data: { subscription } } = this.client.auth.onAuthStateChange(
-      async (event: string, session: any) => {
+      async (event: string) => {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           const authSession = await this.getSession();
           callback(authSession);

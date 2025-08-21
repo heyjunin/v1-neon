@@ -1,5 +1,6 @@
 import { ProtectedRoute } from '@/components/auth/protected-route'
 import { RootLayout } from '@/components/layout/root-layout'
+import { AuthCallbackPage } from '@/pages/auth/callback'
 import { DashboardPage } from '@/pages/dashboard'
 import { ExamplesPage } from '@/pages/examples'
 import { HomePage } from '@/pages/home'
@@ -9,7 +10,6 @@ import { PostsPage } from '@/pages/posts'
 import { PostDetailPage } from '@/pages/posts/post-detail'
 import { ProfilePage } from '@/pages/profile'
 import { PWAPage } from '@/pages/pwa'
-import { SignupPage } from '@/pages/signup'
 import { Route, Routes } from 'react-router-dom'
 
 export function AppRoutes() {
@@ -17,6 +17,8 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="auth/callback" element={<AuthCallbackPage />} />
         <Route
           path="dashboard"
           element={
@@ -39,10 +41,6 @@ export function AppRoutes() {
         <Route path="examples" element={<ExamplesPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-      
-      {/* Auth routes */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
     </Routes>
   )
 }

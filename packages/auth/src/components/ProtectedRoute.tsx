@@ -1,3 +1,5 @@
+"use client";
+
 import { Navigate } from "react-router-dom";
 import { useUser } from "../hooks";
 import type { ProtectedRouteProps } from "../types";
@@ -7,7 +9,7 @@ export function ProtectedRoute({
   redirectTo = "/login", 
   fallback = <div>Loading...</div> 
 }: ProtectedRouteProps) {
-  const { user, isLoading, isAuthenticated } = useUser();
+  const { isLoading, isAuthenticated } = useUser();
 
   if (isLoading) {
     return <>{fallback}</>;

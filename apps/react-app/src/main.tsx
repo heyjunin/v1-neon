@@ -1,3 +1,5 @@
+import { AuthProvider } from '@v1/auth/components'
+import { createReactAuthProvider } from '@v1/auth/providers/supabase'
 import '@v1/ui/globals.css'
 import React, { Suspense } from 'react'
 import ReactDOM from 'react-dom/client'
@@ -12,14 +14,18 @@ if (!rootElement) {
   throw new Error('Root element not found')
 }
 
+const authProvider = createReactAuthProvider()
+
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <Suspense fallback={<div>Loading...</div>}>
       <HelmetProvider>
         <BrowserRouter>
-          <ThemeProvider>
-            <AppRoutes />
-          </ThemeProvider>
+          <AuthProvider provider={authProvider}>
+            <ThemeProvider>
+              <AppRoutes />
+            </ThemeProvider>
+          </AuthProvider>
         </BrowserRouter>
       </HelmetProvider>
     </Suspense>

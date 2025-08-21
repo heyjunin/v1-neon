@@ -1,15 +1,7 @@
-import { createBrowserClient, createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SupabaseAuthProvider } from "./shared";
 import type { Database } from "./types";
-
-// Client-side client
-export const createBrowserSupabaseClient = () => {
-  return createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
-};
 
 // Server-side client
 export const createServerSupabaseClient = () => {
@@ -37,12 +29,7 @@ export const createServerSupabaseClient = () => {
   );
 };
 
-// Auth providers
-export const createBrowserAuthProvider = () => {
-  const client = createBrowserSupabaseClient();
-  return new SupabaseAuthProvider(client);
-};
-
+// Auth provider for server-side
 export const createServerAuthProvider = () => {
   const client = createServerSupabaseClient();
   return new SupabaseAuthProvider(client);

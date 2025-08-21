@@ -24,6 +24,7 @@
   },
   "exports": {
     "./providers/supabase": "./src/providers/supabase/index.ts",
+    "./providers/supabase/client-index": "./src/providers/supabase/client-index.ts",
     "./hooks": "./src/hooks/index.ts",
     "./components": "./src/components/index.ts",
     "./utils": "./src/utils/index.ts",

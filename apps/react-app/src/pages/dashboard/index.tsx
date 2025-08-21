@@ -1,5 +1,6 @@
+import { DashboardLayout } from '@/components/layouts'
 import { DashboardPageHeader } from '@/components/templates'
-import { useAuth } from '@/hooks/use-auth'
+import { useUser } from '@v1/auth/hooks'
 import { Badge } from '@v1/ui/badge'
 import { Button } from '@v1/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
@@ -16,15 +17,7 @@ import {
 } from 'lucide-react'
 
 export function DashboardPage() {
-  const { isAuthenticated } = useAuth()
-
-  // Mock user data
-  const mockUser = {
-    displayName: 'John Doe',
-    primaryEmail: 'john.doe@example.com',
-    signedUpAt: '2024-01-15T00:00:00Z',
-    id: 'user-123'
-  }
+  const { user, isAuthenticated } = useUser()
 
   // Mock data
   const stats = [
@@ -50,10 +43,15 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <DashboardLayout
+      meta={{
+        title: 'Dashboard - V1 React App',
+        description: 'Painel de controle com métricas e informações importantes'
+      }}
+    >
       <DashboardPageHeader
         title="Dashboard"
-        description={`Welcome back, ${mockUser.displayName}! Here's what's happening today.`}
+        description={`Welcome back, ${user?.fullName || user?.email}! Here's what's happening today.`}
         actions={
           <Button>
             <Calendar className="h-4 w-4 mr-2" />
@@ -98,14 +96,14 @@ export function DashboardPage() {
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Email:</span>
-              <span className="font-medium">{mockUser.primaryEmail}</span>
+              <span className="font-medium">{user?.email}</span>
             </div>
 
             <div className="flex items-center gap-3">
               <Calendar className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Member since:</span>
               <span className="font-medium">
-                {new Date(mockUser.signedUpAt).toLocaleDateString()}
+                {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
               </span>
             </div>
 
@@ -113,7 +111,7 @@ export function DashboardPage() {
               <User className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">User ID:</span>
               <span className="font-mono text-xs bg-gray-100 px-2 py-1 rounded">
-                {mockUser.id}
+                {user?.id}
               </span>
             </div>
           </CardContent>
@@ -184,6 +182,6 @@ export function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   )
 }

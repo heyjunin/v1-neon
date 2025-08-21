@@ -1,3 +1,5 @@
+"use client";
+
 import React, { createContext, useEffect, useState } from "react";
 import type { AuthContextValue, AuthProvider as AuthProviderInterface, AuthSession } from "../types";
 

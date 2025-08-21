@@ -1,4 +1,4 @@
-import { Navigate } from 'react-router-dom'
+import { ProtectedRoute as AuthProtectedRoute } from '@v1/auth/components'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -6,12 +6,9 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRouteProps) {
-  // Temporariamente desabilitado - sempre redireciona para login
-  const isAuthenticated = false
-  
-  if (!isAuthenticated) {
-    return <Navigate to={redirectTo} replace />
-  }
-  
-  return <>{children}</>
+  return (
+    <AuthProtectedRoute redirectTo={redirectTo}>
+      {children}
+    </AuthProtectedRoute>
+  )
 }
