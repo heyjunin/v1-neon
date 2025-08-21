@@ -1,0 +1,74 @@
+# CLI init command
+
+> Use these options when running the CLI `init` command.
+
+Run the command like this:
+
+<CodeGroup>
+  ```bash npm
+  npx trigger.dev@latest init
+  ```
+
+  ```bash pnpm
+  pnpm dlx trigger.dev@latest init
+  ```
+
+  ```bash yarn
+  yarn dlx trigger.dev@latest init
+  ```
+</CodeGroup>
+
+## Options
+
+<ParamField body="Javascript" type="--javascript">
+  By default, the init command assumes you are using TypeScript. Use this flag to initialize a
+  project that uses JavaScript.
+</ParamField>
+
+<ParamField body="Project ref" type="--project-ref | -p">
+  The project ref to use when initializing the project.
+</ParamField>
+
+<ParamField body="Package tag" type="--tag | -t">
+  The version of the `@trigger.dev/sdk` package to install. Defaults to `latest`.
+</ParamField>
+
+<ParamField body="Skip package install" type="--skip-package-install">
+  Skip installing the `@trigger.dev/sdk` package.
+</ParamField>
+
+<ParamField body="Override config" type="--override-config">
+  Override the existing config file if it exists.
+</ParamField>
+
+<ParamField body="Package arguments" type="--pkg-args">
+  Additional arguments to pass to the package manager. Accepts CSV for multiple args.
+</ParamField>
+
+### Common options
+
+These options are available on most commands.
+
+<ParamField body="Login profile" type="--profile">
+  The login profile to use. Defaults to "default".
+</ParamField>
+
+<ParamField body="API URL" type="--api-url | -a">
+  Override the default API URL. If not specified, it uses `https://api.trigger.dev`. This can also be set via the `TRIGGER_API_URL` environment variable.
+</ParamField>
+
+<ParamField body="Log level" type="--log-level | -l">
+  The CLI log level to use. Options are `debug`, `info`, `log`, `warn`, `error`, and `none`. This does not affect the log level of your trigger.dev tasks. Defaults to `log`.
+</ParamField>
+
+<ParamField body="Skip telemetry" type="--skip-telemetry">
+  Opt-out of sending telemetry data. This can also be done via the `TRIGGER_TELEMETRY_DISABLED` environment variable. Just set it to anything other than an empty string.
+</ParamField>
+
+<ParamField body="Help" type="--help | -h">
+  Shows the help information for the command.
+</ParamField>
+
+<ParamField body="Version" type="--version | -v">
+  Displays the version number of the CLI.
+</ParamField>

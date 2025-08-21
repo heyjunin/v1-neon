@@ -3,7 +3,7 @@
 const fs = require('fs/promises');
 const path = require('path');
 
-const sourceDir = path.join(process.cwd(), '.cursor', 'rules');
+const sourceDir = path.join(process.cwd(), '.ai', 'rules');
 const destDir = path.join(process.cwd(), '.windsurf', 'rules');
 const rootWindsurfRulesFile = path.join(process.cwd(), '.windsurfrules');
 

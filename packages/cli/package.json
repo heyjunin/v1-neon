@@ -1,0 +1,32 @@
+{
+  "name": "@v1/cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "v1": "./bin/v1-cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .turbo node_modules dist"
+  },
+  "dependencies": {
+    "@v1/database": "workspace:*",
+    "@v1/logger": "workspace:*",
+    "commander": "^11.0.0",
+    "chalk": "^5.0.0",
+    "inquirer": "^9.0.0",
+    "fs-extra": "^11.0.0",
+    "glob": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.0",
+    "@types/inquirer": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.4"
+  }
+}

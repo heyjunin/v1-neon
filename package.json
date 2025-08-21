@@ -31,6 +31,9 @@
     "lint:repo": "bunx sherif@latest",
     "lint:repo:fix": "bunx sherif@latest --fix",
     "typecheck": "turbo typecheck",
+    "ai:sync": "node scripts/sync-ai-contexts.js",
+    "ai:sync:gemini": "node scripts/setup-gemini-context.js",
+    "ai:sync:windsurf": "node scripts/setup-windsurf-context.js",
     "setup:env": "node scripts/setup-env.js",
     "setup:env:complete": "node scripts/setup-env-complete.js",
     "setup:neon": "node scripts/setup-neon.js",
@@ -40,7 +43,10 @@
     "supabase:remote": "bash scripts/supabase-remote.sh",
     "supabase:status": "node scripts/supabase-status.js",
     "dev:local": "npm run supabase:local && bun run dev",
-    "dev:remote": "npm run supabase:remote && bun run dev"
+    "dev:remote": "npm run supabase:remote && bun run dev",
+    "make:seeder": "v1 make:seeder",
+    "cli:build": "turbo build --filter=@v1/cli",
+    "cli:dev": "turbo dev --filter=@v1/cli"
   },
   "devDependencies": {
     "@biomejs/biome": "1.8.3",

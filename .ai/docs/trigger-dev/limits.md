@@ -1,0 +1,160 @@
+# Limits
+
+> There are some hard and soft limits that you might hit.
+
+## Concurrency limits
+
+| Pricing tier | Limit                |
+| :----------- | :------------------- |
+| Free         | 10 concurrent runs   |
+| Hobby        | 25 concurrent runs   |
+| Pro          | 100+ concurrent runs |
+
+Additional bundles above the Pro tier are available for \$50/month per 50 concurrent runs. Contact us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord) to request more.
+
+## Rate limits
+
+Generally speaking each SDK call is an API call.
+
+| Limit | Details                   |
+| :---- | :------------------------ |
+| API   | 1,500 requests per minute |
+
+You can request a higher rate limit from us if you're on a paid plan.
+
+The most common cause of hitting the API rate limit is if you’re calling `trigger()` on a task in a loop, instead of doing this use `batchTrigger()` which will trigger multiple tasks in a single API call. You can have up to 500 tasks in a single batch trigger call.
+
+## Queued tasks
+
+The number of queued tasks by environment.
+
+| Limit   | Details            |
+| :------ | :----------------- |
+| Dev     | At most 500        |
+| Staging | At most 10 million |
+| Prod    | At most 10 million |
+
+## Schedules
+
+| Pricing tier | Limit              |
+| :----------- | :----------------- |
+| Free         | 10 per project     |
+| Hobby        | 100 per project    |
+| Pro          | 1,000+ per project |
+
+Additional bundles above the Pro tier are available for \$10/month per 1,000 schedules. Contact us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord) to request more.
+
+When attaching schedules to tasks we strongly recommend you add them [in our dashboard](/tasks/scheduled#attaching-schedules-in-the-dashboard) if they're "static". That way you can control them easily per environment.
+
+If you add them [dynamically using code](/management/schedules/create) make sure you add a `deduplicationKey` so you don't add the same schedule to a task multiple times. If you don't your task will get triggered multiple times, it will cost you more, and you will hit the limit.
+
+If you're creating schedules for your user you will definitely need to request more schedules from us.
+
+## Preview branches
+
+| Pricing tier | Limit                |
+| :----------- | :------------------- |
+| Free         | Not available        |
+| Hobby        | 5 preview branches   |
+| Pro          | 20+ preview branches |
+
+Additional bundles above the Pro tier are available for \$10/month per preview branch. Contact us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord) to request more.
+
+## Realtime connections
+
+| Pricing tier | Limit                       |
+| :----------- | :-------------------------- |
+| Free         | 10 concurrent connections   |
+| Hobby        | 50 concurrent connections   |
+| Pro          | 500+ concurrent connections |
+
+Additional bundles are available for \$10/month per 100 concurrent connections. Contact us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord) to request more.
+
+## Task payloads and outputs
+
+| Limit                  | Details                                       |
+| :--------------------- | :-------------------------------------------- |
+| Single trigger payload | Must not exceed 3MB                           |
+| Batch trigger payload  | The total of all payloads must not exceed 5MB |
+| Task outputs           | Must not exceed 10MB                          |
+
+Payloads and outputs that exceed 512KB will be offloaded to object storage and a presigned URL will be provided to download the data when calling `runs.retrieve`. You don't need to do anything to handle this in your tasks however, as we will transparently upload/download these during operation.
+
+## Batch size
+
+A single batch can have a maximum of 500 items.
+
+<SoftLimit />
+
+## Log retention
+
+| Pricing tier | Limit   |
+| :----------- | :------ |
+| Free         | 1 day   |
+| Hobby        | 7 days  |
+| Pro          | 30 days |
+
+## Log size
+
+We limit the size of logs to prevent oversized data potentially causing issues.
+
+<Expandable title="log limits">
+  #### Attribute Limits
+
+  * Span Attribute Count Limit: 256
+  * Log Attribute Count Limit: 256
+  * Span Attribute Value Length Limit: 131072 characters
+  * Log Attribute Value Length Limit: 131072 characters
+
+  #### Event and Link Limits
+
+  * Span Event Count Limit: 10
+  * Link Count Limit: 2
+  * Attributes per Link Limit: 10
+  * Attributes per Event Limit: 10
+
+  #### I/O Packet Length Limit
+
+  128 KB (131,072 bytes)
+
+  #### Attribute Clipping Behavior
+
+  * Attributes exceeding the value length limit (1028 characters) are discarded.
+  * If the total number of attributes exceeds 256, additional attributes are not included.
+
+  #### Attribute Value Size Calculation
+
+  * Strings: Actual length of the string
+  * Numbers: 8 bytes
+  * Booleans: 4 bytes
+  * Arrays: Sum of the sizes of all elements
+  * Undefined or null: 0 bytes
+</Expandable>
+
+## Alerts
+
+An alert destination is a single email address, Slack channel, or webhook URL that you want to send alerts to.
+
+| Pricing tier | Limit                   |
+| :----------- | :---------------------- |
+| Free         | 1 alert destination     |
+| Hobby        | 3 alert destinations    |
+| Pro          | 100+ alert destinations |
+
+If you're on the Pro plan and need more than the plan limit, you can request more by contacting us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord).
+
+## Machines
+
+The default machine is `small-1x` which has 0.5 vCPU and 0.5 GB of RAM. You can optionally configure a higher spec machine which will increase the cost of running the task but can also improve the performance of the task if it is CPU or memory bound.
+
+See the [machine configurations](/machines#machine-configurations) for more details.
+
+## Team members
+
+| Pricing tier | Limit            |
+| :----------- | :--------------- |
+| Free         | 5 team members   |
+| Hobby        | 5 team members   |
+| Pro          | 25+ team members |
+
+Additional seats are available for \$20/month per seat. Contact us via [email](https://trigger.dev/contact) or [Discord](https://trigger.dev/discord) to request more.

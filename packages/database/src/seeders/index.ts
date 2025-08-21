@@ -27,3 +27,9 @@ export const seeders = [
   new NotificationsSeeder(),
   new ExampleAdvancedSeeder()
 ];
+
+import { ProductsSeederSeeder } from './products-seeder.js';
+export { ProductsSeederSeeder };
+
+import { CategoriesSeederSeeder } from './categories-seeder.js';
+export { CategoriesSeederSeeder };
