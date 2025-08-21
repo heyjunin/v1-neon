@@ -109,7 +109,7 @@ export async function getPostsWithUsers(
       countQuery,
       filters,
       pagination,
-      sortBy,
+      sortBy: posts[sortBy as keyof typeof posts],
       sortOrder,
     });
   } catch (error) {
