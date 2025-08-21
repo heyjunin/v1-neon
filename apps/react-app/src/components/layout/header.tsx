@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@v1/ui/button'
 import { NavigationMenu, NavigationMenuItem, NavigationMenuLink, NavigationMenuList } from '@v1/ui/navigation-menu'
-import { Home, BarChart3, FileText, User } from 'lucide-react'
+import { BarChart3, FileText, Globe, Home, User } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { ThemeToggle } from '../theme'
 
 export function Header() {
   const location = useLocation()
@@ -11,6 +12,7 @@ export function Header() {
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
     { path: '/posts', label: 'Posts', icon: FileText },
     { path: '/profile', label: 'Profile', icon: User },
+    { path: '/pwa', label: 'PWA', icon: Globe },
   ]
 
   return (
@@ -54,6 +56,7 @@ export function Header() {
           </NavigationMenu>
 
           <div className="flex items-center space-x-2">
+            <ThemeToggle />
             <Button variant="outline" size="sm">
               Login
             </Button>

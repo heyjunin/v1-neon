@@ -1,11 +1,12 @@
-import { createBrowserRouter } from 'react-router-dom'
 import { RootLayout } from '@/components/layout/root-layout'
-import { HomePage } from '@/pages/home'
 import { DashboardPage } from '@/pages/dashboard'
+import { HomePage } from '@/pages/home'
+import { NotFoundPage } from '@/pages/not-found'
 import { PostsPage } from '@/pages/posts'
 import { PostDetailPage } from '@/pages/posts/post-detail'
 import { ProfilePage } from '@/pages/profile'
-import { NotFoundPage } from '@/pages/not-found'
+import { PWAPage } from '@/pages/pwa'
+import { createBrowserRouter } from 'react-router-dom'
 
 export const router = createBrowserRouter([
   {
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
       {
         path: 'profile',
         element: <ProfilePage />,
+      },
+      {
+        path: 'pwa',
+        element: <PWAPage />,
       },
       {
         path: '*',

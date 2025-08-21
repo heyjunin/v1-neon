@@ -7,4 +7,5 @@ export default {
     '../../packages/ui/src/**/*.{js,jsx,ts,tsx}',
   ],
   presets: [require('@v1/ui/tailwind.config')],
+  darkMode: 'class',
 } satisfies Config

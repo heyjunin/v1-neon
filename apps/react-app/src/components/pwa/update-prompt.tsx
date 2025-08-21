@@ -1,7 +1,7 @@
 import { Button } from '@v1/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card'
 import { Badge } from '@v1/ui/badge'
-import { RefreshCw, X } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { usePWA } from '@/hooks/use-pwa'
 
 export function UpdatePrompt() {
