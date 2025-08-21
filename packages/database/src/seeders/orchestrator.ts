@@ -42,7 +42,7 @@ export class SeederOrchestrator {
           logger.info(`Running seeder: ${seeder.name}`);
         }
 
-        await seeder.run(this.db);
+        await seeder.run(this.db, { force });
         
         const duration = Date.now() - startTime;
         results.push({

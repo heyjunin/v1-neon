@@ -8,15 +8,23 @@ import { BaseSeeder } from './base-seeder';
 export class OrganizationsSeeder extends BaseSeeder {
   name = 'organizations';
 
-  async run(db: NeonHttpDatabase): Promise<void> {
+  async run(db: NeonHttpDatabase, options?: { force?: boolean }): Promise<void> {
     logger.info('🌱 Seeding organizations...');
 
     await this.executeInTransaction(db, async () => {
       // Check if organizations already exist
       const existingOrganizations = await db.select().from(organizations).limit(1);
       
-      if (existingOrganizations.length > 0) {
+      if (existingOrganizations.length > 0 && !options?.force) {
         throw new Error('Organizations already exist in the database. Use --force to override.');
+      }
+
+      // Clear existing data if force is true
+      if (existingOrganizations.length > 0 && options?.force) {
+        logger.info('Clearing existing organizations data...');
+        await db.delete(organizationInvites);
+        await db.delete(organizationMembers);
+        await db.delete(organizations);
       }
 
       // Get existing users to use as owners and members

@@ -2,7 +2,7 @@ import { type NeonHttpDatabase } from 'drizzle-orm/neon-http';
 
 export interface Seeder {
   name: string;
-  run(db: NeonHttpDatabase): Promise<void>;
+  run(db: NeonHttpDatabase, options?: { force?: boolean }): Promise<void>;
 }
 
 export interface SeederResult {

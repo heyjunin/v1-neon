@@ -24,6 +24,8 @@
     "seed:help": "turbo seed:help --filter=@v1/database",
     "db:setup": "bun run db:migrate && bun run seed:run",
     "db:reset": "bun run db:push && bun run seed:run --force",
+    "db:seed:organizations": "bun run seed:run organizations --force --verbose",
+    "db:seed:all": "bun run seed:run --force --verbose",
     "format": "biome format --write .",
     "lint": "turbo lint && bun lint:repo",
     "lint:repo": "bunx sherif@latest",
