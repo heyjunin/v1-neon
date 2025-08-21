@@ -1,21 +1,20 @@
-import { Footer } from "@/components/footer";
-import { TRPCProvider } from "@/lib/trpc";
-import { cn } from "@v1/ui/cn";
-import "@v1/ui/globals.css";
-import { GeistMono } from "geist/font/mono";
-import { GeistSans } from "geist/font/sans";
-import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
+import { Footer } from '@/components/footer';
+import { TRPCProvider } from '@/lib/trpc';
+import { cn } from '@v1/ui/cn';
+import '@v1/ui/globals.css';
+import { Toaster } from '@v1/ui/toaster';
+import { GeistMono, GeistSans } from 'geist/font';
+import { ThemeProvider } from 'next-themes';
 
-export const metadata: Metadata = {
-  title: "Create v1",
-  description: "Production ready Next.js app",
+export const metadata = {
+  title: 'V1 App',
+  description: 'V1 App',
 };
 
 export const viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)" },
-    { media: "(prefers-color-scheme: dark)" },
+    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 };
 
@@ -29,7 +28,7 @@ export default function RootLayout({
       <body
         className={cn(
           `${GeistSans.variable} ${GeistMono.variable}`,
-          "antialiased",
+          'antialiased',
         )}
       >
         <ThemeProvider
@@ -42,6 +41,7 @@ export default function RootLayout({
             {children}
 
             <Footer />
+            <Toaster />
           </TRPCProvider>
         </ThemeProvider>
       </body>

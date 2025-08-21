@@ -17,7 +17,6 @@ interface ConfirmationDialogProps {
   onConfirm: () => void;
   title: string;
   description: string;
-  isLoading?: boolean;
   actionType?: 'delete' | 'archive' | 'publish' | 'custom';
   confirmText?: string;
   cancelText?: string;
@@ -29,7 +28,6 @@ export function ConfirmationDialog({
   onConfirm,
   title,
   description,
-  isLoading = false,
   actionType = 'delete',
   confirmText,
   cancelText = 'Cancelar',
@@ -41,28 +39,24 @@ export function ConfirmationDialog({
           icon: Trash2,
           variant: 'destructive' as const,
           text: confirmText || 'Excluir',
-          loadingText: 'Excluindo...',
         };
       case 'archive':
         return {
           icon: AlertTriangle,
           variant: 'outline' as const,
           text: confirmText || 'Arquivar',
-          loadingText: 'Arquivando...',
         };
       case 'publish':
         return {
           icon: AlertTriangle,
           variant: 'default' as const,
           text: confirmText || 'Publicar',
-          loadingText: 'Publicando...',
         };
       default:
         return {
           icon: AlertTriangle,
           variant: 'default' as const,
           text: confirmText || 'Confirmar',
-          loadingText: 'Processando...',
         };
     }
   };
@@ -95,16 +89,14 @@ export function ConfirmationDialog({
           <Button
             variant="outline"
             onClick={onClose}
-            disabled={isLoading}
           >
             {cancelText}
           </Button>
           <Button
             variant={config.variant}
             onClick={onConfirm}
-            disabled={isLoading}
           >
-            {isLoading ? config.loadingText : config.text}
+            {config.text}
           </Button>
         </DialogFooter>
       </DialogContent>

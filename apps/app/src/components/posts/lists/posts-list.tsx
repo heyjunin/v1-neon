@@ -4,24 +4,25 @@ import { useDeletePost, usePosts } from '@/lib/trpc';
 import { Button } from '@v1/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@v1/ui/card';
 import { Input } from '@v1/ui/input';
-import { Calendar, Edit, Plus, Search, Trash2, User } from 'lucide-react';
+import { Calendar, Edit, ExternalLink, Eye, Plus, Search, Trash2, User } from 'lucide-react';
+import Link from 'next/link';
 import React, { useState } from 'react';
 import { ConfirmationDialog } from '../components/dialogs';
-import { PostNotification } from '../components/notification';
 import { useConfirmation } from '../hooks/use-confirmation';
-import { useNotification } from '../hooks/use-notification';
+import { usePostToast } from '../hooks/use-toast';
 import { Post } from '../types';
 
 interface PostsListProps {
   onEdit: (post: Post) => void;
   onCreate: () => void;
+  onView?: (post: Post) => void;
 }
 
-export function PostsList({ onEdit, onCreate }: PostsListProps) {
+export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const { data: posts, isLoading, refetch, error } = usePosts();
   const deletePostMutation = useDeletePost();
-  const { notification, showNotification, hideNotification } = useNotification();
+  const { showSuccess, showError } = usePostToast();
   const { confirmation, openConfirmation, closeConfirmation, confirmAction } = useConfirmation();
 
   // Ensure posts is always an array and handle loading/error states
@@ -56,9 +57,9 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
     try {
       await deletePostMutation.mutateAsync({ id });
       await refetch();
-      showNotification('success', 'Post excluído com sucesso!');
+      showSuccess('Post excluído com sucesso!');
     } catch (error) {
-      showNotification('error', 'Erro ao excluir post. Tente novamente.');
+      showError('Erro ao excluir post. Tente novamente.');
     }
   };
 
@@ -68,6 +69,12 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
 
   const handleConfirmDelete = async () => {
     await confirmAction(handleDelete);
+  };
+
+  const handleViewClick = (post: Post) => {
+    if (onView) {
+      onView(post);
+    }
   };
 
   // Handle error state
@@ -169,6 +176,23 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
+                    {onView && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewClick(post)}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <Link href={`/posts/${post.id}`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </Link>
                     <Button
                       variant="outline"
                       size="sm"
@@ -209,15 +233,6 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
         </div>
       )}
 
-      {/* Notification */}
-      <PostNotification
-        type={notification.type}
-        message={notification.message}
-        isVisible={notification.isVisible}
-        onClose={hideNotification}
-        variant="toast"
-      />
-
       {/* Confirmation Dialog */}
       <ConfirmationDialog
         isOpen={confirmation.isOpen}
@@ -225,7 +240,6 @@ export function PostsList({ onEdit, onCreate }: PostsListProps) {
         onConfirm={handleConfirmDelete}
         title="Excluir Post"
         description={`Tem certeza que deseja excluir o post "${confirmation.itemTitle}"? Esta ação não pode ser desfeita.`}
-        isLoading={deletePostMutation.isPending}
         actionType="delete"
       />
     </div>

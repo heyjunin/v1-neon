@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { PostNotification } from './components/notification';
 import { PostForm } from './forms';
-import { useNotification } from './hooks/use-notification';
+import { usePostToast } from './hooks/use-toast';
 import { PostsList } from './lists';
 import type { Post } from './types';
+import { PostView } from './views';
 
 export function PostsManager() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const { notification, showNotification, hideNotification } = useNotification();
+  const [viewingPost, setViewingPost] = useState<Post | null>(null);
+  const { showSuccess } = usePostToast();
 
   const handleCreate = () => {
     setEditingPost(null);
@@ -22,31 +23,30 @@ export function PostsManager() {
     setIsFormOpen(true);
   };
 
+  const handleView = (post: Post) => {
+    setViewingPost(post);
+  };
+
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingPost(null);
   };
 
+  const handleCloseView = () => {
+    setViewingPost(null);
+  };
+
   const handleFormSuccess = () => {
-    showNotification('success', editingPost ? 'Post atualizado com sucesso!' : 'Post criado com sucesso!');
+    showSuccess(editingPost ? 'Post atualizado com sucesso!' : 'Post criado com sucesso!');
   };
 
   return (
     <div className="space-y-6">
-      {/* Notification */}
-      {notification.isVisible && (
-        <PostNotification
-          type={notification.type}
-          message={notification.message}
-          onClose={hideNotification}
-          variant="inline"
-        />
-      )}
-
       {/* Posts List */}
       <PostsList
         onEdit={handleEdit}
         onCreate={handleCreate}
+        onView={handleView}
       />
 
       {/* Post Form */}
@@ -56,6 +56,16 @@ export function PostsManager() {
         onClose={handleCloseForm}
         onSuccess={handleFormSuccess}
       />
+
+      {/* Post View */}
+      {viewingPost && (
+        <PostView
+          post={viewingPost}
+          isOpen={!!viewingPost}
+          onClose={handleCloseView}
+          onEdit={handleEdit}
+        />
+      )}
     </div>
   );
 }

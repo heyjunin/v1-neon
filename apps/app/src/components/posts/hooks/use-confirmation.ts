@@ -43,9 +43,11 @@ export function useConfirmation(): UseConfirmationReturn {
   const confirmAction = async (onConfirm: (id: string) => Promise<void>) => {
     if (!confirmation.itemId) return;
 
+    // Fechar a modal imediatamente após confirmação
+    closeConfirmation();
+
     try {
       await onConfirm(confirmation.itemId);
-      closeConfirmation();
     } catch (error) {
       console.error('Error in confirmation:', error);
       throw error;
