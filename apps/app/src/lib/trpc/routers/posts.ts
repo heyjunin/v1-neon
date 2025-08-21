@@ -1,8 +1,8 @@
 import { createPost, deletePost, updatePost } from "@v1/database/mutations";
 import {
-  getPostById,
+  getPostByIdWithUser,
   getPostsByUserId,
-  getPostsWithUsers,
+  getPostsWithUsers
 } from "@v1/database/queries";
 import { logger } from "@v1/logger";
 import { z } from "zod";
@@ -92,7 +92,7 @@ export const postsRouter = router({
     .input(getPostByIdSchema)
     .query(async ({ input }) => {
       try {
-        const post = await getPostById(input.id);
+        const post = await getPostByIdWithUser(input.id);
 
         if (!post) {
           throw new Error("Post not found");

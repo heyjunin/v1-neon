@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@v1/ui/dialog";
+import { formatDate, areDatesEqual } from "@v1/utils";
 import { Calendar, Edit, User, X } from "lucide-react";
 import { Post } from "../types";
 
@@ -88,28 +89,16 @@ export function PostView({ post, isOpen, onClose, onEdit }: PostViewProps) {
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     <strong>Criado em:</strong>{" "}
-                    {new Date(post.createdAt).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatDate(post.createdAt, { includeTime: true })}
                   </span>
                 </div>
 
-                {post.updatedAt !== post.createdAt && (
+                {post.updatedAt && !areDatesEqual(post.updatedAt, post.createdAt) && (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600 dark:text-gray-400">
                       <strong>Atualizado em:</strong>{" "}
-                      {new Date(post.updatedAt).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(post.updatedAt, { includeTime: true })}
                     </span>
                   </div>
                 )}

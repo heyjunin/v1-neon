@@ -6,7 +6,28 @@ import {
   useNotifications,
   useUnreadNotificationsCount,
 } from "@/lib/trpc";
-import type { Notification } from "@v1/database/schema";
+// Type for serialized notification data from tRPC
+type SerializedNotification = {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  isRead: boolean;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+  readAt: string | null;
+  metadata?: any;
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  post: {
+    id: string;
+    title: string;
+  } | null;
+};
 import { Badge } from "@v1/ui/badge";
 import { Button } from "@v1/ui/button";
 import {
@@ -136,7 +157,7 @@ export function NotificationDropdown() {
             </div>
           ) : (
             <div className="space-y-1 p-1">
-              {notifications.map((notification: Notification) => (
+              {notifications.map((notification: SerializedNotification) => (
                 <NotificationItem
                   key={notification.id}
                   notification={notification}

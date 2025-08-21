@@ -132,6 +132,35 @@ export async function getPostById(postId: string): Promise<Post | null> {
   }
 }
 
+export async function getPostByIdWithUser(postId: string): Promise<(Post & {
+  user: { id: string; email: string; fullName: string | null };
+}) | null> {
+  try {
+    const result = await db
+      .select({
+        id: posts.id,
+        userId: posts.userId,
+        title: posts.title,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          fullName: users.fullName,
+        },
+      })
+      .from(posts)
+      .innerJoin(users, eq(posts.userId, users.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+    return result[0] || null;
+  } catch (error) {
+    logger.error("Error getting post by ID with user:", error);
+    throw error;
+  }
+}
+
 export async function getPostsByUserId(userId: string): Promise<Post[]> {
   try {
     return await db

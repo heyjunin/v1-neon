@@ -5,3 +5,6 @@ export function stripSpecialCharacters(inputString: string) {
     .replace(/\s+/g, "-") // Replace spaces with hyphens
     .toLowerCase(); // Convert to lowercase for consistency
 }
+
+// Export date utilities
+export * from "./date";

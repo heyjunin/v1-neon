@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@v1/ui/card";
 import { Input } from "@v1/ui/input";
+import { formatDate } from "@v1/utils";
 import {
   Calendar,
   Edit,
@@ -240,11 +241,7 @@ export function PostsList({ onEdit, onCreate, onView }: PostsListProps) {
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     <span>
-                      {new Date(post.createdAt).toLocaleDateString("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      })}
+                      {formatDate(post.createdAt)}
                     </span>
                   </div>
                 </div>

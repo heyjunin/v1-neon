@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@v1/ui/dialog";
 import { Separator } from "@v1/ui/separator";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDate, formatRelativeDate } from "@v1/utils";
 import { Check, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
@@ -20,7 +20,7 @@ interface NotificationDetailModalProps {
     message: string;
     type: string;
     isRead: boolean;
-    createdAt: Date;
+    createdAt: string;
     organization?: {
       id: string;
       name: string;
@@ -120,14 +120,12 @@ export function NotificationDetailModal({
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Received:</span>
               <span>
-                {formatDistanceToNow(new Date(notification.createdAt), {
-                  addSuffix: true,
-                })}
+                                    {formatRelativeDate(notification.createdAt)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">Date:</span>
-              <span>{format(new Date(notification.createdAt), "PPP p")}</span>
+                              <span>{formatDate(notification.createdAt, { includeTime: true })}</span>
             </div>
           </div>
 

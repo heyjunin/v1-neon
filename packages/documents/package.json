@@ -21,7 +21,7 @@
     "@ai-sdk/mistral": "^1.2.8",
     "@langchain/community": "^0.3.46",
     "@langchain/core": "^0.3.58",
-    "@midday/utils": "workspace:*",
+    "@v1/utils": "workspace:*",
     "@mistralai/mistralai": "^1.7.2",
     "ai": "4.3.16",
     "mammoth": "^1.9.1",

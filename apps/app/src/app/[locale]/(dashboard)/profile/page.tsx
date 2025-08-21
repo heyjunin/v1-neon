@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@v1/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@v1/ui/tabs";
+import { formatDate } from "@v1/utils";
 import {
   Calendar,
   FileText,
@@ -124,9 +125,7 @@ function ProfileContent() {
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Member since</span>
                     <span className="text-sm font-medium">
-                      {user?.created_at
-                        ? new Date(user.created_at).toLocaleDateString()
-                        : "N/A"}
+                      {formatDate(user?.created_at)}
                     </span>
                   </div>
 

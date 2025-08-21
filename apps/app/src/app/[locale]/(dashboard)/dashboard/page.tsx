@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@v1/ui/card";
+import { formatDate } from "@v1/utils";
 import { Calendar, Mail, Settings, User } from "lucide-react";
 import Link from "next/link";
 
@@ -79,9 +80,7 @@ function DashboardContent() {
               <Calendar className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">Member since:</span>
               <span className="font-medium">
-                {user?.created_at
-                  ? new Date(user.created_at).toLocaleDateString()
-                  : "N/A"}
+                {formatDate(user?.created_at)}
               </span>
             </div>
 

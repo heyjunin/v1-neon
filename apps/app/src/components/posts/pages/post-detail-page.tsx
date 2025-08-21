@@ -8,6 +8,39 @@ import { useRouter } from "next/navigation";
 import { ConfirmationDialog } from "../components/dialogs";
 import { useConfirmation } from "../hooks/use-confirmation";
 import { usePostToast } from "../hooks/use-toast";
+// Função utilitária para formatar datas do projeto
+const formatPostDate = (date: string | null, includeTime = false) => {
+  if (!date) return "Data não disponível";
+  
+  try {
+    const dateObj = new Date(date);
+    const options: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    };
+    
+    if (includeTime) {
+      options.hour = "2-digit";
+      options.minute = "2-digit";
+    }
+    
+    return dateObj.toLocaleDateString("pt-BR", options);
+  } catch {
+    return "Data não disponível";
+  }
+};
+
+const areDatesEqual = (date1: string | null, date2: string | null) => {
+  if (!date1 && !date2) return true;
+  if (!date1 || !date2) return false;
+  
+  try {
+    return new Date(date1).getTime() === new Date(date2).getTime();
+  } catch {
+    return false;
+  }
+};
 
 interface PostDetailPageProps {
   postId: string;
@@ -151,28 +184,16 @@ export function PostDetailPage({ postId }: PostDetailPageProps) {
                 <Calendar className="h-4 w-4 text-gray-500" />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
                   <strong>Criado em:</strong>{" "}
-                  {new Date(post.createdAt).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {formatPostDate(post.createdAt, true)}
                 </span>
               </div>
 
-              {post.updatedAt !== post.createdAt && (
+              {post.updatedAt && !areDatesEqual(post.updatedAt, post.createdAt) && (
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
                     <strong>Atualizado em:</strong>{" "}
-                    {new Date(post.updatedAt).toLocaleDateString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {formatPostDate(post.updatedAt, true)}
                   </span>
                 </div>
               )}

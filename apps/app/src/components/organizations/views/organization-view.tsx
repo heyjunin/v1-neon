@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@v1/ui/dialog";
+import { formatDate } from "@v1/utils";
 import { Building2, Calendar, Edit, User } from "lucide-react";
 import type { Organization } from "../types";
 
@@ -123,9 +124,7 @@ export function OrganizationView({
                 <div>
                   <p className="text-sm font-medium text-gray-500">Criada em</p>
                   <p className="text-sm text-gray-900">
-                    {new Date(organization.createdAt).toLocaleDateString(
-                      "pt-BR",
-                    )}
+                    {formatDate(organization.createdAt)}
                   </p>
                 </div>
               </div>
@@ -137,9 +136,7 @@ export function OrganizationView({
                     Atualizada em
                   </p>
                   <p className="text-sm text-gray-900">
-                    {new Date(organization.updatedAt).toLocaleDateString(
-                      "pt-BR",
-                    )}
+                    {formatDate(organization.updatedAt)}
                   </p>
                 </div>
               </div>

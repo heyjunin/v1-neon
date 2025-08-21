@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@v1/ui/dropdown-menu";
-import { formatDistanceToNow } from "date-fns";
+import { formatRelativeDate } from "@v1/utils";
 import { Check, Eye, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { NotificationDetailModal } from "./notification-detail-modal";
@@ -19,7 +19,7 @@ interface NotificationItemProps {
     message: string;
     type: string;
     isRead: boolean;
-    createdAt: Date;
+    createdAt: string;
     organization?: {
       id: string;
       name: string;
@@ -74,9 +74,7 @@ export function NotificationItem({
                 {notification.message}
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {formatDistanceToNow(new Date(notification.createdAt), {
-                  addSuffix: true,
-                })}
+                {formatRelativeDate(notification.createdAt)}
               </p>
             </div>
 

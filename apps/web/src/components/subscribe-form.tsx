@@ -5,13 +5,10 @@ import { Button } from "@v1/ui/button";
 import { Icons } from "@v1/ui/icons";
 import { Input } from "@v1/ui/input";
 import { useState } from "react";
-import { useFormStatus } from "react-dom";
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-
+function SubmitButton({ pending }: { pending: boolean }) {
   return (
-    <Button type="submit" className="ml-auto rounded-full">
+    <Button type="submit" className="ml-auto rounded-full" disabled={pending}>
       {pending ? <Icons.Loader className="size-4" /> : "Subscribe"}
     </Button>
   );
@@ -25,6 +22,7 @@ type Props = {
 
 export function SubscribeForm({ group, placeholder, className }: Props) {
   const [isSubmitted, setSubmitted] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
   return (
     <div>
@@ -50,11 +48,13 @@ export function SubscribeForm({ group, placeholder, className }: Props) {
           <form
             className="flex flex-col gap-4"
             action={async (formData) => {
+              setIsPending(true);
               setSubmitted(true);
               await subscribeAction(formData, group);
 
               setTimeout(() => {
                 setSubmitted(false);
+                setIsPending(false);
               }, 5000);
             }}
           >
@@ -69,7 +69,7 @@ export function SubscribeForm({ group, placeholder, className }: Props) {
               className={className}
             />
 
-            <SubmitButton />
+            <SubmitButton pending={isPending} />
           </form>
         )}
       </div>
