@@ -7,9 +7,10 @@ export * from "./orchestrator";
 export * from "./organizations";
 export * from "./organizations-seeder";
 export * from "./posts-seeder";
+export * from "./rbac-seeder";
 export * from "./users-seeder";
 export * from "./utils/faker";
-export { ExampleAdvancedSeeder, NotificationsSeeder, OrganizationsSeeder, PostsSeeder, UsersSeeder };
+export { ExampleAdvancedSeeder, NotificationsSeeder, OrganizationsSeeder, PostsSeeder, RBACSeeder, UsersSeeder };
 
 // Re-export all seeders for easy importing
   import { DatabaseSeeder } from "./database-seeder";
@@ -17,6 +18,7 @@ export { ExampleAdvancedSeeder, NotificationsSeeder, OrganizationsSeeder, PostsS
   import { NotificationsSeeder } from "./notifications-seeder";
   import { OrganizationsSeeder } from "./organizations-seeder";
   import { PostsSeeder } from "./posts-seeder";
+  import { RBACSeeder } from "./rbac-seeder";
   import { UsersSeeder } from "./users-seeder";
   
 export const seeders = [
@@ -25,6 +27,7 @@ export const seeders = [
   new OrganizationsSeeder(),
   new PostsSeeder(),
   new NotificationsSeeder(),
+  new RBACSeeder(),
   new ExampleAdvancedSeeder(),
 ];
 

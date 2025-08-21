@@ -2,7 +2,8 @@
 
 import { useUserOrganizations } from "@/lib/trpc/hooks";
 import { useAuth } from "@v1/auth/hooks";
-import { createContext, useContext, useEffect, useState } from "react";
+import { OrganizationUserContext } from "@v1/auth/rbac";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 interface OrganizationWithRole {
   id: string;
@@ -24,6 +25,7 @@ interface OrganizationContextType {
   isLoading: boolean;
   error: string | null;
   isOnboarding: boolean;
+  userContext: OrganizationUserContext | null;
   setCurrentOrganization: (organization: OrganizationWithRole) => void;
   refreshOrganizations: () => Promise<void>;
 }
@@ -41,6 +43,18 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
 
   // Verificar se o usuário está no onboarding (não tem organizações)
   const isOnboarding = Boolean(user && !isLoading && userOrganizations.length === 0);
+
+  // Criar contexto RBAC para o usuário atual
+  const userContext: OrganizationUserContext | null = useMemo(() => {
+    if (!user || !currentOrganization) return null;
+    
+    return {
+      userId: user.id,
+      organizationId: currentOrganization.id,
+      role: currentOrganization.role,
+      status: currentOrganization.status,
+    };
+  }, [user, currentOrganization]);
 
   useEffect(() => {
     // Se não há organization atual, definir a primeira como padrão
@@ -60,6 +74,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     isLoading,
     error: queryError?.message || null,
     isOnboarding,
+    userContext,
     setCurrentOrganization,
     refreshOrganizations,
   };

@@ -8,6 +8,9 @@ const handler = async (req: NextRequest) => {
     // Obter o usuário através do middleware do Supabase
     const { user } = await updateSession(req, NextResponse.next());
 
+    // Obter a organização do header
+    const organizationId = req.headers.get("x-organization-id");
+
     return fetchRequestHandler({
       endpoint: "/api/trpc",
       req,
@@ -21,6 +24,7 @@ const handler = async (req: NextRequest) => {
                 email: user.email || "",
               }
             : null,
+          organizationId: organizationId || null,
         }),
     });
   } catch (error) {

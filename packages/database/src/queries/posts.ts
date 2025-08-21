@@ -4,15 +4,16 @@ import { db } from "../drizzle";
 import { posts, type Post } from "../schema/posts";
 import { users } from "../schema/users";
 import {
-    PaginatedResult,
-    PaginationOptions,
-    QueryBuilder,
-    executePaginatedQuery,
+  PaginatedResult,
+  PaginationOptions,
+  QueryBuilder,
+  executePaginatedQuery,
 } from "../utils";
 
 export interface PostsFilters {
   search?: string;
   userId?: string;
+  organizationId?: string;
   sortBy?: "createdAt" | "updatedAt" | "title";
   sortOrder?: "asc" | "desc";
 }
@@ -27,13 +28,15 @@ export async function getPosts(
     const {
       search,
       userId,
+      organizationId,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = filters || {};
 
     const queryBuilder = new QueryBuilder()
       .addSearch([posts.title, posts.content], search)
-      .addFilter(posts.userId, userId);
+      .addFilter(posts.userId, userId)
+      .addFilter(posts.organizationId, organizationId);
 
     const whereClause = queryBuilder.build();
 
@@ -71,13 +74,15 @@ export async function getPostsWithUsers(
     const {
       search,
       userId,
+      organizationId,
       sortBy = "createdAt",
       sortOrder = "desc",
     } = filters || {};
 
     const queryBuilder = new QueryBuilder()
       .addSearch([posts.title, posts.content], search)
-      .addFilter(posts.userId, userId);
+      .addFilter(posts.userId, userId)
+      .addFilter(posts.organizationId, organizationId);
 
     const whereClause = queryBuilder.build();
 
@@ -85,6 +90,7 @@ export async function getPostsWithUsers(
       .select({
         id: posts.id,
         userId: posts.userId,
+        organizationId: posts.organizationId,
         title: posts.title,
         content: posts.content,
         createdAt: posts.createdAt,
@@ -140,6 +146,7 @@ export async function getPostByIdWithUser(postId: string): Promise<(Post & {
       .select({
         id: posts.id,
         userId: posts.userId,
+        organizationId: posts.organizationId,
         title: posts.title,
         content: posts.content,
         createdAt: posts.createdAt,
@@ -170,6 +177,19 @@ export async function getPostsByUserId(userId: string): Promise<Post[]> {
       .orderBy(desc(posts.createdAt));
   } catch (error) {
     logger.error("Error getting posts by user ID:", error);
+    throw error;
+  }
+}
+
+export async function getPostsByOrganizationId(organizationId: string): Promise<Post[]> {
+  try {
+    return await db
+      .select()
+      .from(posts)
+      .where(eq(posts.organizationId, organizationId))
+      .orderBy(desc(posts.createdAt));
+  } catch (error) {
+    logger.error("Error getting posts by organization ID:", error);
     throw error;
   }
 }

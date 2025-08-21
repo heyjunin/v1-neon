@@ -1,4 +1,5 @@
 import { Footer } from "@/components/footer";
+import { OrganizationProvider } from "@/contexts/organization-context";
 import { TRPCProvider } from "@/lib/trpc";
 import { cn } from "@v1/ui/cn";
 import "@v1/ui/globals.css";
@@ -39,12 +40,14 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProviderWrapper>
-            <TRPCProvider>
-              {children}
+            <OrganizationProvider>
+              <TRPCProvider>
+                {children}
 
-              <Footer />
-              <Toaster />
-            </TRPCProvider>
+                <Footer />
+                <Toaster />
+              </TRPCProvider>
+            </OrganizationProvider>
           </AuthProviderWrapper>
         </ThemeProvider>
       </body>

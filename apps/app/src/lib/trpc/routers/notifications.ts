@@ -11,6 +11,7 @@ import {
   markNotificationAsUnread,
   unarchiveNotification,
 } from "@v1/database/queries";
+import { PERMISSIONS } from "@v1/auth/rbac";
 import { z } from "zod";
 import { protectedProcedure, router } from "../context";
 

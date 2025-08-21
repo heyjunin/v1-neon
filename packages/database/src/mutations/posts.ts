@@ -43,3 +43,11 @@ export async function deletePostsByUserId(userId: string): Promise<number> {
     .returning();
   return result.length;
 }
+
+export async function deletePostsByOrganizationId(organizationId: string): Promise<number> {
+  const result = await db
+    .delete(posts)
+    .where(eq(posts.organizationId, organizationId))
+    .returning();
+  return result.length;
+}

@@ -1,16 +1,16 @@
+import { PERMISSIONS, createRBACChecker } from "@v1/auth/rbac";
 import { createPost, deletePost, updatePost } from "@v1/database/mutations";
 import {
   getPostByIdWithUser,
-  getPostsByUserId,
   getPostsWithUsers
 } from "@v1/database/queries";
 import { logger } from "@v1/logger";
 import { z } from "zod";
 import {
-  loggedProcedure,
+  organizationProcedure,
   protectedProcedure,
   publicProcedure,
-  router,
+  router
 } from "../context";
 
 // Schemas
@@ -43,14 +43,14 @@ const deletePostSchema = z.object({
 });
 
 export const postsRouter = router({
-  // Listar posts com filtros e paginação
-  getPosts: loggedProcedure.input(getPostsSchema).query(async ({ input }) => {
+  // Listar posts da organização atual com filtros e paginação
+  getPosts: organizationProcedure.input(getPostsSchema).query(async ({ input, ctx }) => {
     try {
-      // Primeiro, vamos tentar uma query simples para testar a conexão
       const posts = await getPostsWithUsers(
         {
           search: input.search,
           userId: input.userId,
+          organizationId: ctx.organizationId, // Filtrar por organização atual
           sortBy: input.sortBy,
           sortOrder: input.sortOrder,
         },
@@ -87,15 +87,20 @@ export const postsRouter = router({
     }
   }),
 
-  // Buscar post por ID
-  getPostById: loggedProcedure
+  // Buscar post por ID (apenas se pertencer à organização atual)
+  getPostById: organizationProcedure
     .input(getPostByIdSchema)
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
         const post = await getPostByIdWithUser(input.id);
 
         if (!post) {
           throw new Error("Post not found");
+        }
+
+        // Verificar se o post pertence à organização atual
+        if (post.organizationId !== ctx.organizationId) {
+          throw new Error("Post not found in current organization");
         }
 
         return post;
@@ -105,28 +110,52 @@ export const postsRouter = router({
       }
     }),
 
-  // Buscar posts por usuário
-  getPostsByUserId: loggedProcedure
+  // Buscar posts por usuário na organização atual
+  getPostsByUserId: organizationProcedure
     .input(z.object({ userId: z.string() }))
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       try {
-        const posts = await getPostsByUserId(input.userId);
-        return posts || [];
+        // Buscar posts do usuário na organização atual
+        const posts = await getPostsWithUsers(
+          {
+            userId: input.userId,
+            organizationId: ctx.organizationId,
+          },
+          { page: 1, limit: 100 }
+        );
+        
+        return posts.data || [];
       } catch (error) {
         logger.error("Error in getPostsByUserId:", error);
         throw new Error("Failed to get posts by user");
       }
     }),
 
-  // Criar post
-  createPost: protectedProcedure
+  // Criar post na organização atual
+  createPost: organizationProcedure
     .input(createPostSchema)
     .mutation(async ({ input, ctx }) => {
       try {
+        // Verificar permissão para criar posts
+        const rbacChecker = createRBACChecker({
+          userId: ctx.user.id,
+          organizationId: ctx.organizationId,
+          role: ctx.userRole,
+          status: "active",
+        });
+
+        const permissionCheck = rbacChecker.can(PERMISSIONS.POST_CREATE);
+        if (!permissionCheck.hasPermission) {
+          throw new Error(`Permission denied: ${permissionCheck.reason}`);
+        }
+        
         const post = await createPost({
           ...input,
           userId: ctx.user.id,
+          organizationId: ctx.organizationId,
         });
+        
+        logger.info(`Post created by user ${ctx.user.id} in organization ${ctx.organizationId}`);
         return post;
       } catch (error) {
         logger.error("Error in createPost:", error);
@@ -134,28 +163,98 @@ export const postsRouter = router({
       }
     }),
 
-  // Atualizar post
-  updatePost: protectedProcedure
+  // Atualizar post (apenas se pertencer à organização atual)
+  updatePost: organizationProcedure
     .input(updatePostSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
-        const post = await updatePost(input.id, {
+        // Buscar o post para verificar se pertence à organização atual
+        const post = await getPostByIdWithUser(input.id);
+        
+        if (!post) {
+          throw new Error("Post not found");
+        }
+
+        if (post.organizationId !== ctx.organizationId) {
+          throw new Error("Post not found in current organization");
+        }
+
+        // Verificar permissões
+        const rbacChecker = createRBACChecker({
+          userId: ctx.user.id,
+          organizationId: ctx.organizationId,
+          role: ctx.userRole,
+          status: "active",
+        });
+
+        // Se o usuário é o autor do post, verificar permissão de edição própria
+        if (post.userId === ctx.user.id) {
+          const permissionCheck = rbacChecker.can(PERMISSIONS.POST_UPDATE);
+          if (!permissionCheck.hasPermission) {
+            throw new Error(`Permission denied: ${permissionCheck.reason}`);
+          }
+        } else {
+          // Se não é o autor, verificar se tem permissão para editar posts de outros
+          const permissionCheck = rbacChecker.can(PERMISSIONS.POST_UPDATE);
+          if (!permissionCheck.hasPermission) {
+            throw new Error("You don't have permission to edit this post");
+          }
+        }
+
+        const updatedPost = await updatePost(input.id, {
           title: input.title,
           content: input.content,
         });
-        return post;
+        
+        logger.info(`Post ${input.id} updated by user ${ctx.user.id} in organization ${ctx.organizationId}`);
+        return updatedPost;
       } catch (error) {
         logger.error("Error in updatePost:", error);
         throw new Error("Failed to update post");
       }
     }),
 
-  // Deletar post
-  deletePost: protectedProcedure
+  // Deletar post (apenas se pertencer à organização atual)
+  deletePost: organizationProcedure
     .input(deletePostSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        // Buscar o post para verificar se pertence à organização atual
+        const post = await getPostByIdWithUser(input.id);
+        
+        if (!post) {
+          throw new Error("Post not found");
+        }
+
+        if (post.organizationId !== ctx.organizationId) {
+          throw new Error("Post not found in current organization");
+        }
+
+        // Verificar permissões
+        const rbacChecker = createRBACChecker({
+          userId: ctx.user.id,
+          organizationId: ctx.organizationId,
+          role: ctx.userRole,
+          status: "active",
+        });
+
+        // Se o usuário é o autor do post, verificar permissão de exclusão própria
+        if (post.userId === ctx.user.id) {
+          const permissionCheck = rbacChecker.can(PERMISSIONS.POST_DELETE);
+          if (!permissionCheck.hasPermission) {
+            throw new Error(`Permission denied: ${permissionCheck.reason}`);
+          }
+        } else {
+          // Se não é o autor, verificar se tem permissão para deletar posts de outros
+          const permissionCheck = rbacChecker.can(PERMISSIONS.POST_DELETE);
+          if (!permissionCheck.hasPermission) {
+            throw new Error("You don't have permission to delete this post");
+          }
+        }
+
         await deletePost(input.id);
+        
+        logger.info(`Post ${input.id} deleted by user ${ctx.user.id} in organization ${ctx.organizationId}`);
         return { success: true };
       } catch (error) {
         logger.error("Error in deletePost:", error);
@@ -163,7 +262,7 @@ export const postsRouter = router({
       }
     }),
 
-  // Rota de teste para verificar a conexão
+  // Rota de teste para verificar a conexão (pública)
   testConnection: publicProcedure.query(async () => {
     try {
       // Tentar uma query simples
@@ -183,4 +282,38 @@ export const postsRouter = router({
       };
     }
   }),
+
+  // Rota para obter posts de uma organização específica (apenas para usuários autenticados)
+  getPostsByOrganization: protectedProcedure
+    .input(z.object({ 
+      organizationId: z.string(),
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(10),
+    }))
+    .query(async ({ input, ctx }) => {
+      try {
+        // Verificar se o usuário é membro da organização
+        const { getOrganizationMember } = await import("@v1/database/queries");
+        const member = await getOrganizationMember(input.organizationId, ctx.user.id);
+        
+        if (!member || member.status !== "active") {
+          throw new Error("You don't have access to this organization");
+        }
+
+        const posts = await getPostsWithUsers(
+          {
+            organizationId: input.organizationId,
+          },
+          {
+            page: input.page,
+            limit: input.limit,
+          },
+        );
+
+        return posts;
+      } catch (error) {
+        logger.error("Error in getPostsByOrganization:", error);
+        throw new Error("Failed to get posts by organization");
+      }
+    }),
 });

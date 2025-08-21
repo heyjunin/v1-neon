@@ -1,3 +1,4 @@
+import { PERMISSIONS } from "@v1/auth/rbac";
 import {
   acceptInvite,
   activateMember,
@@ -36,6 +37,48 @@ import {
   publicProcedure,
   router,
 } from "../context";
+
+// Função auxiliar para verificar permissões de organização
+async function checkOrganizationPermission(userId: string, organizationId: string, permission: string) {
+  const userOrganizations = await getUserOrganizations(userId);
+  const userOrg = userOrganizations.find(org => org.id === organizationId);
+  
+  if (!userOrg || userOrg.status !== 'active') {
+    return false;
+  }
+
+  // Mapeamento básico de roles para permissões
+  const rolePermissions: Record<string, string[]> = {
+    owner: Object.values(PERMISSIONS),
+    admin: [
+      PERMISSIONS.ORGANIZATION_VIEW,
+      PERMISSIONS.ORGANIZATION_UPDATE,
+      PERMISSIONS.MEMBER_VIEW,
+      PERMISSIONS.MEMBER_INVITE,
+      PERMISSIONS.MEMBER_UPDATE_ROLE,
+      PERMISSIONS.MEMBER_REMOVE,
+      PERMISSIONS.INVITE_VIEW,
+      PERMISSIONS.INVITE_CREATE,
+      PERMISSIONS.INVITE_CANCEL,
+      PERMISSIONS.INVITE_RESEND,
+    ],
+    member: [
+      PERMISSIONS.ORGANIZATION_VIEW,
+      PERMISSIONS.MEMBER_VIEW,
+      PERMISSIONS.POST_VIEW,
+      PERMISSIONS.POST_CREATE,
+      PERMISSIONS.POST_UPDATE,
+    ],
+    viewer: [
+      PERMISSIONS.ORGANIZATION_VIEW,
+      PERMISSIONS.MEMBER_VIEW,
+      PERMISSIONS.POST_VIEW,
+    ],
+  };
+
+  const userPermissions = rolePermissions[userOrg.role] || [];
+  return userPermissions.includes(permission);
+}
 
 // Schemas
 const createOrganizationSchema = z.object({
@@ -283,10 +326,19 @@ export const organizationsRouter = router({
   // Atualizar organization
   updateOrganization: protectedProcedure
     .input(updateOrganizationSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        // Verificar permissão para atualizar organização
+        const canUpdate = await checkOrganizationPermission(ctx.user.id, input.id, PERMISSIONS.ORGANIZATION_UPDATE);
+        
+        if (!canUpdate) {
+          throw new Error("You don't have permission to update this organization");
+        }
+
         const { id, ...updateData } = input;
         const organization = await updateOrganization(id, updateData);
+        
+        logger.info(`Organization ${id} updated by user ${ctx.user.id}`);
         return organization;
       } catch (error) {
         logger.error("Error in updateOrganization:", error);
@@ -297,9 +349,19 @@ export const organizationsRouter = router({
   // Deletar organization
   deleteOrganization: protectedProcedure
     .input(organizationIdSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       try {
+        // Verificar se o usuário é owner da organização
+        const userOrganizations = await getUserOrganizations(ctx.user.id);
+        const userOrg = userOrganizations.find(org => org.id === input.id);
+        
+        if (!userOrg || userOrg.role !== 'owner' || userOrg.status !== 'active') {
+          throw new Error("Only organization owners can delete organizations");
+        }
+
         await deleteOrganization(input.id);
+        
+        logger.info(`Organization ${input.id} deleted by owner ${ctx.user.id}`);
         return { success: true };
       } catch (error) {
         logger.error("Error in deleteOrganization:", error);

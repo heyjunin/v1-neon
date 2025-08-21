@@ -7,4 +7,6 @@ export interface User {
 export interface CreateContextOptions {
   req?: any;
   user?: User | null;
+  organizationId?: string | null;
+  userRole?: string | null;
 }
