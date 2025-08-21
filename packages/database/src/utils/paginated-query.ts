@@ -1,8 +1,8 @@
 import { asc, desc } from "drizzle-orm";
 import {
-  createPaginationHelpers,
   PaginatedResult,
   PaginationOptions,
+  createPaginationHelpers,
 } from "./pagination";
 
 export interface PaginatedQueryOptions<T> {
@@ -10,7 +10,7 @@ export interface PaginatedQueryOptions<T> {
   countQuery: any;
   filters?: any;
   pagination?: PaginationOptions;
-  sortBy: string;
+  sortBy: any; // Mudando para any para aceitar a referência da coluna
   sortOrder?: "asc" | "desc";
 }
 
@@ -26,7 +26,7 @@ export async function executePaginatedQuery<T>({
   const { getOffset, buildPaginatedResult } = createPaginationHelpers();
 
   const orderByClause =
-    sortOrder === "asc" ? asc(baseQuery[sortBy]) : desc(baseQuery[sortBy]);
+    sortOrder === "asc" ? asc(sortBy) : desc(sortBy);
   const offset = getOffset(page, limit);
 
   const [countResult, data] = await Promise.all([

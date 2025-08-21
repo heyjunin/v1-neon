@@ -1,4 +1,3 @@
-import { logger } from "@v1/logger";
 import type { AuthProvider, AuthSession, AuthUser, SignInOptions } from "../../types";
 
 export class SupabaseAuthProvider implements AuthProvider {
@@ -19,11 +18,11 @@ export class SupabaseAuthProvider implements AuthProvider {
       });
 
       if (error) {
-        logger.error("Sign in error:", error);
+        console.error("Sign in error:", error);
         throw error;
       }
     } catch (error) {
-      logger.error("Sign in error:", error);
+      console.error("Sign in error:", error);
       throw error;
     }
   }
@@ -32,11 +31,11 @@ export class SupabaseAuthProvider implements AuthProvider {
     try {
       const { error } = await this.client.auth.signOut();
       if (error) {
-        logger.error("Sign out error:", error);
+        console.error("Sign out error:", error);
         throw error;
       }
     } catch (error) {
-      logger.error("Sign out error:", error);
+      console.error("Sign out error:", error);
       throw error;
     }
   }
@@ -46,7 +45,7 @@ export class SupabaseAuthProvider implements AuthProvider {
       const { data: { user }, error } = await this.client.auth.getUser();
       
       if (error) {
-        logger.error("Get user error:", error);
+        console.error("Get user error:", error);
         return null;
       }
 
@@ -61,7 +60,7 @@ export class SupabaseAuthProvider implements AuthProvider {
         updatedAt: new Date(user.updated_at || user.created_at),
       };
     } catch (error) {
-      logger.error("Get user error:", error);
+      console.error("Get user error:", error);
       return null;
     }
   }
@@ -71,7 +70,7 @@ export class SupabaseAuthProvider implements AuthProvider {
       const { data: { session }, error } = await this.client.auth.getSession();
       
       if (error) {
-        logger.error("Get session error:", error);
+        console.error("Get session error:", error);
         return {
           user: null,
           isLoading: false,
@@ -102,7 +101,7 @@ export class SupabaseAuthProvider implements AuthProvider {
         error: null,
       };
     } catch (error) {
-      logger.error("Get session error:", error);
+      console.error("Get session error:", error);
       return {
         user: null,
         isLoading: false,

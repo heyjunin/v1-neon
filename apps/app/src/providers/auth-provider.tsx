@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthProvider } from "@v1/auth/components";
-import { createBrowserAuthProvider } from "@v1/auth/providers/supabase";
+import { createBrowserAuthProvider } from "@v1/auth/providers/supabase/client-index";
 
 interface AuthProviderWrapperProps {
   children: React.ReactNode;

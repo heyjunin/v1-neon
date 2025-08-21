@@ -5,6 +5,7 @@ import "@v1/ui/globals.css";
 import { Toaster } from "@v1/ui/toaster";
 import { GeistMono, GeistSans } from "geist/font";
 import { ThemeProvider } from "next-themes";
+import { AuthProviderWrapper } from "../../providers/auth-provider";
 
 export const metadata = {
   title: "V1 App",
@@ -37,12 +38,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TRPCProvider>
-            {children}
+          <AuthProviderWrapper>
+            <TRPCProvider>
+              {children}
 
-            <Footer />
-            <Toaster />
-          </TRPCProvider>
+              <Footer />
+              <Toaster />
+            </TRPCProvider>
+          </AuthProviderWrapper>
         </ThemeProvider>
       </body>
     </html>
