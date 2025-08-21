@@ -19,14 +19,32 @@ export async function createOrganization(
   organizationData: NewOrganization,
 ): Promise<Organization> {
   try {
-    const result = await db
-      .insert(organizations)
-      .values(organizationData)
-      .returning();
-    if (!result[0]) {
-      throw new Error("Failed to create organization: no rows returned");
-    }
-    return result[0];
+    return await db.transaction(async (tx) => {
+      // Create the organization
+      const orgResult = await tx
+        .insert(organizations)
+        .values(organizationData)
+        .returning();
+      
+      if (!orgResult[0]) {
+        throw new Error("Failed to create organization: no rows returned");
+      }
+
+      const organization = orgResult[0];
+
+      // Add the owner as a member with 'owner' role
+      await tx
+        .insert(organizationMembers)
+        .values({
+          organizationId: organization.id,
+          userId: organization.ownerId,
+          role: "owner",
+          status: "active",
+          joinedAt: new Date(),
+        });
+
+      return organization;
+    });
   } catch (error) {
     logger.error("Error creating organization:", error);
     throw error;

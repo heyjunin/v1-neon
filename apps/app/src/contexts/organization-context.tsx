@@ -12,8 +12,8 @@ interface OrganizationWithRole {
   logoUrl: string | null;
   ownerId: string;
   isActive: boolean | null;
-  createdAt: Date | null;
-  updatedAt: Date | null;
+  createdAt: string | null;
+  updatedAt: string | null;
   role: string;
   status: string;
 }
@@ -23,6 +23,7 @@ interface OrganizationContextType {
   userOrganizations: OrganizationWithRole[];
   isLoading: boolean;
   error: string | null;
+  isOnboarding: boolean;
   setCurrentOrganization: (organization: OrganizationWithRole) => void;
   refreshOrganizations: () => Promise<void>;
 }
@@ -37,6 +38,9 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   const refreshOrganizations = async () => {
     await refetch();
   };
+
+  // Verificar se o usuário está no onboarding (não tem organizações)
+  const isOnboarding = Boolean(user && !isLoading && userOrganizations.length === 0);
 
   useEffect(() => {
     // Se não há organization atual, definir a primeira como padrão
@@ -55,6 +59,7 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     userOrganizations,
     isLoading,
     error: queryError?.message || null,
+    isOnboarding,
     setCurrentOrganization,
     refreshOrganizations,
   };
